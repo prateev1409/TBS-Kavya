@@ -21,7 +21,7 @@ function MainComponent() {
       title: "New Releases",
       description:
         "Discover our latest collection of books fresh off the press. From thrilling mysteries to heartwarming romances, find your next favorite read among our new arrivals this week.",
-      images: ["/book1.jpg", "/book2.jpg", "/book3.jpg"],
+      images: ["/book1.png", "/book2.png", "/book3.png"],
       buttonText: "Browse New Releases",
     },
     {
@@ -29,7 +29,7 @@ function MainComponent() {
       title: "Must Reads",
       description:
         "Immerse yourself in timeless classics and contemporary masterpieces. Our curated selection of must-read books features unforgettable stories that have captured readers' hearts.",
-      images: ["/sherlock.jpg", "/book2.jpg"],
+      images: ["/book1.png", "/book2.png"],
       buttonText: "Explore Classics",
     },
     {
@@ -37,7 +37,7 @@ function MainComponent() {
       title: "Visit Blue Tokai",
       description:
         "Experience the perfect blend of books and artisanal coffee at Blue Tokai. Our newest partner café offers a cozy atmosphere for your reading pleasure with expertly crafted beverages.",
-      images: ["/bluetokai-logo.jpg"],
+      images: ["/bluetokai-logo.png"],
       buttonText: "Find Location",
     },
   ];
@@ -45,17 +45,17 @@ function MainComponent() {
     {
       id: 1,
       title: "The Midnight Hour",
-      cover: "/book1.jpg",
+      cover: "/book1.png",
       genre: "Mystery",
     },
     {
       id: 2,
       title: "Stellar Dreams",
-      cover: "/book2.jpg",
+      cover: "/book2.png",
       genre: "Science Fiction",
     },
-    { id: 3, title: "Love's Journey", cover: "/book3.jpg", genre: "Romance" },
-    { id: 4, title: "Dark Corners", cover: "/book4.jpg", genre: "Horror" },
+    { id: 3, title: "Love's Journey", cover: "/book3.png", genre: "Romance" },
+    { id: 4, title: "Dark Corners", cover: "/book4.png", genre: "Horror" },
   ];
   const cafes = [
     {
