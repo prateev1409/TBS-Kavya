@@ -202,7 +202,7 @@ function MainComponent() {
           description="Dive into a world where books and coffee create magic. At TheBookShelves, we're more than just a collection of paperbacks at your favorite cafés—our community thrives on the love for stories and the joy of shared experiences."
           subtext="Sip, read, and connect with us today!"
           linksLeft={[
-            { href: "#", text: "How it works?" },
+            { href: "/how-it-works", text: "How it works?" },
             { href: "#", text: "Terms of Use" },
             { href: "#", text: "Sales and Refunds" },
           ]}
