@@ -6,6 +6,7 @@ import Header from "../components/header";
 
 function MainComponent() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -13,6 +14,11 @@ function MainComponent() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prevMode) => !prevMode);
+    document.documentElement.classList.toggle('dark', !isDarkMode);
+  };
 
   const [selectedGenre, setSelectedGenre] = useState("");
   const carouselSlides = [
@@ -97,7 +103,7 @@ function MainComponent() {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className={`min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark`}>
       <Header
         location="New Town, kolkata"
         onLocationChange={() => {}}
@@ -129,8 +135,8 @@ function MainComponent() {
                 onClick={() => setCurrentSlide(index)}
                 className={`w-3 h-3 rounded-full transition-colors ${
                   currentSlide === index
-                    ? "bg-gray-900 dark:bg-white"
-                    : "bg-gray-300 dark:bg-gray-700"
+                    ? "bg-primary-light dark:bg-primary-dark"
+                    : "bg-secondary-light dark:bg-secondary-dark"
                 }`}
               />
             ))}
@@ -138,14 +144,14 @@ function MainComponent() {
         </section>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold font-ibm-plex-sans text-gray-900 dark:text-white mb-6">
+          <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
             Read something new!
           </h2>
           <select
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
-            className="mb-8 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg 
-              text-gray-900 dark:text-white bg-white dark:bg-gray-800 font-ibm-plex-sans"
+            className="mb-8 px-4 py-2 border border-secondary-light dark:border-secondary-dark rounded-lg 
+              text-secondary-light dark:text-secondary-dark bg-background-light dark:bg-background-dark font-body"
             name="genre"
           >
             <option value="">Choose a genre</option>
@@ -173,7 +179,7 @@ function MainComponent() {
         </section>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold font-ibm-plex-sans text-gray-900 dark:text-white mb-6">
+          <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
             Find a new Cafe!
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -187,10 +193,10 @@ function MainComponent() {
                   alt={`Interior of ${cafe.name}`}
                   className="w-full h-[200px] object-cover rounded-lg mb-3"
                 />
-                <h3 className="font-ibm-plex-sans font-semibold text-gray-900 dark:text-white">
+                <h3 className="font-header font-semibold text-primary-light dark:text-primary-dark">
                   {cafe.name}
                 </h3>
-                <p className="font-ibm-plex-sans text-gray-700 dark:text-gray-300 text-sm">
+                <p className="font-body text-secondary-light dark:text-secondary-dark text-sm">
                   {cafe.distance}
                 </p>
               </div>
@@ -214,6 +220,12 @@ function MainComponent() {
           ]}
         />
       </main>
+      <button
+        onClick={toggleTheme}
+        className="fixed bottom-4 right-4 p-2 bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark rounded-full shadow-lg font-button"
+      >
+        {isDarkMode ? "Light Mode" : "Dark Mode"}
+      </button>
     </div>
   );
 }

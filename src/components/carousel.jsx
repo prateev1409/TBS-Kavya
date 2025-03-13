@@ -24,10 +24,10 @@ const Carousel = ({ title, description, buttonText, images }) => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between">
       <div className="w-full md:w-[70%] pr-0 md:pr-32 mb-2 md:mb-0 relative z-10">
-        <h1 className="text-4xl md:text-5xl font-['IBM_Plex_Sans'] text-gray-900 dark:text-white mb-4">
+        <h1 className="text-4xl md:text-5xl font-header text-primary-light dark:text-primary-dark mb-4">
           {title}
         </h1>
-        <p className="text-gray-700 dark:text-gray-300 font-['IBM_Plex_Sans'] mb-6">
+        <p className="text-secondary-light dark:text-secondary-dark font-body mb-6">
           {description}
         </p>
         <Link
@@ -36,7 +36,7 @@ const Carousel = ({ title, description, buttonText, images }) => {
             buttonText === "Explore Classics" ? "/books/classics" :
             buttonText === "Find Location" ? "/cafes" : "#"
           }
-          className="inline-block bg-gray-900 dark:bg-gray-800 text-white font-['Poppins'] font-bold px-6 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors"
+          className="inline-block bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark font-button font-bold px-6 py-2 rounded-md hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors"
         >
           {buttonText}
         </Link>
