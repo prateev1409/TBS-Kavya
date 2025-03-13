@@ -1,7 +1,7 @@
 "use client"; // Added "use client" directive
 import Link from "next/link";
 import { useState } from "react";
-import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
+import ThemeToggle from "../../../components/ThemeToggle"; // Import ThemeToggle
 
 function MainComponent() {
   const [error, setError] = useState(null);
@@ -16,7 +16,11 @@ function MainComponent() {
     setError(null);
 
     if (!email || !password) {
-      setError("Please fill in all fields");
+      setError(
+        <span className="text-text-light dark:text-text-dark">
+          Please fill in all fields
+        </span>
+      );
       setLoading(false);
       return;
     }
@@ -35,10 +39,10 @@ function MainComponent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-background-dark">
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-text-dark mb-8 font-ibm-plex-sans">
+          <h1 className="text-4xl font-bold text-text-light dark:text-text-dark mb-8 font-ibm-plex-sans">
             Hello Reader!
           </h1>
 
@@ -50,7 +54,7 @@ function MainComponent() {
                 placeholder="Username or Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white transition-colors"
+                className="w-full px-6 py-3 rounded-full border border-border-light dark:border-border-dark focus:border-primary-light dark:focus:border-primary-dark focus:ring-1 focus:ring-primary-light dark:focus:ring-primary-dark transition-colors"
               />
             </div>
 
@@ -61,7 +65,7 @@ function MainComponent() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white transition-colors"
+                className="w-full px-6 py-3 rounded-full border border-border-light dark:border-border-dark focus:border-primary-light dark:focus:border-primary-dark focus:ring-1 focus:ring-primary-light dark:focus:ring-primary-dark transition-colors"
               />
               <button
                 type="button"
@@ -73,7 +77,7 @@ function MainComponent() {
             </div>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900 text-red-500 dark:text-red-200 p-4 rounded-full text-sm">
+              <div className="bg-warning-light dark:bg-warning-dark text-warning-light dark:text-warning-dark p-4 rounded-full text-sm">
                 {error}
               </div>
             )}
@@ -81,43 +85,43 @@ function MainComponent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-black dark:bg-primary-dark text-white dark:text-black px-6 py-3 rounded-full hover:bg-gray-800 dark:hover:bg-primary-light transition-colors disabled:opacity-50"
+              className="w-full bg-primary-light dark:bg-primary-dark text-white dark:text-black px-6 py-3 rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition-colors disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Log In"}
             </button>
           </form>
 
           <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
+            <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
             <span className="px-4 text-gray-500 dark:text-gray-400 text-sm">Or</span>
-            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
+            <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
           </div>
 
           <div className="space-y-4">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full border border-black dark:border-white px-6 py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="w-full border border-border-light dark:border-border-dark px-6 py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark transition-colors"
             >
               <i className="fab fa-google text-xl"></i>
-              <span className="text-black dark:text-white">Continue with Google</span>
+              <span className="text-text-light dark:text-text-dark">Continue with Google</span>
             </button>
 
-            <button className="w-full border border-black dark:border-white px-6 py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <button className="w-full border border-border-light dark:border-border-dark px-6 py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark transition-colors">
               <i className="fab fa-apple text-xl"></i>
-              <span className="text-black dark:text-white">Continue with Apple</span>
+              <span className="text-text-light dark:text-text-dark">Continue with Apple</span>
             </button>
           </div>
 
           <p className="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
             New here?{" "}
-            <Link href="/auth/signup" className="text-black dark:text-white hover:underline">
+            <Link href="/auth/signup" className="text-text-light dark:text-text-dark hover:underline">
               Sign up instead
             </Link>
           </p>
         </div>
       </div>
 
-      <div className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-12">
+      <div className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-backgroundSCD-light to-backgroundSCD-light dark:from-backgroundSCD-dark dark:to-backgroundSCD-dark p-12">
         <div className="relative">
           <img
             src="/Graphic 1.png"

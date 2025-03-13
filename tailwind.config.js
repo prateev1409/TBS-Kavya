@@ -31,6 +31,14 @@ module.exports = {
           light: '#1f2937', // Text color for light mode
           dark: '#f9fafb',  // Text color for dark mode
         },
+        border: {
+          light: '#e5e7eb', // Border color for light mode
+          dark: '#374151',  // Border color for dark mode
+        },
+        warning: {
+          light: '##c91246', // Border color for light mode
+          dark: '##c91246',  // Border color for dark mode
+        },
       },
       fontFamily: {
         header: ['IBM Plex Sans', 'sans-serif'], // Custom font for headers

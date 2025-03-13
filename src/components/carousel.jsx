@@ -129,7 +129,7 @@ const CarouselStory = () => {
     title: "Staff Picks",
     description: "Recommended reads from our book experts",
     buttonText: "View Selection",
-    images: ["public\book1.png", "/book2.png"],
+    images: ["/book1.png", "/book2.png"],
   };
 
   return (

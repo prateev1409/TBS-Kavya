@@ -1,7 +1,7 @@
 "use client"; // Added "use client" directive
 import Link from "next/link";
 import { useState } from "react";
-import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
+import ThemeToggle from "../../../components/ThemeToggle"; // Corrected import path
 
 function MainComponent() {
   const [error, setError] = useState(null);
@@ -27,7 +27,11 @@ function MainComponent() {
     setError(null);
 
     if (!formData.email || !formData.password || !formData.confirmPassword) {
-      setError("Please fill in all fields");
+      setError(
+        <span className="text-text-light dark:text-text-dark">
+          Please fill in all fields
+        </span>
+      );
       setLoading(false);
       return;
     }
@@ -57,10 +61,10 @@ function MainComponent() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-white dark:bg-background-dark p-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark p-4">
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <h1 className="mb-8 text-center text-3xl font-bold text-black dark:text-text-dark">
+          <h1 className="mb-8 text-center text-3xl font-bold text-text-light dark:text-text-dark">
             Create Account
           </h1>
 
@@ -71,7 +75,7 @@ function MainComponent() {
                 name="email"
                 placeholder="Email"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
               />
             </div>
 
@@ -81,12 +85,12 @@ function MainComponent() {
                 name="password"
                 placeholder="Password"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("password")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-light dark:text-text-dark"
               >
                 {passwordVisible ? "🙈" : "👁️"}
               </button>
@@ -98,19 +102,19 @@ function MainComponent() {
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("confirmPassword")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-light dark:text-text-dark"
               >
                 {confirmPasswordVisible ? "🙈" : "👁️"}
               </button>
             </div>
 
             {error && (
-              <div className="rounded-full bg-red-50 p-3 text-sm text-red-500">
+              <div className="rounded-full bg-warning-light dark:bg-warning-dark p-3 text-sm text-warning-light dark:text-warning-dark">
                 {error}
               </div>
             )}
@@ -118,43 +122,43 @@ function MainComponent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-black dark:bg-primary-dark px-4 py-3 text-base font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-full bg-primary-light dark:bg-primary-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-primary-light dark:hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
           <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-gray-500 text-sm">Or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+            <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
+            <span className="px-4 text-text-light dark:text-text-dark text-sm">Or</span>
+            <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
           </div>
 
           <div className="space-y-4">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full rounded-full border border-black bg-white dark:bg-background-dark px-4 py-3 text-base font-medium text-black dark:text-text-dark transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+              className="w-full rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2"
             >
               <i className="fab fa-google mr-2"></i>
               Continue with Google
             </button>
 
-            <button className="w-full rounded-full border border-black bg-white dark:bg-background-dark px-4 py-3 text-base font-medium text-black dark:text-text-dark transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+            <button className="w-full rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2">
               <i className="fab fa-apple mr-2"></i>
               Continue with Apple
             </button>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-600 dark:text-text-dark">
+          <p className="mt-8 text-center text-sm text-text-light dark:text-text-dark">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="font-medium text-black dark:text-primary-dark hover:text-gray-800">
+            <Link href="/auth/signin" className="font-medium text-primary-light dark:text-primary-dark hover:text-primary-light dark:hover:text-primary-dark">
               Sign in
             </Link>
           </p>
         </div>
       </div>
 
-      <div className="hidden lg:flex w-1/2 items-center justify-center bg-white dark:bg-background-dark p-12">
+      <div className="hidden lg:flex w-1/2 items-center justify-center bg-background-light dark:bg-background-dark p-12">
         <div className="relative">
           <img
             src="/Graphic 1.png"

@@ -99,9 +99,9 @@ function MainComponent() {
   ];
 
   return (
-    <div className={`min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark`}>
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
       <Header
-        location="New Town, kolkata"
+        location="New Town, Kolkata"
         onLocationChange={() => {}}
         onSearch={() => {}}
       />
@@ -146,8 +146,7 @@ function MainComponent() {
           <select
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
-            className="mb-8 px-4 py-2 border border-secondary-light dark:border-secondary-dark rounded-lg 
-              text-secondary-light dark:text-secondary-dark bg-background-light dark:bg-background-dark font-body"
+            className="mb-8 px-4 py-2 border border-secondary-light dark:border-secondary-dark rounded-lg text-secondary-light dark:text-secondary-dark bg-background-light dark:bg-background-dark font-body"
             name="genre"
           >
             <option value="">Choose a genre</option>
