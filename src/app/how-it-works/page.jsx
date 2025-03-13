@@ -14,7 +14,7 @@ function MainComponent() {
       <main className="min-h-screen bg-background-light dark:bg-background-dark">
         <div className="bg-backgroundSCD-light dark:bg-backgroundSCD-dark py-16">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
-            <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center justify-between " style={{ gap: '19rem' }} >
               <div className="md:w-1/2">
                 <h1 className="text-5xl font-bold mb-4 font-ibm-plex-sans text-text-light dark:text-text-dark">
                   Welcome To the Bookshelves
@@ -40,7 +40,7 @@ function MainComponent() {
           </h2>
 
           <div className="space-y-16">
-            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-backgroundSCD-light dark:bg-backgroundSCD-dark">
+          <div className="flex flex-col md:flex-row items-center p-8 rounded-2xl bg-backgroundSCD-light dark:bg-backgroundSCD-dark" style={{ gap: '31rem' }}>
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-primary-light dark:text-primary-dark font-ibm-plex-sans">
                   1
@@ -95,7 +95,7 @@ function MainComponent() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-backgroundSCD-light dark:bg-backgroundSCD-dark">
+            <div className="flex flex-col md:flex-row items-center p-8 rounded-2xl bg-backgroundSCD-light dark:bg-backgroundSCD-dark" style={{ gap: '31rem' }}>
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-primary-light dark:text-primary-dark font-ibm-plex-sans">
                   3
