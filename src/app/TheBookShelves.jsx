@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
+import Book from "../components/book";
+import CafeExpansion from "../components/cafe";
 import Carousel from "../components/carousel";
 import Footer from "../components/Footer";
 import Header from "../components/header";
 import ThemeToggle from "../components/ThemeToggle";
 
-function MainComponent() {
+function TheBookShelves() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -16,7 +17,6 @@ function MainComponent() {
     return () => clearInterval(timer);
   }, []);
 
-  const [selectedGenre, setSelectedGenre] = useState("");
   const carouselSlides = [
     {
       id: 1,
@@ -43,58 +43,116 @@ function MainComponent() {
       buttonText: "Find Location",
     },
   ];
+
   const books = [
     {
       id: 1,
       title: "The Midnight Hour",
       cover: "/book1.png",
       genre: "Mystery",
+      author: "Author A",
+      publisher: "Publisher A",
+      description: "A thrilling mystery that will keep you on the edge of your seat.",
+      audioSummary: "/audio1.mp3",
     },
     {
       id: 2,
       title: "Stellar Dreams",
       cover: "/book2.png",
       genre: "Science Fiction",
+      author: "Author B",
+      publisher: "Publisher B",
+      description: "A journey into the unknown realms of space and time.",
+      audioSummary: "/audio2.mp3",
     },
-    { id: 3, title: "Love's Journey", cover: "/book3.png", genre: "Romance" },
-    { id: 4, title: "Dark Corners", cover: "/book4.png", genre: "Horror" },
+    {
+      id: 3,
+      title: "Love's Journey",
+      cover: "/book3.png",
+      genre: "Romance",
+      author: "Author C",
+      publisher: "Publisher C",
+      description: "An enchanting story of love and destiny.",
+      audioSummary: "/audio3.mp3",
+    },
+    {
+      id: 4,
+      title: "Dark Corners",
+      cover: "/book4.png",
+      genre: "Horror",
+      author: "Author D",
+      publisher: "Publisher D",
+      description: "A spine-chilling tale that will haunt your dreams.",
+      audioSummary: "/audio4.mp3",
+    },
   ];
+
   const cafes = [
     {
       id: 1,
       name: "The Reading Room",
       image: "/cafe1.png",
       distance: "0.5 miles away",
+      location: "Downtown",
+      specialties: "Espresso & Croissants",
+      discounts: "10% off for members",
+      priceRange: "$$",
+      description: "A cozy cafe perfect for long reading sessions.",
     },
     {
       id: 2,
       name: "Book & Bean",
       image: "/cafe2.png",
       distance: "1.2 miles away",
+      location: "Midtown",
+      specialties: "Organic Coffee & Snacks",
+      discounts: "15% off on weekends",
+      priceRange: "$$",
+      description: "Enjoy a relaxed ambiance with great coffee.",
     },
     {
       id: 3,
       name: "Chapter One",
       image: "/cafe3.png",
       distance: "1.8 miles away",
+      location: "Uptown",
+      specialties: "Gourmet Brews",
+      discounts: "5% off for students",
+      priceRange: "$$$",
+      description: "A modern space for readers and coffee enthusiasts.",
     },
     {
       id: 4,
       name: "Storyline Cafe",
       image: "/cafe4.png",
       distance: "2.1 miles away",
+      location: "City Center",
+      specialties: "Artisan Coffee & Baked Goods",
+      discounts: "20% off first-time visitors",
+      priceRange: "$$",
+      description: "A vibrant cafe with a creative atmosphere.",
     },
     {
       id: 5,
       name: "Page Turner",
       image: "/cafe5.png",
       distance: "2.5 miles away",
+      location: "Suburbs",
+      specialties: "Light Meals & Coffee",
+      discounts: "Free pastry with coffee",
+      priceRange: "$",
+      description: "A charming spot for quick coffee breaks.",
     },
     {
       id: 6,
       name: "Bookmark Bistro",
       image: "/cafe6.png",
       distance: "3.0 miles away",
+      location: "Near University",
+      specialties: "Café Classics",
+      discounts: "Student discounts available",
+      priceRange: "$$",
+      description: "Ideal for students and casual meetings.",
     },
   ];
 
@@ -106,6 +164,7 @@ function MainComponent() {
         onSearch={() => {}}
       />
       <main className="px-4 md:px-8 max-w-7xl mx-auto py-12">
+        {/* Carousel Section */}
         <section className="relative mb-16 h-[650px] md:h-[400px] overflow-hidden">
           <div className="relative h-full bg-[url('/cafe-background.jpg')] bg-cover bg-center">
             {carouselSlides.map((slide, index) => (
@@ -139,64 +198,24 @@ function MainComponent() {
           </div>
         </section>
 
+        {/* Books Section */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
             Read something new!
           </h2>
-          <select
-            value={selectedGenre}
-            onChange={(e) => setSelectedGenre(e.target.value)}
-            className="mb-8 px-4 py-2 border border-secondary-light dark:border-secondary-dark rounded-lg text-secondary-light dark:text-secondary-dark bg-background-light dark:bg-background-dark font-body"
-            name="genre"
-          >
-            <option value="">Choose a genre</option>
-            <option value="Romance">Romance</option>
-            <option value="Mystery">Mystery</option>
-            <option value="Horror">Horror</option>
-            <option value="Science Fiction">Science Fiction</option>
-            <option value="Non Fiction">Non Fiction</option>
-          </select>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {books.map((book) => (
-              <div
-                key={book.id}
-                className="cursor-pointer transform transition-transform hover:scale-105"
-              >
-                <img
-                  src={book.cover}
-                  alt={`Cover of ${book.title}`}
-                  className="w-full h-[280px] object-cover rounded-lg"
-                />
-              </div>
+              <Book key={book.id} book={book} />
             ))}
           </div>
         </section>
 
+        {/* Cafes Section */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
             Find a new Cafe!
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {cafes.map((cafe) => (
-              <div
-                key={cafe.id}
-                className="cursor-pointer transform transition-transform hover:scale-105"
-              >
-                <img
-                  src={cafe.image}
-                  alt={`Interior of ${cafe.name}`}
-                  className="w-full h-[200px] object-cover rounded-lg mb-3"
-                />
-                <h3 className="font-header font-semibold text-primary-light dark:text-primary-dark">
-                  {cafe.name}
-                </h3>
-                <p className="font-body text-secondary-light dark:text-secondary-dark text-sm">
-                  {cafe.distance}
-                </p>
-              </div>
-            ))}
-          </div>
+          <CafeExpansion cafes={cafes} />
         </section>
 
         <Footer
@@ -220,4 +239,4 @@ function MainComponent() {
   );
 }
 
-export default MainComponent;
+export default TheBookShelves;
