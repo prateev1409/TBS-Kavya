@@ -57,7 +57,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/signup-coffee.svg"
+                  src="/SignUp.png"
                   alt="Sign up illustration"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -87,7 +87,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/browse-illustration.svg"
+                  src="/Browse.png"
                   alt="Illustration showing book browsing and reservation process"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -117,7 +117,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/pickup-illustration.svg"
+                  src="/PickUp.png"
                   alt="Illustration of book pickup process at a cafe"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -141,7 +141,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/return-books.svg"
+                  src="/Return-books.png"
                   alt="Book return"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
