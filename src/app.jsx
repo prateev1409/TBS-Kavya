@@ -1,5 +1,5 @@
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
-import HowItWorks from "./app/How It Works";
+import HowItWorks from "./app/HowItWorks";
 import Footer from "./components/footer";
 import Header from "./components/header";
 import MainComponent from "./MainComponent";
@@ -12,6 +12,7 @@ function App() {
         <Switch>
           <Route exact path="/" component={MainComponent} />
           <Route path="/how-it-works" component={HowItWorks} />
+          <Route path="/the-bookshelves" component={MainComponent} />
           {/* Add other routes here */}
         </Switch>
         <Footer
