@@ -27,7 +27,7 @@ function MainComponent() {
                 <img
                   src="/How-it-works-header-graphic.png"
                   alt="Books and coffee illustration"
-                  className="w-full max-w-md h-[400px] object-contain"
+                  className="w-full max-w-md h-[400px] object-contain rounded-xl"
                 />
               </div>
             </div>
@@ -60,7 +60,7 @@ function MainComponent() {
                 <img
                   src="/SignUp.png"
                   alt="Sign up illustration"
-                  className="w-full h-[400px] object-contain rounded-xl shadow-sm"
+                  className="w-full max-w-md h-full object-contain rounded-xl shadow-sm"
                 />
               </div>
             </div>
@@ -90,7 +90,7 @@ function MainComponent() {
                 <img
                   src="/Browse.png"
                   alt="Illustration showing book browsing and reservation process"
-                  className="w-full h-[400px] object-contain rounded-xl shadow-sm"
+                  className="w-full max-w-md h-full object-contain rounded-xl shadow-sm"
                 />
               </div>
             </div>
@@ -120,7 +120,7 @@ function MainComponent() {
                 <img
                   src="/Pickup.png"
                   alt="Illustration of book pickup process at a cafe"
-                  className="w-full h-[400px] object-contain rounded-xl shadow-sm"
+                  className="w-full max-w-md h-full object-contain rounded-xl shadow-sm"
                 />
               </div>
             </div>
@@ -136,7 +136,7 @@ function MainComponent() {
                 <p className="text-text-light dark:text-text-dark mt-2 font-ibm-plex-sans">
                   Drop off your book at any participating café when you're done.
                 </p>
-                <button className="mt-6 bg-backgroundSCD-light dark:bg-backgroundSCD-dark text-text-light dark:text-text-dark px-6 py-3 rounded-full hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark transition font-ibm-plex-sans">
+                <button className="mt-6 bg-backgroundSCD-light dark:bg-backgroundSCD-dark text-text-light dark:text-text-dark px-6 py-3 rounded-full hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark transition font-ibm-plex-sans border border-border-dark dark:border-border-light">
                   Request Return
                 </button>
               </div>
@@ -144,7 +144,7 @@ function MainComponent() {
                 <img
                   src="/Return-books.png"
                   alt="Book return"
-                  className="w-full h-[400px] object-contain rounded-xl shadow-sm"
+                  className="w-full max-w-md h-full object-contain rounded-xl shadow-sm"
                 />
               </div>
             </div>
