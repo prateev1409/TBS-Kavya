@@ -25,7 +25,7 @@ function MainComponent() {
               </div>
               <div className="md:w-1/2">
                 <img
-                  src="/books-coffee.svg"
+                  src="/How-it-works-header-graphic.png"
                   alt="Books and coffee illustration"
                   className="w-full max-w-md h-[400px] object-contain"
                 />

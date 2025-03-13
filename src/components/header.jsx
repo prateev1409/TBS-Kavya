@@ -8,15 +8,38 @@ const Header = ({ location, onLocationChange, onSearch }) => {
   return (
     <header className="border-b border-border-light dark:border-border-dark px-4 md:px-8 py-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <div className="flex items-center">
+      <div className="flex items-center">
           <Link href="/">
-            <div className="w-12 h-12 cursor-pointer">
-              <img src="/Logo-Darkmode.png" alt="The Book Shelves Logo" className="w-full h-full object-contain" />
+            <div className="w-full h-12 cursor-pointer">
+              {!isLoggedIn ? (
+                <>
+                  <img
+                    src="/ExpandedLogo-Lightmode.png"
+                    alt="The Book Shelves Logo"
+                    className="w-full h-full object-contain dark:hidden"
+                  />
+                  <img
+                    src="/ExpandedLogo-Darkmode.png"
+                    alt="The Book Shelves Logo"
+                    className="w-full h-full object-contain hidden dark:block"
+                  />
+                </>
+              ) : (
+                <>
+                  <img
+                    src="/Logo-Lightmode.png"
+                    alt="The Book Shelves Logo"
+                    className="w-full h-full object-contain dark:hidden"
+                  />
+                  <img
+                    src="/Logo-Darkmode.png"
+                    alt="The Book Shelves Logo"
+                    className="w-full h-full object-contain hidden dark:block"
+                  />
+                </>
+              )}
             </div>
           </Link>
-          {isLoggedIn && (
-            <span className="ml-2 text-lg font-bold text-text-light dark:text-text-dark">The Book Shelves</span>
-          )}
         </div>
 
         <div className="flex-1 max-w-3xl">

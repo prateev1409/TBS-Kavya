@@ -8,7 +8,16 @@ const Footer = ({ description, subtext, linksLeft, linksRight }) => {
         <div className="flex items-center justify-between mb-16">
           <div className="flex items-center space-x-4">
             <div className="w-4/5 h-auto">
-              <img src="/ExpandedLogo-Darkmode.png" alt="The Book Shelves Logo" className="w-full h-auto object-contain" />
+              <img
+                src="/ExpandedLogo-Lightmode.png"
+                alt="The Book Shelves Logo"
+                className="w-full h-auto object-contain dark:hidden"
+              />
+              <img
+                src="/ExpandedLogo-Darkmode.png"
+                alt="The Book Shelves Logo"
+                className="w-full h-auto object-contain hidden dark:block"
+              />
             </div>
           </div>
           <Link
