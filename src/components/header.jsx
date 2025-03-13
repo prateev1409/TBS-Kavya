@@ -1,21 +1,22 @@
 "use client";
-import React from "react";
 import Link from "next/link"; // Added import for Link
 
 const Header = ({ location, onLocationChange, onSearch }) => {
   return (
-    <header className="border-b border-gray-200 px-4 md:px-8 py-4">
+    <header className="border-b border-gray-200 px-4 md:px-8 py-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center">
-          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">TBS</span>
-          </div>
+          <Link href="/">
+            <div className="w-12 h-12 cursor-pointer">
+              <img src="/Logo.png" alt="The Book Shelves Logo" className="w-full h-full object-contain" />
+            </div>
+          </Link>
         </div>
-
+        
         <div className="flex-1 max-w-3xl">
-          <div className="relative flex items-center bg-white border border-gray-300 rounded-full p-2">
-            <div className="min-w-[180px] border-r border-gray-300 pr-4 mr-4">
-              <div className="flex items-center gap-2 text-gray-600">
+          <div className="relative flex items-center bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-full p-2">
+            <div className="min-w-[180px] border-r border-gray-300 dark:border-gray-700 pr-4 mr-4">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -39,12 +40,12 @@ const Header = ({ location, onLocationChange, onSearch }) => {
               </div>
             </div>
 
-            <div className="flex-1 bg-gray-50 rounded-full flex items-center">
+            <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center">
               <input
                 type="text"
                 name="search"
                 placeholder="Search with Book name, Author, Publication or Café name"
-                className="flex-1 text-sm text-gray-600 outline-none bg-transparent px-3 py-1.5"
+                className="flex-1 text-sm text-gray-600 dark:text-gray-300 outline-none bg-transparent px-3 py-1.5"
                 onChange={onSearch}
               />
               <button
@@ -74,24 +75,24 @@ const Header = ({ location, onLocationChange, onSearch }) => {
         <nav className="hidden md:flex items-center gap-8">
           <Link
             href="/how-it-works"
-            className="text-gray-600 hover:text-gray-900 font-['IBM_Plex_Sans']"
+            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-header"
           >
             How it works ?
           </Link>
           <Link
             href="/discover"
-            className="text-gray-600 hover:text-gray-900 font-['IBM_Plex_Sans']"
+            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-header"
           >
             Discover
           </Link>
-          <button className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center">
+          <button className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-700 flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5 text-gray-600 dark:text-gray-300"
             >
               <path
                 strokeLinecap="round"

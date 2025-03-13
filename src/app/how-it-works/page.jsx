@@ -1,6 +1,7 @@
 "use client";
 import Footer from "../../components/footer"; // Corrected path
 import Header from "../../components/header"; // Also corrected for consistency
+import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
 
 function MainComponent() {
   return (
@@ -18,7 +19,7 @@ function MainComponent() {
                 <h1 className="text-5xl font-bold mb-4 font-ibm-plex-sans">
                   Welcome To the Bookshelves
                 </h1>
-                <p className="text-xl text-gray-600 font-ibm-plex-sans">
+                <p className="text-xl text-gray-600 dark:text-gray-300 font-ibm-plex-sans">
                   A place where coffee and books blends seamlessly
                 </p>
               </div>
@@ -39,7 +40,7 @@ function MainComponent() {
           </h2>
 
           <div className="space-y-16">
-            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-gray-50">
+            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-blue-600 font-ibm-plex-sans">
                   1
@@ -47,7 +48,7 @@ function MainComponent() {
                 <h3 className="text-2xl font-bold mt-4 font-ibm-plex-sans">
                   Sign Up & Subscribe
                 </h3>
-                <p className="text-gray-600 mt-2 font-ibm-plex-sans">
+                <p className="text-gray-600 dark:text-gray-300 mt-2 font-ibm-plex-sans">
                   Create an account and choose a subscription plan that works
                   for you.
                 </p>
@@ -64,7 +65,7 @@ function MainComponent() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row-reverse items-center gap-12 p-8 rounded-2xl bg-gray-50">
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12 p-8 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-blue-600 font-ibm-plex-sans">
                   2
@@ -72,7 +73,7 @@ function MainComponent() {
                 <h3 className="text-2xl font-bold font-ibm-plex-sans mt-4">
                   Browse & Reserve
                 </h3>
-                <p className="text-gray-600 font-ibm-plex-sans mt-2">
+                <p className="text-gray-600 dark:text-gray-300 font-ibm-plex-sans mt-2">
                   Search for books and find them at your favorite cafés. Reserve
                   with just a click.
                 </p>
@@ -81,7 +82,7 @@ function MainComponent() {
                     type="text"
                     placeholder="Find a book..."
                     name="book-search"
-                    className="w-full px-6 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-blue-600 font-ibm-plex-sans"
+                    className="w-full px-6 py-3 rounded-full border border-gray-300 dark:border-gray-700 focus:outline-none focus:border-blue-600 font-ibm-plex-sans"
                   />
                 </div>
               </div>
@@ -94,7 +95,7 @@ function MainComponent() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-gray-50">
+            <div className="flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-blue-600 font-ibm-plex-sans">
                   3
@@ -102,12 +103,12 @@ function MainComponent() {
                 <h3 className="text-2xl font-bold font-ibm-plex-sans mt-4">
                   Pick Up & Enjoy
                 </h3>
-                <p className="text-gray-600 font-ibm-plex-sans mt-2">
+                <p className="text-gray-600 dark:text-gray-300 font-ibm-plex-sans mt-2">
                   Visit your chosen café, show your reservation, and start
                   reading!
                 </p>
-                <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-600 font-ibm-plex-sans">
+                <div className="mt-6 p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 font-ibm-plex-sans">
                     Your pickup location:
                   </p>
                   <p className="font-bold font-ibm-plex-sans">
@@ -124,7 +125,7 @@ function MainComponent() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row-reverse items-center gap-12 p-8 rounded-2xl bg-gray-50">
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12 p-8 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div className="md:w-1/3">
                 <div className="text-6xl font-bold text-blue-600 font-ibm-plex-sans">
                   4
@@ -132,10 +133,10 @@ function MainComponent() {
                 <h3 className="text-2xl font-bold mt-4 font-ibm-plex-sans">
                   Return Anytime
                 </h3>
-                <p className="text-gray-600 mt-2 font-ibm-plex-sans">
+                <p className="text-gray-600 dark:text-gray-300 mt-2 font-ibm-plex-sans">
                   Drop off your book at any participating café when you're done.
                 </p>
-                <button className="mt-6 bg-gray-200 text-gray-800 px-6 py-3 rounded-full hover:bg-gray-300 transition font-ibm-plex-sans">
+                <button className="mt-6 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 px-6 py-3 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition font-ibm-plex-sans">
                   Request Return
                 </button>
               </div>
@@ -153,7 +154,7 @@ function MainComponent() {
             <h2 className="text-3xl font-bold font-ibm-plex-sans mb-4">
               Ready to start your reading journey?
             </h2>
-            <p className="text-gray-600 font-ibm-plex-sans mb-8">
+            <p className="text-gray-600 dark:text-gray-300 font-ibm-plex-sans mb-8">
               Join our community of book lovers and coffee enthusiasts today!
             </p>
             <button className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition font-ibm-plex-sans">
@@ -177,6 +178,7 @@ function MainComponent() {
           { href: "#", text: "Contact" },
         ]}
       />
+      <ThemeToggle /> {/* Add ThemeToggle component */}
     </div>
   );
 }

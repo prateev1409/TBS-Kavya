@@ -3,30 +3,27 @@ import Link from "next/link"; // Added import for Link
 
 const Footer = ({ description, subtext, linksLeft, linksRight }) => {
   return (
-    <footer className="bg-[#1C1C1C] px-4 md:px-8 py-16">
+    <footer className="bg-background-dark px-4 md:px-8 py-16">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-16">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-              <span className="text-[#1C1C1C] font-bold text-xl">TBS</span>
+            <div className="w-4/5 h-auto">
+              <img src="/ExpandedLogo.png" alt="The Book Shelves Logo" className="w-full h-auto object-contain" />
             </div>
-            <span className="text-white text-2xl font-['IBM_Plex_Sans']">
-              THE BOOK SHELVES
-            </span>
           </div>
           <Link
             href="/contact"
-            className="text-white text-3xl font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
+            className="text-white text-3xl font-header hover:text-gray-300 transition-colors"
           >
             Contact
           </Link>
         </div>
 
         <div className="max-w-2xl mb-32">
-          <p className="text-white font-['IBM_Plex_Sans'] text-lg leading-relaxed mb-8">
+          <p className="text-white font-body text-lg leading-relaxed mb-8">
             {description}
           </p>
-          <p className="text-white font-['IBM_Plex_Sans'] text-lg">{subtext}</p>
+          <p className="text-white font-body text-lg">{subtext}</p>
         </div>
 
         <div className="flex flex-col md:flex-row justify-between pt-8 border-t border-gray-700">
@@ -35,7 +32,7 @@ const Footer = ({ description, subtext, linksLeft, linksRight }) => {
               <Link
                 key={index}
                 href={link.href === "#" && link.text === "How it works ?" ? "/how-it-works" : link.href}
-                className="text-white font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
+                className="text-white font-body hover:text-gray-300 transition-colors"
               >
                 {link.text}
               </Link>
@@ -48,7 +45,7 @@ const Footer = ({ description, subtext, linksLeft, linksRight }) => {
                 <Link
                   key={index}
                   href={link.href}
-                  className="text-white font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
+                  className="text-white font-body hover:text-gray-300 transition-colors"
                 >
                   {link.text}
                 </Link>

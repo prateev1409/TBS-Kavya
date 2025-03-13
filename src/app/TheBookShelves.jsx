@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Carousel from "../components/carousel";
 import Footer from "../components/Footer";
 import Header from "../components/header";
+import ThemeToggle from "../components/ThemeToggle";
 
 function MainComponent() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,11 +15,6 @@ function MainComponent() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode((prevMode) => !prevMode);
-    document.documentElement.classList.toggle('dark', !isDarkMode);
-  };
 
   const [selectedGenre, setSelectedGenre] = useState("");
   const carouselSlides = [
@@ -67,37 +63,37 @@ function MainComponent() {
     {
       id: 1,
       name: "The Reading Room",
-      image: "/cafe1.jpg",
+      image: "/cafe1.png",
       distance: "0.5 miles away",
     },
     {
       id: 2,
       name: "Book & Bean",
-      image: "/cafe2.jpg",
+      image: "/cafe2.png",
       distance: "1.2 miles away",
     },
     {
       id: 3,
       name: "Chapter One",
-      image: "/cafe3.jpg",
+      image: "/cafe3.png",
       distance: "1.8 miles away",
     },
     {
       id: 4,
       name: "Storyline Cafe",
-      image: "/cafe4.jpg",
+      image: "/cafe4.png",
       distance: "2.1 miles away",
     },
     {
       id: 5,
       name: "Page Turner",
-      image: "/cafe5.jpg",
+      image: "/cafe5.png",
       distance: "2.5 miles away",
     },
     {
       id: 6,
       name: "Bookmark Bistro",
-      image: "/cafe6.jpg",
+      image: "/cafe6.png",
       distance: "3.0 miles away",
     },
   ];
@@ -220,12 +216,7 @@ function MainComponent() {
           ]}
         />
       </main>
-      <button
-        onClick={toggleTheme}
-        className="fixed bottom-4 right-4 p-2 bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark rounded-full shadow-lg font-button"
-      >
-        {isDarkMode ? "Light Mode" : "Dark Mode"}
-      </button>
+      <ThemeToggle />
     </div>
   );
 }

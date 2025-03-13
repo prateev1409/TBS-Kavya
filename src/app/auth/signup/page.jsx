@@ -1,6 +1,7 @@
 "use client"; // Added "use client" directive
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
 
 function MainComponent() {
   const [error, setError] = useState(null);
@@ -10,6 +11,8 @@ function MainComponent() {
     password: "",
     confirmPassword: "",
   });
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -43,11 +46,21 @@ function MainComponent() {
     setError("Google sign-in not implemented yet");
   };
 
+  const togglePasswordVisibility = (field) => {
+    if (field === "password") {
+      setPasswordVisible(!passwordVisible);
+      setTimeout(() => setPasswordVisible(false), 15000);
+    } else if (field === "confirmPassword") {
+      setConfirmPasswordVisible(!confirmPasswordVisible);
+      setTimeout(() => setConfirmPasswordVisible(false), 15000);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-white p-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-white dark:bg-background-dark p-4">
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <h1 className="mb-8 text-center text-3xl font-bold text-black">
+          <h1 className="mb-8 text-center text-3xl font-bold text-black dark:text-text-dark">
             Create Account
           </h1>
 
@@ -58,28 +71,42 @@ function MainComponent() {
                 name="email"
                 placeholder="Email"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
               />
             </div>
 
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={passwordVisible ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
               />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility("password")}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400"
+              >
+                {passwordVisible ? "🙈" : "👁️"}
+              </button>
             </div>
 
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={confirmPasswordVisible ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 onChange={handleInputChange}
-                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="w-full rounded-full border border-gray-300 px-4 py-3 text-gray-700 dark:text-text-dark focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
               />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility("confirmPassword")}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400"
+              >
+                {confirmPasswordVisible ? "🙈" : "👁️"}
+              </button>
             </div>
 
             {error && (
@@ -91,7 +118,7 @@ function MainComponent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-black px-4 py-3 text-base font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-full bg-black dark:bg-primary-dark px-4 py-3 text-base font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
@@ -106,79 +133,37 @@ function MainComponent() {
           <div className="space-y-4">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full rounded-full border border-black bg-white px-4 py-3 text-base font-medium text-black transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+              className="w-full rounded-full border border-black bg-white dark:bg-background-dark px-4 py-3 text-base font-medium text-black dark:text-text-dark transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
             >
               <i className="fab fa-google mr-2"></i>
               Continue with Google
             </button>
 
-            <button className="w-full rounded-full border border-black bg-white px-4 py-3 text-base font-medium text-black transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+            <button className="w-full rounded-full border border-black bg-white dark:bg-background-dark px-4 py-3 text-base font-medium text-black dark:text-text-dark transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
               <i className="fab fa-apple mr-2"></i>
               Continue with Apple
             </button>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-600">
+          <p className="mt-8 text-center text-sm text-gray-600 dark:text-text-dark">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="font-medium text-black hover:text-gray-800">
+            <Link href="/auth/signin" className="font-medium text-black dark:text-primary-dark hover:text-gray-800">
               Sign in
             </Link>
           </p>
         </div>
       </div>
 
-      <div className="hidden lg:flex w-1/2 items-center justify-center bg-white p-12">
+      <div className="hidden lg:flex w-1/2 items-center justify-center bg-white dark:bg-background-dark p-12">
         <div className="relative">
           <img
-            src="/reading-illustration.svg"
+            src="/Graphic 1.png"
             alt="Person reading a book with floating elements"
             className="w-full max-w-lg"
           />
-          <div className="absolute -top-12 right-0 animate-float">
-            <img
-              src="/planet.svg"
-              alt="Floating planet"
-              className="w-16 h-16"
-            />
-          </div>
-          <div className="absolute top-1/4 -left-8 animate-float-delayed">
-            <img
-              src="/lightbulb.svg"
-              alt="Floating lightbulb"
-              className="w-12 h-12"
-            />
-          </div>
-          <div className="absolute bottom-0 right-12 animate-float-slow">
-            <img src="/leaf.svg" alt="Floating leaf" className="w-10 h-10" />
-          </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-          animation: float-delayed 5s ease-in-out infinite;
-          animation-delay: 1s;
-        }
-        .animate-float-slow {
-          animation: float-slow 7s ease-in-out infinite;
-          animation-delay: 2s;
-        }
-      `}</style>
+      <ThemeToggle /> {/* Add ThemeToggle component */}
     </div>
   );
 }
