@@ -1,4 +1,6 @@
 "use client";
+import React from "react";
+import Link from "next/link"; // Added import for Link
 
 const Footer = ({ description, subtext, linksLeft, linksRight }) => {
   return (
@@ -13,12 +15,12 @@ const Footer = ({ description, subtext, linksLeft, linksRight }) => {
               THE BOOK SHELVES
             </span>
           </div>
-          <a
-            href="#"
+          <Link
+            href="/contact"
             className="text-white text-3xl font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
           >
             Contact
-          </a>
+          </Link>
         </div>
 
         <div className="max-w-2xl mb-32">
@@ -31,26 +33,26 @@ const Footer = ({ description, subtext, linksLeft, linksRight }) => {
         <div className="flex flex-col md:flex-row justify-between pt-8 border-t border-gray-700">
           <div className="flex space-x-8">
             {linksLeft.map((link, index) => (
-              <a
+              <Link
                 key={index}
-                href={link.href}
+                href={link.href === "#" && link.text === "How it works ?" ? "/how-it-works" : link.href}
                 className="text-white font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
               >
                 {link.text}
-              </a>
+              </Link>
             ))}
           </div>
           <div className="flex space-x-8">
             {linksRight
               .filter((link) => link.text !== "Contact")
               .map((link, index) => (
-                <a
+                <Link
                   key={index}
                   href={link.href}
                   className="text-white font-['IBM_Plex_Sans'] hover:text-gray-300 transition-colors"
                 >
                   {link.text}
-                </a>
+                </Link>
               ))}
           </div>
         </div>
@@ -65,7 +67,7 @@ const FooterStory = () => {
       "Dive into a world where books and coffee create magic. At TheBookShelves, we're more than just a collection of paperbacks at your favorite cafés—our community thrives on the love for stories and the joy of shared experiences.",
     subtext: "Sip, read, and connect with us today!",
     linksLeft: [
-      { href: "/how-it-works", text: "How it works ?" },
+      { href: "#", text: "How it works ?" },
       { href: "#", text: "Terms of Use" },
       { href: "#", text: "Sales and Refunds" },
     ],

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link"; // Added import for Link
 
 const Carousel = ({ title, description, buttonText, images }) => {
   return (
@@ -10,12 +11,16 @@ const Carousel = ({ title, description, buttonText, images }) => {
         <p className="text-gray-700 dark:text-gray-300 font-['IBM_Plex_Sans'] mb-6">
           {description}
         </p>
-        <button
-          className="bg-gray-900 dark:bg-gray-800 text-white font-['Poppins'] font-bold px-6 py-2 rounded-md 
-                     hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors"
+        <Link
+          href={
+            buttonText === "Browse New Releases" ? "/books/new-releases" :
+            buttonText === "Explore Classics" ? "/books/classics" :
+            buttonText === "Find Location" ? "/cafes" : "#"
+          }
+          className="inline-block bg-gray-900 dark:bg-gray-800 text-white font-['Poppins'] font-bold px-6 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors"
         >
           {buttonText}
-        </button>
+        </Link>
       </div>
 
       <div className="relative w-full md:w-1/2 h-[400px] flex items-center justify-end pl-8">
@@ -78,7 +83,5 @@ const CarouselStory = () => {
     </div>
   );
 };
-
-
 
 export default Carousel;

@@ -1,6 +1,6 @@
 "use client";
-import Footer from "../components/footer";
-import Header from "../components/header";
+import Footer from "../../components/footer"; // Corrected path
+import Header from "../../components/header"; // Also corrected for consistency
 
 function MainComponent() {
   return (
@@ -57,7 +57,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/SignUp.png"
+                  src="/signup-coffee.svg"
                   alt="Sign up illustration"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -87,7 +87,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/Browse.png"
+                  src="/browse-illustration.svg"
                   alt="Illustration showing book browsing and reservation process"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -117,7 +117,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/PickUp.png"
+                  src="/pickup-illustration.svg"
                   alt="Illustration of book pickup process at a cafe"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />
@@ -141,7 +141,7 @@ function MainComponent() {
               </div>
               <div className="md:w-2/3">
                 <img
-                  src="/Return-books.png"
+                  src="/return-books.svg"
                   alt="Book return"
                   className="w-full h-[400px] object-contain rounded-xl shadow-sm"
                 />

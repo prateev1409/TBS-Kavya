@@ -1,4 +1,6 @@
 "use client";
+import React from "react";
+import Link from "next/link"; // Added import for Link
 
 const Header = ({ location, onLocationChange, onSearch }) => {
   return (
@@ -70,18 +72,18 @@ const Header = ({ location, onLocationChange, onSearch }) => {
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
-          <a
+          <Link
             href="/how-it-works"
             className="text-gray-600 hover:text-gray-900 font-['IBM_Plex_Sans']"
           >
             How it works ?
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            href="/discover"
             className="text-gray-600 hover:text-gray-900 font-['IBM_Plex_Sans']"
           >
             Discover
-          </a>
+          </Link>
           <button className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
