@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 const Header = ({ location, onLocationChange, onSearch }) => {
   return (
@@ -72,7 +71,7 @@ const Header = ({ location, onLocationChange, onSearch }) => {
 
         <nav className="hidden md:flex items-center gap-8">
           <a
-            href="#"
+            href="/how-it-works"
             className="text-gray-600 hover:text-gray-900 font-['IBM_Plex_Sans']"
           >
             How it works ?
