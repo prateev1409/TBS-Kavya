@@ -1,5 +1,6 @@
 "use client"; // Ensure this is a Client Component
-function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
+
+function SubscriptionPlan({ plan, isSelected, onSelect, isCurrentPlan }) {
   return (
     <div
       className={`
@@ -8,7 +9,7 @@ function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
         ${isCurrentPlan ? "bg-backgroundSCD-light dark:bg-backgroundSCD-dark" : "bg-background-light dark:bg-background-dark"}
       `}
     >
-      {plan.name === "Standard" && (
+      {plan.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark text-sm py-1 px-4 rounded-full">
           Most Popular
         </div>
@@ -16,7 +17,7 @@ function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
 
       <div className="h-48 mb-6 overflow-hidden rounded-lg">
         <img
-          src={`/subscription-${plan.name.toLowerCase()}.jpg`}
+          src={plan.image}
           alt={`${plan.name} plan showing ${plan.booksPerMonth} book${plan.booksPerMonth > 1 ? "s" : ""}`}
           className="w-full h-full object-cover"
         />
@@ -54,16 +55,10 @@ function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
       </div>
 
       <button
-        onClick={() => onSelect(plan)}
-        className={`
-          w-full py-3 px-4 rounded-full font-medium transition-colors font-button
-          ${
-            isCurrentPlan
-              ? "bg-backgroundSCD-light dark:bg-backgroundSCD-dark cursor-not-allowed"
-              : isSelected
-                ? "bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark hover:bg-primary-light dark:hover:bg-primary-dark"
-                : "bg-background-light dark:bg-background-dark hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark"
-          }
+        onClick={onSelect}
+        className={`w-full py-3 px-4 rounded-full font-medium transition-colors font-button
+          ${isCurrentPlan ? "bg-backgroundSCD-light dark:bg-backgroundSCD-dark cursor-not-allowed" : ""}
+          ${isSelected ? "bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark hover:bg-primary-light dark:hover:bg-primary-dark" : "bg-background-light dark:bg-background-dark hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark"}
         `}
         disabled={isCurrentPlan}
       >
@@ -73,68 +68,4 @@ function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
   );
 }
 
-function StoryComponent() {
-  const plans = [
-    {
-      name: "Basic",
-      price: 9.99,
-      booksPerMonth: 1,
-      cafeDiscount: 10,
-      features: [
-        "Access to all bookstore cafes",
-        "Basic member events",
-        "Mobile app access",
-        "Monthly newsletter",
-      ],
-    },
-    {
-      name: "Standard",
-      price: 19.99,
-      booksPerMonth: 2,
-      cafeDiscount: 15,
-      features: [
-        "Priority cafe seating",
-        "Member-only events",
-        "Early book releases",
-        "Reading group access",
-        "Quarterly book curator call",
-      ],
-    },
-    {
-      name: "Premium",
-      price: 29.99,
-      booksPerMonth: 3,
-      cafeDiscount: 25,
-      features: [
-        "VIP cafe access",
-        "Exclusive author events",
-        "Early book releases",
-        "Monthly book curator call",
-        "Free event guest passes",
-        "Author meet & greets",
-      ],
-    },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <MainComponent
-              key={plan.name}
-              plan={plan}
-              isSelected={false}
-              onSelect={() => console.log(`${plan.name} plan selected`)}
-              isCurrentPlan={false}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default StoryComponent;
-
-
+export default SubscriptionPlan;
