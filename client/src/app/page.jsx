@@ -1,7 +1,7 @@
 "use client";
-import TheBookShelves from "./TheBookShelves";
-//import MainComponent from "./discover/page";
+//import TheBookShelves from "./TheBookShelves";
+import Scanner from "./Scanner/scanner";
 export default function Page() {
-    return <TheBookShelves />;
-  return <MainComponent />;
+  //return <TheBookShelves />;
+  return <Scanner />;
 }
