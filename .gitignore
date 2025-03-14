@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Server (Node.js)
+server/node_modules/
+# Client (Next.js)
+client/node_modules/
