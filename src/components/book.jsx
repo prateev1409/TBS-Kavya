@@ -11,8 +11,11 @@ function BookCard({ book, onExpand }) {
       <img
         src={book.cover}
         alt={`Cover of ${book.title}`}
-        className="w-full h-[280px] object-cover rounded-lg"
+        className="w-full h-full object-cover rounded-lg"
       />
+      <div className="absolute bottom-4 right-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
+        ⭐{book.rating}/5
+      </div>
     </div>
   );
 }
@@ -21,8 +24,14 @@ function BookExpanded({ book, onClose }) {
   if (!book) return null;
 
   return (
-    <div className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50">
-      <div className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body">
+    <div
+      className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50"
+      onClick={onClose} // Close on background click
+    >
+      <div
+        className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body"
+        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+      >
         <button
           className="absolute top-4 right-4 text-xl text-text-light dark:text-text-dark"
           onClick={onClose}
@@ -30,11 +39,17 @@ function BookExpanded({ book, onClose }) {
           ✖
         </button>
         <div className="flex flex-col md:flex-row">
-          <img
-            src={book.cover}
-            alt={book.title}
-            className="w-48 h-72 object-cover rounded-lg"
-          />
+          <div className="relative">
+            <img
+              src={book.cover}
+              alt={book.title}
+              className="w-48 h-72 object-cover rounded-lg"
+              loading="lazy" // Lazy loading
+            />
+            <div className="absolute bottom-4 left-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
+              ⭐{book.rating}/5
+            </div>
+          </div>
           <div className="ml-6">
             <h2 className="text-2xl font-header font-bold mb-2 text-text-light dark:text-text-dark">
               {book.title}
@@ -63,6 +78,7 @@ function BookExpanded({ book, onClose }) {
     </div>
   );
 }
+
 
 function Book({ book }) {
   const [expanded, setExpanded] = useState(false);
