@@ -1,6 +1,9 @@
 import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
+import { useAuth } from "../../hooks/useAuth"; // Assuming useAuth is a custom hook
 
 function MainComponent() {
+  const { signOut } = useAuth();
+
   const handleSignOut = async () => {
     await signOut({
       callbackUrl: "/",
@@ -9,18 +12,28 @@ function MainComponent() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark p-4">
-      <div className="w-full max-w-md rounded-2xl bg-background-light dark:bg-background-dark p-8 shadow-xl border border-border-light dark:border-border-dark">
-        <h1 className="mb-8 text-center text-3xl font-bold text-text-light dark:text-text-dark">
-          Sign Out
+    <div className="flex min-h-screen w-full items-center justify-between px-4 md:px-16 bg-background-light dark:bg-background-dark">
+      <div className="flex flex-col items-start space-y-8 w-full md:w-1/2">
+        <h1 className="text-4xl md:text-6xl font-header text-text-light dark:text-text-dark">
+          Hope I will
+          <br />
+          see you again
         </h1>
 
         <button
           onClick={handleSignOut}
-          className="w-full rounded-full bg-background-dark dark:bg-background-light px-4 py-3 text-base font-medium text-text-dark dark:text-text-light transition-colors hover:bg-primary-light dark:hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 disabled:opacity-50"
+          className="w-full md:w-64 rounded-full bg-primary-light dark:bg-primary-dark px-6 py-4 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-primary-light dark:hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 font-button"
         >
           Sign Out
         </button>
+      </div>
+
+      <div className="hidden md:flex w-1/2 justify-center items-center">
+        <img
+          src="/Graphic 1.png"
+          alt="Person reading a book with floating elements"
+          className="w-[500px]"
+        />
       </div>
 
       <ThemeToggle /> {/* Add ThemeToggle component */}
@@ -29,3 +42,5 @@ function MainComponent() {
 }
 
 export default MainComponent;
+
+
