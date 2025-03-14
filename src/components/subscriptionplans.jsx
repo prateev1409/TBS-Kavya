@@ -1,3 +1,4 @@
+"use client"; // Ensure this is a Client Component
 function MainComponent({ plan, isSelected, onSelect, isCurrentPlan }) {
   return (
     <div

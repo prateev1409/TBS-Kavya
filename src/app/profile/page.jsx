@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
-import { useUser } from "../../hooks/useUser"; // Assuming useUser is a custom hook
+import { useUser } from "../Hooks/useUser"; // Assuming useUser is a custom hook
 
 function MainComponent() {
   const { data: user, loading, refetch } = useUser();
@@ -45,7 +45,7 @@ function MainComponent() {
   }
 
   if (!user) {
-    window.location.href = "/account/signin";
+    window.location.href = "/auth/signin";
     return null;
   }
 

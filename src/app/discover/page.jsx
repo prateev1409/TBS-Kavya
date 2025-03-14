@@ -53,7 +53,7 @@ function MainComponent() {
       { href: "#", text: "Sales and Refunds" },
     ],
     linksRight: [
-      { href: "#", text: "Pricing" },
+      { href: "/Subscription", text: "Subscription" },
       { href: "#", text: "Careers" },
       { href: "#", text: "Meet the team" },
       { href: "#", text: "Contact" },

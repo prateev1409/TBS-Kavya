@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
-import SubscriptionPlan from "../../components/SubscriptionPlan";
+import SubscriptionPlan from "../../components/subscriptionplans";
+import { useUser } from "../Hooks/useUser"; // Add the missing import
+
 function MainComponent() {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [error, setError] = useState(null);
@@ -52,7 +54,7 @@ function MainComponent() {
     ];
     const handleSelectPlan = async (plan) => {
       if (!user) {
-        window.location.href = "/account/signin?callbackUrl=/subscriptions";
+        window.location.href = "/auth/signin?callbackUrl=/subscriptions";
         return;
       }
       setSelectedPlan(plan);
@@ -145,6 +147,8 @@ function MainComponent() {
       </div>
     );
   }
+
+export default MainComponent;
   
   
   

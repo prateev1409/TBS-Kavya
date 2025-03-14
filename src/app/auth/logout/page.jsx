@@ -1,4 +1,5 @@
-import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
+"use client";
+import ThemeToggle from "../../../components/ThemeToggle"; // Import ThemeToggle
 import { useAuth } from "../../hooks/useAuth"; // Assuming useAuth is a custom hook
 
 function MainComponent() {
