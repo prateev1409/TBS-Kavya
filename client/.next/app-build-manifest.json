@@ -11,35 +11,25 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/how-it-works/page": [
+    "/auth/signin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/how-it-works/page.js"
+      "static/chunks/app/auth/signin/page.js"
     ],
-    "/discover/page": [
+    "/auth/logout/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/discover/page.js"
+      "static/chunks/app/auth/logout/page.js"
     ],
     "/Subscription/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/Subscription/page.js"
     ],
-    "/auth/signin/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/auth/signin/page.js"
-    ],
     "/auth/signup/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/auth/signup/page.js"
-    ],
-    "/auth/logout/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/auth/logout/page.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",

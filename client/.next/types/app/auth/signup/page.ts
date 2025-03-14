@@ -1,4 +1,4 @@
-// File: D:\githubfolder\TBS-Kavya\client\src\app\auth\signup\page.jsx
+// File: D:\GItRepo\TBS-Kavya\client\src\app\auth\signup\page.jsx
 import * as entry from '../../../../../src/app/auth/signup/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
