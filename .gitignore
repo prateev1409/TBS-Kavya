@@ -39,3 +39,5 @@ next-env.d.ts
 server/node_modules/
 # Client (Next.js)
 client/node_modules/
+
+client/.next/
