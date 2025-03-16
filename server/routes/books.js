@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator'); // Add this line
 const Book = require('../models/Book');
 const User = require('../models/User');
 
@@ -61,54 +62,71 @@ router.get('/:book_id', async (req, res) => {
 });
 
 // POST /api/books - Create a new book (admin-only)
-router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-        const {
-            name,
-            author,
-            language,
-            publisher,
-            genre,
-            description,
-            image_url,
-            audio_url,
-            ratings,
-            is_free,
-        } = req.body;
-
-        // Generate unique book_id (e.g., first letters of name + number)
-        const getFirstLetters = (str) => str.split(' ').map(word => word[0]).join('').toUpperCase();
-        const baseId = getFirstLetters(name);
-        let book_id = baseId + '1';
-        let count = 1;
-
-        while (await Book.findOne({ book_id })) {
-            count++;
-            book_id = `${baseId}${count}`;
+router.post(
+    '/',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('name').notEmpty().withMessage('name is required').trim(),
+        body('author').notEmpty().withMessage('author is required').trim(),
+        body('language').notEmpty().withMessage('language is required').trim(),
+        body('ratings').optional().isInt({ min: 0, max: 5 }).withMessage('ratings must be between 0 and 5'),
+    ],
+    async (req, res) => {
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        const book = new Book({
-            book_id,
-            name,
-            author,
-            language,
-            publisher,
-            genre,
-            description,
-            image_url,
-            audio_url,
-            ratings: ratings || 0,
-            is_free: is_free || false,
-            keeper_type: 'cafe', // Default to cafe ownership
-            keeper_id: null,
-        });
+        try {
+            const {
+                name,
+                author,
+                language,
+                publisher,
+                genre,
+                description,
+                image_url,
+                audio_url,
+                ratings,
+                is_free,
+            } = req.body;
 
-        await book.save();
-        res.status(201).json({ message: 'Book created successfully', book });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+            // Generate unique book_id (e.g., first letters of name + number)
+            const getFirstLetters = (str) => str.split(' ').map(word => word[0]).join('').toUpperCase();
+            const baseId = getFirstLetters(name);
+            let book_id = baseId + '1';
+            let count = 1;
+
+            while (await Book.findOne({ book_id })) {
+                count++;
+                book_id = `${baseId}${count}`;
+            }
+
+            const book = new Book({
+                book_id,
+                name,
+                author,
+                language,
+                publisher,
+                genre,
+                description,
+                image_url,
+                audio_url,
+                ratings: ratings || 0,
+                is_free: is_free || false,
+                keeper_type: 'cafe',
+                keeper_id: null,
+            });
+
+            await book.save();
+            res.status(201).json({ message: 'Book created successfully', book });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     }
-});
+);
 
 // PUT /api/books/:book_id - Update a book (admin-only)
 router.put('/:book_id', authMiddleware, adminMiddleware, async (req, res) => {

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator'); // Add this line
 const Transaction = require('../models/Transaction');
 const Book = require('../models/Book');
 const Cafe = require('../models/Cafe');
@@ -19,61 +20,71 @@ const authMiddleware = (req, res, next) => {
 };
 
 // POST /api/transactions - Create a new transaction (pickup request)
-router.post('/', authMiddleware, async (req, res) => {
-    const { book_id, cafe_id } = req.body;
-
-    try {
-        // Validate request body
-        if (!book_id || !cafe_id) {
-            return res.status(400).json({ error: 'book_id and cafe_id are required' });
+router.post(
+    '/',
+    authMiddleware,
+    [
+        body('book_id').notEmpty().withMessage('book_id is required').trim(),
+        body('cafe_id').notEmpty().withMessage('cafe_id is required').trim(),
+    ],
+    async (req, res) => {
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        // Verify the book exists and is available
-        const book = await Book.findOne({ book_id });
-        if (!book) {
-            return res.status(404).json({ error: 'Book not found' });
+        const { book_id, cafe_id } = req.body;
+
+        try {
+            // Verify the book exists and is available
+            const book = await Book.findOne({ book_id });
+            if (!book) {
+                return res.status(404).json({ error: 'Book not found' });
+            }
+            if (book.keeper_type === 'user') {
+                return res.status(400).json({ error: 'Book is currently with a user' });
+            }
+
+            // Verify the cafe exists
+            const cafe = await Cafe.findOne({ cafe_id });
+            if (!cafe) {
+                return res.status(404).json({ error: 'Cafe not found' });
+            }
+
+            // Verify the user exists
+            const user = await User.findById(req.userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Check if user already has a book (based on subscription limits)
+            if (user.book_id && user.subscription_type === 'basic') {
+                return res.status(400).json({ error: 'Basic subscription allows only one book at a time' });
+            }
+
+            // Generate a unique transaction_id (manual increment for simplicity)
+            const lastTransaction = await Transaction.findOne().sort({ transaction_id: -1 });
+            const transaction_id = lastTransaction ? lastTransaction.transaction_id + 1 : 1;
+
+            // Create the transaction
+            const transaction = new Transaction({
+                transaction_id,
+                book_id,
+                user_id: user.user_id,
+                cafe_id,
+                status: 'pickup_pending',
+            });
+
+            await transaction.save();
+
+            res.status(201).json({ message: 'Pickup request created successfully', transaction });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
         }
-        if (book.keeper_type === 'user') {
-            return res.status(400).json({ error: 'Book is currently with a user' });
-        }
-
-        // Verify the cafe exists
-        const cafe = await Cafe.findOne({ cafe_id });
-        if (!cafe) {
-            return res.status(404).json({ error: 'Cafe not found' });
-        }
-
-        // Verify the user exists
-        const user = await User.findById(req.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Check if user already has a book (based on subscription limits)
-        if (user.book_id && user.subscription_type === 'basic') {
-            return res.status(400).json({ error: 'Basic subscription allows only one book at a time' });
-        }
-
-        // Generate a unique transaction_id (manual increment for simplicity)
-        const lastTransaction = await Transaction.findOne().sort({ transaction_id: -1 });
-        const transaction_id = lastTransaction ? lastTransaction.transaction_id + 1 : 1;
-
-        // Create the transaction
-        const transaction = new Transaction({
-            transaction_id,
-            book_id,
-            user_id: user.user_id, // e.g., 'AG2001'
-            cafe_id,
-            status: 'pickup_pending',
-        });
-
-        await transaction.save();
-
-        res.status(201).json({ message: 'Pickup request created successfully', transaction });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
     }
-});
+);
+
 // POST /api/transactions/scan/book/:book_id - Verify book QR code
 router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
     const { book_id } = req.params;
@@ -143,10 +154,11 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 // PUT /api/transactions/drop-off/:book_id - Initiate drop-off process
 router.put('/drop-off/:book_id', authMiddleware, async (req, res) => {
     const { book_id } = req.params;
-    const { cafe_id } = req.body; // Cafe where the book is being dropped off
+    const { cafe_id } = req.body;
 
     try {
         // Validate request body
@@ -183,7 +195,7 @@ router.put('/drop-off/:book_id', authMiddleware, async (req, res) => {
 
         // Update transaction to dropoff_pending
         transaction.status = 'dropoff_pending';
-        transaction.cafe_id = cafe_id; // Update cafe_id to the drop-off cafe
+        transaction.cafe_id = cafe_id;
         transaction.processed_at = new Date();
         await transaction.save();
 
@@ -223,7 +235,7 @@ router.put('/complete/:transaction_id', authMiddleware, async (req, res) => {
 
         // Reset book ownership
         book.keeper_type = 'cafe';
-        book.keeper_id = transaction.cafe_id; // Return to the cafe where it was dropped off
+        book.keeper_id = transaction.cafe_id;
         await book.save();
 
         // Clear user's book assignment
