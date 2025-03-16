@@ -14,7 +14,7 @@ function MainComponent() {
   const [isCodeApplied, setIsCodeApplied] = useState(false);
   const { data: user, loading: userLoading } = useUser();
 
-  const codes = ["FREE2025", "DISCOUNT50", "PROMO2025"];
+  const codes = ["DINKY100", "KAVYA100", "LEO100", "KASIS100"];
 
   const plans = [
     {
