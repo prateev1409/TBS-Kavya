@@ -226,7 +226,7 @@ function MainComponent() {
 
         <div className="text-center">
           <a
-            href="/account/logout"
+            href="/auth/logout"
             className="inline-block px-6 py-2 text-sm font-medium text-warning-light dark:text-warning-dark border border-warning-light dark:border-warning-dark rounded-full hover:bg-warning-light dark:hover:bg-warning-dark transition-colors"
           >
             Log Out
