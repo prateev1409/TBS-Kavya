@@ -9,7 +9,12 @@ import { useUser } from "../Hooks/useUser";
 function MainComponent() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [error, setError] = useState(null);
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [isCodeApplied, setIsCodeApplied] = useState(false);
   const { data: user, loading: userLoading } = useUser();
+
+  const codes = ["FREE2025", "DISCOUNT50", "PROMO2025"];
 
   const plans = [
     {
@@ -67,7 +72,7 @@ function MainComponent() {
 
   const handleSubscribe = async () => {
     if (!selectedPlan) return;
-  
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/create-subscription`, {
@@ -78,15 +83,25 @@ function MainComponent() {
         },
         body: JSON.stringify({ tier: selectedPlan.tier }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to create subscription');
       }
-  
+
       window.location.href = '/';
     } catch (err) {
       console.error(err);
       setError('Failed to process subscription');
+    }
+  };
+
+  const handleApplyCode = () => {
+    if (codes.includes(code)) {
+      setMessage("Your subscription is free, Just pay the deposit");
+      setIsCodeApplied(true);
+      setSelectedPlan(null);
+    } else {
+      setMessage("Invalid code");
     }
   };
 
@@ -160,25 +175,31 @@ function MainComponent() {
           ))}
         </div>
 
-        {selectedPlan ? (
-          <div className="mt-12 text-center">
-            <button
-              onClick={handleSubscribe}
-              className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
-            >
-              Confirm Subscription
-            </button>
-          </div>
-        ) : (
-          <div className="mt-12 text-center">
-            <button
-              onClick={handleSubscribe}
-              className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
-            >
-              Try free content
-            </button>
-          </div>
-        )}
+        <div className="mt-12 text-center">
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Enter code"
+            className="px-4 py-2 border rounded-md"
+          />
+          <button
+            onClick={handleApplyCode}
+            className="ml-4 bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-4 py-2 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+          >
+            Apply Code
+          </button>
+          {message && <div className="mt-4 text-success">{message}</div>}
+        </div>
+
+        <div className="mt-12 text-center">
+          <button
+            onClick={handleSubscribe}
+            className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+          >
+            {isCodeApplied ? "Pay Deposit" : selectedPlan ? "Confirm Subscription" : "Try free content"}
+          </button>
+        </div>
       </div>
       <Footer
         description={footerData.description}
