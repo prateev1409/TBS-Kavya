@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
+import { useAuth } from "../app/Hooks/useAuth"; // Import the useAuth hook
 
 const Header = ({ location, onLocationChange, onSearch }) => {
-  //const { isLoggedIn } = useAuth();
-  const isLoggedIn =true;
+  const { isLoggedIn } = useAuth();
+  //const isLoggedIn =true;
 
   return (
     <header className="border-b border-border-light dark:border-border-dark px-4 md:px-8 py-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">

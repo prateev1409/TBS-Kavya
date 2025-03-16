@@ -1,4 +1,4 @@
-// File: D:\TBS\Code\createxyz-project\client\src\app\Subscription\page.jsx
+// File: D:\TBS-Kavya\client\src\app\Subscription\page.jsx
 import * as entry from '../../../../src/app/Subscription/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
