@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator'); // Add this line
+const { body, validationResult } = require('express-validator');
+const logger = require('../utils/logger'); // Add this line
 const Transaction = require('../models/Transaction');
 const Book = require('../models/Book');
 const Cafe = require('../models/Cafe');
@@ -15,6 +16,7 @@ const authMiddleware = (req, res, next) => {
         req.userId = decoded.id;
         next();
     } catch (err) {
+        logger.error(`Auth middleware error: ${err.message}`);
         res.status(401).json({ error: 'Invalid token' });
     }
 };
@@ -31,6 +33,7 @@ router.post(
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            logger.warn(`Validation error on POST /api/transactions: ${JSON.stringify(errors.array())}`);
             return res.status(400).json({ errors: errors.array() });
         }
 
@@ -40,26 +43,31 @@ router.post(
             // Verify the book exists and is available
             const book = await Book.findOne({ book_id });
             if (!book) {
+                logger.warn(`Book not found: ${book_id}`);
                 return res.status(404).json({ error: 'Book not found' });
             }
             if (book.keeper_type === 'user') {
+                logger.warn(`Book unavailable: ${book_id}`);
                 return res.status(400).json({ error: 'Book is currently with a user' });
             }
 
             // Verify the cafe exists
             const cafe = await Cafe.findOne({ cafe_id });
             if (!cafe) {
+                logger.warn(`Cafe not found: ${cafe_id}`);
                 return res.status(404).json({ error: 'Cafe not found' });
             }
 
             // Verify the user exists
             const user = await User.findById(req.userId);
             if (!user) {
+                logger.warn(`User not found: ${req.userId}`);
                 return res.status(404).json({ error: 'User not found' });
             }
 
             // Check if user already has a book (based on subscription limits)
             if (user.book_id && user.subscription_type === 'basic') {
+                logger.warn(`Subscription limit exceeded for user: ${user.user_id}`);
                 return res.status(400).json({ error: 'Basic subscription allows only one book at a time' });
             }
 
@@ -77,9 +85,11 @@ router.post(
             });
 
             await transaction.save();
+            logger.info(`Transaction created successfully: ${transaction.transaction_id} for user: ${user.user_id}`);
 
             res.status(201).json({ message: 'Pickup request created successfully', transaction });
         } catch (err) {
+            logger.error(`Error creating transaction: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
@@ -93,20 +103,25 @@ router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
         // Verify the book exists
         const book = await Book.findOne({ book_id });
         if (!book) {
+            logger.warn(`Book not found during scan: ${book_id}`);
             return res.status(404).json({ error: 'Book not found' });
         }
         if (book.keeper_type === 'user') {
+            logger.warn(`Book unavailable during scan: ${book_id}`);
             return res.status(400).json({ error: 'Book is currently with a user' });
         }
 
         // Find a pending transaction for this book
         const transaction = await Transaction.findOne({ book_id, status: 'pickup_pending' });
         if (!transaction) {
+            logger.warn(`No pending transaction for book: ${book_id}`);
             return res.status(404).json({ error: 'No pending transaction found for this book' });
         }
 
+        logger.info(`Book QR code verified successfully: ${book_id}, transaction: ${transaction.transaction_id}`);
         res.status(200).json({ message: 'Book verified successfully', transaction_id: transaction.transaction_id });
     } catch (err) {
+        logger.error(`Error scanning book QR code: ${err.message}`);
         res.status(500).json({ error: err.message });
     }
 });
@@ -119,18 +134,21 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
         // Verify the user exists
         const user = await User.findOne({ user_id });
         if (!user) {
+            logger.warn(`User not found during scan: ${user_id}`);
             return res.status(404).json({ error: 'User not found' });
         }
 
         // Find the authenticated user's transaction (should match scanned user_id)
         const transaction = await Transaction.findOne({ user_id, status: 'pickup_pending' });
         if (!transaction) {
+            logger.warn(`No pending transaction for user: ${user_id}`);
             return res.status(404).json({ error: 'No pending transaction found for this user' });
         }
 
         // Verify the book is still available
         const book = await Book.findOne({ book_id: transaction.book_id });
         if (!book || book.keeper_type === 'user') {
+            logger.warn(`Book no longer available for transaction: ${transaction.book_id}`);
             return res.status(400).json({ error: 'Book is no longer available' });
         }
 
@@ -149,8 +167,10 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
         user.book_pickup_time = new Date();
         await user.save();
 
+        logger.info(`Transaction approved successfully: ${transaction.transaction_id}, user: ${user_id}`);
         res.status(200).json({ message: 'Transaction approved, book picked up successfully', transaction });
     } catch (err) {
+        logger.error(`Error approving transaction: ${err.message}`);
         res.status(500).json({ error: err.message });
     }
 });
@@ -163,33 +183,39 @@ router.put('/drop-off/:book_id', authMiddleware, async (req, res) => {
     try {
         // Validate request body
         if (!cafe_id) {
+            logger.warn(`Missing cafe_id in drop-off request for book: ${book_id}`);
             return res.status(400).json({ error: 'cafe_id is required' });
         }
 
         // Verify the user
         const user = await User.findById(req.userId);
         if (!user) {
+            logger.warn(`User not found for drop-off: ${req.userId}`);
             return res.status(404).json({ error: 'User not found' });
         }
 
         // Verify the book exists and is with the user
         const book = await Book.findOne({ book_id });
         if (!book) {
+            logger.warn(`Book not found for drop-off: ${book_id}`);
             return res.status(404).json({ error: 'Book not found' });
         }
         if (book.keeper_type !== 'user' || book.keeper_id !== user.user_id) {
+            logger.warn(`Book not with user for drop-off: ${book_id}, user: ${user.user_id}`);
             return res.status(400).json({ error: 'Book is not currently with this user' });
         }
 
         // Find the transaction for this book and user
         const transaction = await Transaction.findOne({ book_id, user_id: user.user_id, status: 'picked_up' });
         if (!transaction) {
+            logger.warn(`No active transaction for drop-off: ${book_id}, user: ${user.user_id}`);
             return res.status(404).json({ error: 'No active transaction found for this book' });
         }
 
         // Verify the cafe exists
         const cafe = await Cafe.findOne({ cafe_id });
         if (!cafe) {
+            logger.warn(`Cafe not found for drop-off: ${cafe_id}`);
             return res.status(404).json({ error: 'Cafe not found' });
         }
 
@@ -199,8 +225,10 @@ router.put('/drop-off/:book_id', authMiddleware, async (req, res) => {
         transaction.processed_at = new Date();
         await transaction.save();
 
+        logger.info(`Drop-off request initiated: ${transaction.transaction_id}, book: ${book_id}`);
         res.status(200).json({ message: 'Drop-off request initiated successfully', transaction });
     } catch (err) {
+        logger.error(`Error initiating drop-off: ${err.message}`);
         res.status(500).json({ error: err.message });
     }
 });
@@ -213,18 +241,21 @@ router.put('/complete/:transaction_id', authMiddleware, async (req, res) => {
         // Find the transaction
         const transaction = await Transaction.findOne({ transaction_id, status: 'dropoff_pending' });
         if (!transaction) {
+            logger.warn(`No pending drop-off transaction: ${transaction_id}`);
             return res.status(404).json({ error: 'No pending drop-off transaction found' });
         }
 
         // Verify the book
         const book = await Book.findOne({ book_id: transaction.book_id });
         if (!book) {
+            logger.warn(`Book not found for drop-off completion: ${transaction.book_id}`);
             return res.status(404).json({ error: 'Book not found' });
         }
 
         // Verify the user
         const user = await User.findOne({ user_id: transaction.user_id });
         if (!user) {
+            logger.warn(`User not found for drop-off completion: ${transaction.user_id}`);
             return res.status(404).json({ error: 'User not found' });
         }
 
@@ -243,8 +274,10 @@ router.put('/complete/:transaction_id', authMiddleware, async (req, res) => {
         user.book_pickup_time = null;
         await user.save();
 
+        logger.info(`Drop-off completed successfully: ${transaction.transaction_id}`);
         res.status(200).json({ message: 'Book drop-off completed successfully', transaction });
     } catch (err) {
+        logger.error(`Error completing drop-off: ${err.message}`);
         res.status(500).json({ error: err.message });
     }
 });
