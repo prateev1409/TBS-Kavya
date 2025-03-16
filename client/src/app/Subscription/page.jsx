@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import Footer from "../../components/footer";
 import Header from "../../components/header";
@@ -12,6 +13,7 @@ function MainComponent() {
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [isCodeApplied, setIsCodeApplied] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const { data: user, loading: userLoading } = useUser();
 
   const codes = ["DINKY100", "KAVYA100", "LEO100", "KASIS100"];
@@ -61,19 +63,18 @@ function MainComponent() {
   ];
 
   const handleSelectPlan = (plan) => {
-    if (!user) {
-      window.location.href = "/auth/signin?callbackUrl=/subscriptions";
-      return;
-    }
-    setSelectedPlan((prevSelectedPlan) =>
+        setSelectedPlan((prevSelectedPlan) =>
       prevSelectedPlan?.id === plan.id ? null : plan
     );
   };
 
   const handleSubscribe = async () => {
-    if (!selectedPlan) return;
-
     try {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    if (!selectedPlan) return;
       const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/create-subscription`, {
         method: 'POST',
@@ -96,6 +97,10 @@ function MainComponent() {
   };
 
   const handleApplyCode = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
     if (codes.includes(code)) {
       setMessage("Your subscription is free, Just pay the deposit");
       setIsCodeApplied(true);
@@ -103,6 +108,14 @@ function MainComponent() {
     } else {
       setMessage("Invalid code");
     }
+  };
+
+  const handleCloseLoginPrompt = () => {
+    setShowLoginPrompt(false);
+  };
+
+  const handleLoginRedirect = () => {
+    window.location.href = "/auth/signin?callbackUrl=/subscriptions";
   };
 
   if (userLoading) {
@@ -193,12 +206,21 @@ function MainComponent() {
         </div>
 
         <div className="mt-12 text-center">
-          <button
-            onClick={handleSubscribe}
-            className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
-          >
-            {isCodeApplied ? "Pay Deposit" : selectedPlan ? "Confirm Subscription" : "Try free content"}
-          </button>
+          {!user ? (
+            <button
+              onClick={() => setShowLoginPrompt(true)}
+              className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+            >
+              {isCodeApplied ? "Pay Deposit" : selectedPlan ? "Confirm Subscription" : "Try free content"}
+            </button>
+          ) : (
+            <button
+              onClick={handleSubscribe}
+              className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-8 py-3 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+            >
+              {isCodeApplied ? <Link href="/payments">Pay Deposit</Link> : selectedPlan ? <Link href="/payments">Confirm Subscription</Link> : <Link href="/">Try free content</Link>}
+            </button>
+          )}
         </div>
       </div>
       <Footer
@@ -208,6 +230,28 @@ function MainComponent() {
         linksRight={footerData.linksRight}
       />
       <ThemeToggle />
+
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
+            <p className="mb-4 text-lg text-gray-800 dark:text-gray-200">
+              Log in to subscribe or enjoy the free content
+            </p>
+            <button
+              onClick={handleLoginRedirect}
+              className="bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-4 py-2 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={handleCloseLoginPrompt}
+              className="ml-4 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors font-button"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
