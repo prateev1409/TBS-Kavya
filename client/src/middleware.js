@@ -6,9 +6,13 @@ export const config = {
 
 export function middleware(request) {
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-createxyz-project-id", "f058e828-231f-4968-9207-8959082d2bcf");
 
-  request.nextUrl.href = `https://www.create.xyz/${request.nextUrl.pathname}`;
+  // Set custom headers for title and description
+  requestHeaders.set("x-site-title", "The Bookshelves");
+  requestHeaders.set("x-site-description", "Sip, read, and connect with us today!");
+
+  // Replace the URL with your own domain
+  request.nextUrl.href = `https://www.thebookshelves.xyz/${request.nextUrl.pathname}`;
 
   return NextResponse.rewrite(request.nextUrl, {
     request: {
