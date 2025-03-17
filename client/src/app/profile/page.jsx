@@ -139,7 +139,7 @@ function MainComponent() {
             </p>
           </div>
           <a
-            href="/subscriptions"
+            href="/Subscription"
             className="inline-flex items-center px-6 py-2.5 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark font-button rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
           >
             Upgrade Subscription
