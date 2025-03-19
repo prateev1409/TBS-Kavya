@@ -1,3 +1,8 @@
 2025-03-17 04:20:21 [INFO]: POST /api/auth/login - IP: ::1
 2025-03-17 04:20:27 [INFO]: GET /api/users/profile - IP: ::1
 2025-03-17 04:20:27 [INFO]: GET /api/users/profile - IP: ::1
+2025-03-17 15:56:17 [INFO]: GET /api/users/profile - IP: ::1
+2025-03-17 15:56:17 [INFO]: GET /api/users/profile - IP: ::1
+2025-03-17 15:58:41 [INFO]: POST /api/auth/login - IP: ::1
+2025-03-17 15:58:51 [INFO]: GET /api/users/profile - IP: ::1
+2025-03-17 15:58:51 [INFO]: GET /api/users/profile - IP: ::1
