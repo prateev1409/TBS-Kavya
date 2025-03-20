@@ -5,14 +5,38 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
-  const { name, phone_number, email, password } = req.body;
   try {
-    const user = new User({ name, phone_number, email, password });
-    await user.save();
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.status(201).json({ token });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+      const { name, phone_number, email, password } = req.body;
+
+      // Check if the user already exists
+      let existingUser = await User.findOne({ email });
+      if (existingUser) {
+          return res.status(400).json({ message: "User with this email already exists." });
+      }
+
+      // Generate a unique user_id
+      let count = await User.countDocuments();
+      let user_id = `User_${String(count + 1).padStart(3, '0')}`; // e.g., User_001, User_002, ...
+
+      // Create a new admin user
+      const newUser = new User({
+          user_id,
+          name,
+          phone_number,
+          email,
+          password,
+          role: 'user'
+      });
+
+      // Save to database
+      await newUser.save();
+
+      // Generate JWT Token
+      const token = jwt.sign({ id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
+      res.status(201).json({ message: "user registered successfully!", token });
+  } catch (error) {
+      console.error("Signup Error:", error);
+      res.status(500).json({ message: "Internal server error" });
   }
 });
 

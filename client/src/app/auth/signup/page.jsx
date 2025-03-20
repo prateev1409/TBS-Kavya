@@ -49,7 +49,7 @@ function MainComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'User', // Add a default name or collect it in the form
-          phone_number: '1234567899', // Add a default or collect it
+          phone_number: '7345678945', // Add a default or collect it
           email: formData.email,
           password: formData.password,
         }),

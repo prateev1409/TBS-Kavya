@@ -4949,3 +4949,14 @@
 2025-03-21 02:57:42 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
 2025-03-21 02:57:43 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
 2025-03-21 02:57:43 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-21 02:59:43 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"aishik@2001","password":"admin"}
+2025-03-21 02:59:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-21 02:59:44 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-21 02:59:44 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-21 02:59:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-21 02:59:44 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-21 02:59:44 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-21 02:59:45 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-21 02:59:45 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-21 03:00:32 [INFO]: POST /api/auth/register - IP: ::1 - Body: {"name":"User","phone_number":"1234567899","email":"user@example.com","password":"user"}
+2025-03-21 03:08:19 [INFO]: POST /api/auth/register - IP: ::1 - Body: {"name":"User","phone_number":"1234567899","email":"user@example.com","password":"admin"}
