@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react"; // Add useEffect to the imports
+import { useAuth } from "../Hooks/useAuth";
 
 function CafesSection({ data, setData, onEdit }) {
+    const { refreshToken } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState({
         location: "",
@@ -12,27 +14,57 @@ function CafesSection({ data, setData, onEdit }) {
         average_bills: [],
         ratings: [],
     });
+    const [loading, setLoading] = useState(false);
 
     const scrollRef = useRef(null);
     const isDown = useRef(false);
     const startX = useRef(0);
     const scrollLeft = useRef(0);
 
+    // Fetch filter options on mount
     useEffect(() => {
+        const abortController = new AbortController();
         const fetchFilters = async () => {
+            if (loading) return;
+            setLoading(true);
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`, {
+                let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal,
                 });
-                if (!res.ok) throw new Error('Failed to fetch filters');
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        const newToken = await refreshToken();
+                        if (!newToken) {
+                            throw new Error('Failed to refresh token');
+                        }
+                        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`, {
+                            headers: { Authorization: `Bearer ${newToken}` },
+                            signal: abortController.signal,
+                        });
+                        if (!res.ok) throw new Error('Failed to fetch filters');
+                    } else {
+                        throw new Error('Failed to fetch filters');
+                    }
+                }
                 const data = await res.json();
                 setFilterOptions(data);
             } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Fetch aborted');
+                    return;
+                }
                 console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchFilters();
+
+        return () => {
+            abortController.abort();
+        };
     }, []);
 
     const handleMouseDown = (e) => {
@@ -72,18 +104,49 @@ function CafesSection({ data, setData, onEdit }) {
     });
 
     const handleDelete = async (cafeId) => {
+        if (!window.confirm(`Are you sure you want to delete the cafe with ID ${cafeId}?`)) {
+            return;
+        }
+
+        if (loading) return;
+        setLoading(true);
+
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/${cafeId}`, {
+            let token = localStorage.getItem('token');
+            let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/${cafeId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (!res.ok) throw new Error('Failed to delete cafe');
+
+            if (res.status === 401) {
+                token = await refreshToken();
+                if (!token) {
+                    throw new Error('Failed to refresh token');
+                }
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/${cafeId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(`Failed to delete cafe: ${errorData.error || res.statusText}`);
+            }
+
             setData(data.filter(cafe => cafe.cafe_id !== cafeId));
+            alert('Cafe deleted successfully!');
         } catch (err) {
-            console.error(err);
+            console.error('Error in handleDelete:', err);
+            alert(`Error: ${err.message}`);
+        } finally {
+            setLoading(false);
         }
     };
+
+    if (loading) {
+        return <div>Loading filters...</div>;
+    }
 
     return (
         <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
@@ -159,7 +222,7 @@ function CafesSection({ data, setData, onEdit }) {
                                 <td className="px-4 py-3">{cafe.name}</td>
                                 <td className="px-4 py-3">{cafe.location}</td>
                                 <td className="px-4 py-3">₹{cafe.average_bill}</td>
-                                <td className="px-4 py-3">{cafe.discount}</td>
+                                <td className="px-4 py-3">{cafe.discount}%</td>
                                 <td className="px-4 py-3">{cafe.ratings}</td>
                                 <td className="px-4 py-3">{cafe.specials || 'N/A'}</td>
                                 <td className="px-4 py-3">
@@ -178,6 +241,7 @@ function CafesSection({ data, setData, onEdit }) {
                                     <button
                                         onClick={() => handleDelete(cafe.cafe_id)}
                                         className="text-red-600 hover:text-red-800"
+                                        disabled={loading}
                                     >
                                         Delete
                                     </button>

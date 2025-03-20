@@ -18,7 +18,7 @@ function AdminDashboard() {
     const [editItemId, setEditItemId] = useState(null);
     const [formValues, setFormValues] = useState({});
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false); // Add loading state
+    const [loading, setLoading] = useState(false);
 
     const modalScrollRef = useRef(null);
     const modalIsDown = useRef(false);
@@ -27,9 +27,9 @@ function AdminDashboard() {
 
     // Fetch data on mount
     useEffect(() => {
-        const abortController = new AbortController(); // Create an AbortController for cleanup
+        const abortController = new AbortController();
         const fetchData = async () => {
-            if (loading) return; // Prevent multiple fetches
+            if (loading) return;
             setLoading(true);
             try {
                 let token = localStorage.getItem('token');
@@ -38,10 +38,9 @@ function AdminDashboard() {
                     return;
                 }
 
-                // Check if token is valid, refresh if needed
                 const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
                     headers: { Authorization: `Bearer ${token}` },
-                    signal: abortController.signal, // Add abort signal
+                    signal: abortController.signal,
                 });
                 if (!profileRes.ok) {
                     if (profileRes.status === 401) {
@@ -119,11 +118,10 @@ function AdminDashboard() {
 
         fetchData();
 
-        // Cleanup: Abort fetch requests on unmount
         return () => {
             abortController.abort();
         };
-    }, []); // Remove refreshToken from dependency array
+    }, []);
 
     const handleModalMouseDown = (e) => {
         modalIsDown.current = true;
@@ -153,6 +151,7 @@ function AdminDashboard() {
     const getModalFields = () => {
         if (activeTab === "books") {
             return [
+                { name: "id", label: "Book ID", type: "text", readOnly: true },
                 { name: "name", label: "Book Name *", type: "text" },
                 { name: "author", label: "Author *", type: "text" },
                 { name: "language", label: "Language *", type: "text" },
@@ -168,11 +167,12 @@ function AdminDashboard() {
             ];
         } else if (activeTab === "cafes") {
             return [
-                { name: "name", label: "Cafe Name", type: "text" },
-                { name: "location", label: "Location", type: "text" },
-                { name: "average_bill", label: "Average Bill", type: "number" },
-                { name: "discount", label: "Discount", type: "number" },
-                { name: "ratings", label: "Ratings", type: "number" },
+                { name: "cafe_id", label: "Cafe ID", type: "text", readOnly: true },
+                { name: "name", label: "Cafe Name *", type: "text" },
+                { name: "location", label: "Location *", type: "text" },
+                { name: "average_bill", label: "Average Bill", type: "number", min: 0 },
+                { name: "discount", label: "Discount", type: "number", min: 0 },
+                { name: "ratings", label: "Ratings (0-5)", type: "number", min: 0, max: 5 },
                 { name: "specials", label: "Specials", type: "text" },
             ];
         } else if (activeTab === "users") {
@@ -209,7 +209,15 @@ function AdminDashboard() {
                 language: '',
                 available: true,
                 is_free: false,
-                ratings: 0
+                ratings: 0,
+            });
+        } else if (activeTab === "cafes") {
+            setFormValues({
+                name: '',
+                location: '',
+                average_bill: 0,
+                discount: 0,
+                ratings: 0,
             });
         } else {
             setFormValues({});
@@ -253,35 +261,51 @@ function AdminDashboard() {
         try {
             let url;
             let method;
+            let requestData;
+
             if (activeTab === "books") {
                 url = isEditing
                     ? `${process.env.NEXT_PUBLIC_API_URL}/books/${editItemId}`
                     : `${process.env.NEXT_PUBLIC_API_URL}/admin/books`;
                 method = isEditing ? 'PUT' : 'POST';
+                requestData = {
+                    name: formValues.name,
+                    author: formValues.author,
+                    language: formValues.language,
+                    publisher: formValues.publisher || undefined,
+                    genre: formValues.genre || undefined,
+                    description: formValues.description || undefined,
+                    image_url: formValues.image_url || undefined,
+                    audio_url: formValues.audio_url || undefined,
+                    ratings: Number(formValues.ratings) || 0,
+                    is_free: formValues.is_free || false,
+                    available: formValues.available !== undefined ? formValues.available : true,
+                    keeper_id: formValues.keeper_id || undefined,
+                };
+            } else if (activeTab === "cafes") {
+                url = isEditing
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/cafes/${editItemId}`
+                    : `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
+                method = isEditing ? 'PUT' : 'POST';
+                requestData = {
+                    name: formValues.name,
+                    location: formValues.location,
+                    average_bill: Number(formValues.average_bill) || 0,
+                    discount: Number(formValues.discount) || 0,
+                    ratings: Number(formValues.ratings) || 0,
+                    specials: formValues.specials || undefined,
+                };
             } else {
                 url = isEditing
                     ? `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}/${editItemId}`
                     : `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}`;
                 method = isEditing ? 'PUT' : 'POST';
+                requestData = formValues;
             }
 
-            const bookData = {
-                name: formValues.name,
-                author: formValues.author,
-                language: formValues.language,
-                publisher: formValues.publisher || undefined,
-                genre: formValues.genre || undefined,
-                description: formValues.description || undefined,
-                image_url: formValues.image_url || undefined,
-                audio_url: formValues.audio_url || undefined,
-                ratings: Number(formValues.ratings) || 0,
-                is_free: formValues.is_free || false,
-                available: formValues.available !== undefined ? formValues.available : true,
-                keeper_id: formValues.keeper_id || undefined,
-            };
-
-            console.log('Sending request to:', url); // Debug log
-            console.log('Request body:', bookData); // Debug log
+            console.log('Sending request to:', url);
+            console.log('Request body:', requestData);
+            console.log('Initial token:', token);
 
             let res = await fetch(url, {
                 method: method,
@@ -289,28 +313,30 @@ function AdminDashboard() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(bookData),
+                body: JSON.stringify(requestData),
             });
 
-            // If the request fails due to an invalid token, try refreshing the token
             if (res.status === 401) {
+                console.log('Received 401, attempting to refresh token...');
                 token = await refreshToken();
                 if (!token) {
                     throw new Error('Failed to refresh token');
                 }
+                console.log('New token after refresh:', token);
+                // Update the token in localStorage after refresh
+                localStorage.setItem('token', token);
                 // Retry the request with the new token
                 res = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, // Ensure the Bearer prefix is correct
                     },
-                    body: JSON.stringify(bookData),
+                    body: JSON.stringify(requestData),
                 });
             }
 
-            console.log('Response status:', res.status); // Debug log
-            console.log('Response headers:', res.headers.get('content-type')); // Debug log
+            console.log('Response status after retry:', res.status);
 
             if (!res.ok) {
                 const contentType = res.headers.get('content-type');
@@ -321,14 +347,14 @@ function AdminDashboard() {
                     errorMessage = `Failed to ${isEditing ? 'update' : 'add'} ${activeTab.slice(0, -1)}: ${errorData.error || res.statusText} (${res.status})`;
                 } else {
                     const text = await res.text();
-                    console.log('Raw response:', text); // Debug log
+                    console.log('Raw response:', text);
                     errorMessage = `Failed to ${isEditing ? 'update' : 'add'} ${activeTab.slice(0, -1)}: Received non-JSON response (${res.status})`;
                 }
                 throw new Error(errorMessage);
             }
 
             const responseData = await res.json();
-            console.log('Response data:', responseData); // Debug log
+            console.log('Response data:', responseData);
 
             if (isEditing) {
                 if (activeTab === "books") {
@@ -355,9 +381,10 @@ function AdminDashboard() {
             }
             closeModal();
         } catch (err) {
-            console.error('Error in handleFormSubmit:', err); // Debug log
+            console.error('Error in handleFormSubmit:', err);
             setError(err.message);
-            if (err.message.includes('Invalid token') || err.message.includes('Unauthorized')) {
+            // Only redirect to login if the error is specifically about token refresh failure
+            if (err.message === 'Failed to refresh token') {
                 localStorage.removeItem('token');
                 window.location.href = '/auth/signin';
             }
@@ -475,11 +502,12 @@ function AdminDashboard() {
                                                         name={field.name}
                                                         type={field.type}
                                                         value={formValues[field.name] || ""}
-                                                        onChange={handleInputChange}
-                                                        className="w-full border px-3 py-2 rounded-lg"
+                                                        onChange={field.readOnly ? undefined : handleInputChange}
+                                                        className={`w-full border px-3 py-2 rounded-lg ${field.readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                                         required={field.label.includes('*')}
                                                         min={field.min}
                                                         max={field.max}
+                                                        readOnly={field.readOnly}
                                                     />
                                                 )}
                                             </>
