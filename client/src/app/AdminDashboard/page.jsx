@@ -4,8 +4,10 @@ import BooksSection from "./BooksSection";
 import CafesSection from "./CafesSection";
 import TransactionsSection from "./TransactionsSection";
 import UsersSection from "./UsersSection";
+import { useAuth } from "../Hooks/useAuth";
 
 function AdminDashboard() {
+    const { refreshToken } = useAuth();
     const [books, setBooks] = useState([]);
     const [cafes, setCafes] = useState([]);
     const [users, setUsers] = useState([]);
@@ -16,6 +18,7 @@ function AdminDashboard() {
     const [editItemId, setEditItemId] = useState(null);
     const [formValues, setFormValues] = useState({});
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const modalScrollRef = useRef(null);
     const modalIsDown = useRef(false);
@@ -24,20 +27,32 @@ function AdminDashboard() {
 
     // Fetch data on mount
     useEffect(() => {
+        const abortController = new AbortController(); // Create an AbortController for cleanup
         const fetchData = async () => {
+            if (loading) return; // Prevent multiple fetches
+            setLoading(true);
             try {
-                const token = localStorage.getItem('token');
+                let token = localStorage.getItem('token');
                 if (!token) {
                     window.location.href = '/auth/signin';
                     return;
                 }
 
+                // Check if token is valid, refresh if needed
                 const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal, // Add abort signal
                 });
                 if (!profileRes.ok) {
-                    const errorData = await profileRes.json();
-                    throw new Error(`Invalid token: ${errorData.error || profileRes.statusText}`);
+                    if (profileRes.status === 401) {
+                        token = await refreshToken();
+                        if (!token) {
+                            throw new Error('Failed to refresh token');
+                        }
+                    } else {
+                        const errorData = await profileRes.json();
+                        throw new Error(`Invalid token: ${errorData.error || profileRes.statusText}`);
+                    }
                 }
                 const userData = await profileRes.json();
                 if (userData.role !== 'admin') {
@@ -46,6 +61,7 @@ function AdminDashboard() {
 
                 const booksRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/inventory`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal,
                 });
                 if (!booksRes.ok) {
                     const errorData = await booksRes.json();
@@ -56,6 +72,7 @@ function AdminDashboard() {
 
                 const cafesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal,
                 });
                 if (!cafesRes.ok) {
                     const errorData = await cafesRes.json();
@@ -66,6 +83,7 @@ function AdminDashboard() {
 
                 const usersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal,
                 });
                 if (!usersRes.ok) {
                     const errorData = await usersRes.json();
@@ -76,6 +94,7 @@ function AdminDashboard() {
 
                 const transactionsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal,
                 });
                 if (!transactionsRes.ok) {
                     const errorData = await transactionsRes.json();
@@ -84,16 +103,27 @@ function AdminDashboard() {
                 const transactionsData = await transactionsRes.json();
                 setTransactions(transactionsData);
             } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Fetch aborted');
+                    return;
+                }
                 setError(err.message);
                 if (err.message.includes('Invalid token') || err.message.includes('Admin access required')) {
                     localStorage.removeItem('token');
                     window.location.href = '/auth/signin';
                 }
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
-    }, []);
+
+        // Cleanup: Abort fetch requests on unmount
+        return () => {
+            abortController.abort();
+        };
+    }, []); // Remove refreshToken from dependency array
 
     const handleModalMouseDown = (e) => {
         modalIsDown.current = true;
@@ -213,7 +243,7 @@ function AdminDashboard() {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
+        let token = localStorage.getItem('token');
         if (!token) {
             setError('No authentication token found. Please log in.');
             window.location.href = '/auth/signin';
@@ -221,11 +251,18 @@ function AdminDashboard() {
         }
 
         try {
-            let url = `${process.env.NEXT_PUBLIC_API_URL}/admin/books`;
-            let method = 'POST';
-            if (isEditing) {
-                url = `${process.env.NEXT_PUBLIC_API_URL}/books/${editItemId}`;
-                method = 'PUT';
+            let url;
+            let method;
+            if (activeTab === "books") {
+                url = isEditing
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/books/${editItemId}`
+                    : `${process.env.NEXT_PUBLIC_API_URL}/admin/books`;
+                method = isEditing ? 'PUT' : 'POST';
+            } else {
+                url = isEditing
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}/${editItemId}`
+                    : `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}`;
+                method = isEditing ? 'PUT' : 'POST';
             }
 
             const bookData = {
@@ -246,7 +283,7 @@ function AdminDashboard() {
             console.log('Sending request to:', url); // Debug log
             console.log('Request body:', bookData); // Debug log
 
-            const res = await fetch(url, {
+            let res = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
@@ -255,20 +292,37 @@ function AdminDashboard() {
                 body: JSON.stringify(bookData),
             });
 
+            // If the request fails due to an invalid token, try refreshing the token
+            if (res.status === 401) {
+                token = await refreshToken();
+                if (!token) {
+                    throw new Error('Failed to refresh token');
+                }
+                // Retry the request with the new token
+                res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(bookData),
+                });
+            }
+
             console.log('Response status:', res.status); // Debug log
             console.log('Response headers:', res.headers.get('content-type')); // Debug log
 
             if (!res.ok) {
                 const contentType = res.headers.get('content-type');
-                let errorMessage = `Failed to ${isEditing ? 'update' : 'add'} book: ${res.statusText} (${res.status})`;
+                let errorMessage = `Failed to ${isEditing ? 'update' : 'add'} ${activeTab.slice(0, -1)}: ${res.statusText} (${res.status})`;
                 
                 if (contentType && contentType.includes('application/json')) {
                     const errorData = await res.json();
-                    errorMessage = `Failed to ${isEditing ? 'update' : 'add'} book: ${errorData.error || res.statusText} (${res.status})`;
+                    errorMessage = `Failed to ${isEditing ? 'update' : 'add'} ${activeTab.slice(0, -1)}: ${errorData.error || res.statusText} (${res.status})`;
                 } else {
                     const text = await res.text();
                     console.log('Raw response:', text); // Debug log
-                    errorMessage = `Failed to ${isEditing ? 'update' : 'add'} book: Received non-JSON response (${res.status})`;
+                    errorMessage = `Failed to ${isEditing ? 'update' : 'add'} ${activeTab.slice(0, -1)}: Received non-JSON response (${res.status})`;
                 }
                 throw new Error(errorMessage);
             }
@@ -279,72 +333,24 @@ function AdminDashboard() {
             if (isEditing) {
                 if (activeTab === "books") {
                     setBooks(books.map(book => 
-                        book.id === editItemId ? responseData.book : book
+                        book.id === editItemId ? { ...book, ...responseData.book } : book
                     ));
                 } else if (activeTab === "cafes") {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/${editItemId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify(formValues),
-                    });
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(`Failed to update cafe: ${errorData.error || res.statusText}`);
-                    }
-                    const updatedCafe = await res.json();
-                    setCafes(cafes.map(cafe => cafe.cafe_id === editItemId ? updatedCafe.cafe : cafe));
+                    setCafes(cafes.map(cafe => 
+                        cafe.cafe_id === editItemId ? responseData.cafe : cafe
+                    ));
                 } else if (activeTab === "users") {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${editItemId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify(formValues),
-                    });
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(`Failed to update user: ${errorData.error || res.statusText}`);
-                    }
-                    const updatedUser = await res.json();
-                    setUsers(users.map(user => user.user_id === editItemId ? updatedUser.user : user));
+                    setUsers(users.map(user => 
+                        user.user_id === editItemId ? responseData.user : user
+                    ));
                 }
             } else {
                 if (activeTab === "books") {
                     setBooks([...books, responseData.book]);
                 } else if (activeTab === "cafes") {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify(formValues),
-                    });
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(`Failed to add cafe: ${errorData.error || res.statusText}`);
-                    }
-                    const newCafe = await res.json();
-                    setCafes([...cafes, newCafe.cafe]);
+                    setCafes([...cafes, responseData.cafe]);
                 } else if (activeTab === "users") {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify(formValues),
-                    });
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(`Failed to add user: ${errorData.error || res.statusText}`);
-                    }
-                    const newUser = await res.json();
-                    setUsers([...users, newUser.user]);
+                    setUsers([...users, responseData.user]);
                 }
             }
             closeModal();
@@ -362,6 +368,14 @@ function AdminDashboard() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-red-600">{error}</div>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-gray-600">Loading...</div>
             </div>
         );
     }

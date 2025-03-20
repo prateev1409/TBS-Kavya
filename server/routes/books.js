@@ -3,16 +3,23 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Book = require('../models/Book');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    console.log('Received token in authMiddleware:', token); // Debug log
+    if (!token) {
+        console.log('No token provided');
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded token in authMiddleware:', decoded); // Debug log
         req.userId = decoded.id;
         next();
     } catch (err) {
+        console.error('Token verification failed in authMiddleware:', err.message); // Debug log
         res.status(401).json({ error: 'Invalid token' });
     }
 };
@@ -132,25 +139,69 @@ router.post(
 );
 
 // PUT /api/books/:book_id - Update a book (admin-only)
-router.put('/:book_id', authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-        const { book_id } = req.params;
-        const updates = req.body;
-
-        const book = await Book.findOne({ book_id });
-        if (!book) {
-            return res.status(404).json({ error: 'Book not found' });
+router.put(
+    '/:book_id',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('name').notEmpty().withMessage('name is required').trim(),
+        body('author').notEmpty().withMessage('author is required').trim(),
+        body('language').notEmpty().withMessage('language is required').trim(),
+        body('ratings').optional().isInt({ min: 0, max: 5 }).withMessage('ratings must be between 0 and 5'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        Object.assign(book, updates);
-        book.updatedAt = Date.now();
-        await book.save();
+        try {
+            const { book_id } = req.params;
+            const {
+                name,
+                author,
+                language,
+                publisher,
+                genre,
+                description,
+                image_url,
+                audio_url,
+                ratings,
+                is_free,
+                available,
+                keeper_id,
+            } = req.body;
 
-        res.status(200).json({ message: 'Book updated successfully', book });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+            const book = await Book.findOne({ book_id });
+            if (!book) {
+                return res.status(404).json({ error: 'Book not found' });
+            }
+
+            // Update only the fields that are provided
+            book.name = name;
+            book.author = author;
+            book.language = language;
+            book.publisher = publisher !== undefined ? publisher : book.publisher;
+            book.genre = genre !== undefined ? genre : book.genre;
+            book.description = description !== undefined ? description : book.description;
+            book.image_url = image_url !== undefined ? image_url : book.image_url;
+            book.audio_url = audio_url !== undefined ? audio_url : book.audio_url;
+            book.ratings = ratings !== undefined ? ratings : book.ratings;
+            book.is_free = is_free !== undefined ? is_free : book.is_free;
+            book.available = available !== undefined ? available : book.available;
+            book.keeper_id = keeper_id !== undefined ? keeper_id : book.keeper_id;
+            book.updatedAt = Date.now();
+
+            await book.save();
+            console.log('Book updated:', book);
+            res.status(200).json({ message: 'Book updated successfully', book });
+        } catch (err) {
+            console.error('Error updating book:', err.message);
+            res.status(500).json({ error: 'Failed to update book: ' + err.message });
+        }
     }
-});
+);
 
 // DELETE /api/books/:book_id - Delete a book (admin-only)
 router.delete('/:book_id', authMiddleware, adminMiddleware, async (req, res) => {
@@ -162,9 +213,11 @@ router.delete('/:book_id', authMiddleware, adminMiddleware, async (req, res) => 
         }
 
         await book.deleteOne();
+        console.log(`Book deleted: ${book_id}`);
         res.status(200).json({ message: 'Book deleted successfully' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Error deleting book:', err.message);
+        res.status(500).json({ error: 'Failed to delete book: ' + err.message });
     }
 });
 

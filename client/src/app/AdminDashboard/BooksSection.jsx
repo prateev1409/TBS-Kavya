@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../Hooks/useAuth";
 
 function BooksSection({ data, setData, onEdit }) {
+    const { refreshToken } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState({
         author: "",
@@ -14,6 +16,7 @@ function BooksSection({ data, setData, onEdit }) {
         languages: [],
         genres: [],
     });
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const scrollRef = useRef(null);
     const isDown = useRef(false);
@@ -21,21 +24,51 @@ function BooksSection({ data, setData, onEdit }) {
     const scrollLeft = useRef(0);
 
     useEffect(() => {
+        const abortController = new AbortController(); // Create an AbortController for cleanup
         const fetchFilters = async () => {
+            if (loading) return; // Prevent multiple fetches
+            setLoading(true);
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`, {
+                let token = localStorage.getItem('token');
+                let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: abortController.signal, // Add abort signal
                 });
-                if (!res.ok) throw new Error('Failed to fetch filters');
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        token = await refreshToken();
+                        if (!token) {
+                            throw new Error('Failed to refresh token');
+                        }
+                        // Retry the request with the new token
+                        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                            signal: abortController.signal,
+                        });
+                        if (!res.ok) throw new Error('Failed to fetch filters');
+                    } else {
+                        throw new Error('Failed to fetch filters');
+                    }
+                }
                 const data = await res.json();
                 setFilterOptions(data);
             } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Fetch aborted');
+                    return;
+                }
                 console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchFilters();
-    }, []);
+
+        // Cleanup: Abort fetch requests on unmount
+        return () => {
+            abortController.abort();
+        };
+    }, []); // Remove refreshToken from dependency array
 
     const handleMouseDown = (e) => {
         isDown.current = true;
@@ -75,18 +108,47 @@ function BooksSection({ data, setData, onEdit }) {
     });
 
     const handleDelete = async (bookId) => {
+        if (!window.confirm(`Are you sure you want to delete the book with ID ${bookId}?`)) {
+            return;
+        }
+
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
+            let token = localStorage.getItem('token');
+            let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (!res.ok) throw new Error('Failed to delete book');
+
+            // If the request fails due to an invalid token, try refreshing the token
+            if (res.status === 401) {
+                token = await refreshToken();
+                if (!token) {
+                    throw new Error('Failed to refresh token');
+                }
+                // Retry the request with the new token
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(`Failed to delete book: ${errorData.error || res.statusText}`);
+            }
+
+            // Only update the state if the deletion was successful
             setData(data.filter(book => book.id !== bookId));
+            alert('Book deleted successfully!');
         } catch (err) {
-            console.error(err);
+            console.error('Error in handleDelete:', err);
+            alert(`Error: ${err.message}`);
         }
     };
+
+    if (loading) {
+        return <div>Loading filters...</div>;
+    }
 
     return (
         <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
