@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator'); // Add this line
+const { body, validationResult } = require('express-validator');
 const Book = require('../models/Book');
 const User = require('../models/User');
 
-// Middleware to verify JWT (already implemented)
+// Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -30,18 +30,32 @@ const adminMiddleware = async (req, res, next) => {
     }
 };
 
-// GET /api/books - Retrieve list of books with filtering
+// GET /api/books - Retrieve list of books with case-insensitive filtering
 router.get('/', async (req, res) => {
     try {
         const { genre, author, language } = req.query;
         let query = {};
 
-        if (genre) query.genre = genre;
-        if (author) query.author = author;
-        if (language) query.language = language;
+        if (genre) query.genre = { $regex: genre, $options: 'i' };
+        if (author) query.author = { $regex: author, $options: 'i' };
+        if (language) query.language = { $regex: language, $options: 'i' };
 
         const books = await Book.find(query);
         res.status(200).json(books);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/books/filters - Retrieve unique values for filters
+router.get('/filters', async (req, res) => {
+    try {
+        const authors = await Book.distinct('author');
+        const publishers = await Book.distinct('publisher');
+        const genres = await Book.distinct('genre');
+        const languages = await Book.distinct('language');
+
+        res.status(200).json({ authors, publishers, genres, languages });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -73,7 +87,6 @@ router.post(
         body('ratings').optional().isInt({ min: 0, max: 5 }).withMessage('ratings must be between 0 and 5'),
     ],
     async (req, res) => {
-        // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -91,21 +104,11 @@ router.post(
                 audio_url,
                 ratings,
                 is_free,
+                available,
+                keeper_id,
             } = req.body;
 
-            // Generate unique book_id (e.g., first letters of name + number)
-            const getFirstLetters = (str) => str.split(' ').map(word => word[0]).join('').toUpperCase();
-            const baseId = getFirstLetters(name);
-            let book_id = baseId + '1';
-            let count = 1;
-
-            while (await Book.findOne({ book_id })) {
-                count++;
-                book_id = `${baseId}${count}`;
-            }
-
             const book = new Book({
-                book_id,
                 name,
                 author,
                 language,
@@ -116,8 +119,8 @@ router.post(
                 audio_url,
                 ratings: ratings || 0,
                 is_free: is_free || false,
-                keeper_type: 'cafe',
-                keeper_id: null,
+                available: available !== undefined ? available : true,
+                keeper_id: keeper_id || null,
             });
 
             await book.save();
@@ -140,6 +143,7 @@ router.put('/:book_id', authMiddleware, adminMiddleware, async (req, res) => {
         }
 
         Object.assign(book, updates);
+        book.updatedAt = Date.now();
         await book.save();
 
         res.status(200).json({ message: 'Book updated successfully', book });
@@ -157,7 +161,7 @@ router.delete('/:book_id', authMiddleware, adminMiddleware, async (req, res) => 
             return res.status(404).json({ error: 'Book not found' });
         }
 
-        await book.remove();
+        await book.deleteOne();
         res.status(200).json({ message: 'Book deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });

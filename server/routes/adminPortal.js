@@ -1,105 +1,171 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 const Book = require('../models/Book');
 const User = require('../models/User');
+const Cafe = require('../models/Cafe');
 
-// Middleware to verify JWT (already implemented)
+// Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    console.log('Received token:', token); // Debug log
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded token:', decoded); // Debug log
         req.userId = decoded.id;
         next();
     } catch (err) {
-        res.status(401).json({ error: 'Invalid token' });
+        console.error('Token verification failed:', err.message); // Debug log
+        return res.status(401).json({ error: 'Invalid token' });
     }
 };
 
 // Middleware to check admin role
 const adminMiddleware = async (req, res, next) => {
     try {
+        console.log('User ID from token:', req.userId); // Debug log
         const user = await User.findById(req.userId);
-        if (!user || user.role !== 'admin') {
+        console.log('User found in adminMiddleware:', user); // Debug log
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        if (user.role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });
         }
         next();
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Admin middleware error:', err.message); // Debug log
+        return res.status(500).json({ error: 'Server error in admin middleware' });
     }
 };
 
 // GET /api/admin/inventory - Retrieve detailed book inventory
 router.get('/inventory', authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        // Fetch all books with keeper information
-        const books = await Book.find().populate('keeper_id', 'name -_id'); // Populate keeper name if user or cafe
-
-        // Format the response to include meaningful keeper details
+        const books = await Book.find();
+        console.log('Books fetched:', books); // Debug log
         const inventory = books.map(book => ({
-            book_id: book.book_id,
+            id: book.book_id,
+            is_free: book.is_free,
             name: book.name,
-            keeper_type: book.keeper_type,
-            keeper: book.keeper_type === 'user' 
-                ? (book.keeper_id ? book.keeper_id.name : 'Unknown User') 
-                : (book.keeper_id ? book.keeper_id : 'No Cafe Assigned'),
-            last_modified: book.last_modified,
+            author: book.author,
+            language: book.language,
+            publisher: book.publisher,
+            genre: book.genre,
+            description: book.description,
+            image_url: book.image_url,
+            audio_url: book.audio_url,
+            ratings: book.ratings,
+            available: book.available,
+            keeper_id: book.keeper_id || '',
+            createdAt: book.createdAt,
+            updatedAt: book.updatedAt,
         }));
 
-        res.status(200).json(inventory);
+        return res.status(200).json(inventory);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Error fetching inventory:', err.message); // Debug log
+        return res.status(500).json({ error: 'Failed to fetch book inventory' });
     }
 });
+
+// Function to generate book_id in the format <Initials>_<Number>
+const generateBookId = async (bookName) => {
+    // Step 1: Extract initials from the book name
+    const words = bookName.trim().split(/\s+/); // Split by whitespace
+    const initials = words
+        .map(word => word.charAt(0).toUpperCase()) // Take the first letter of each word and capitalize it
+        .join(''); // Join the letters (e.g., "Dodo The Duck" → "DTD")
+
+    // Step 2: Count existing books with the same initials (both old and new formats)
+    const regexNewFormat = new RegExp(`^${initials}_\\d+$`); // Match new format like "DTD_1"
+    const regexOldFormat = new RegExp(`^${initials}\\d+$`); // Match old format like "DTD1"
+    const countNewFormat = await Book.countDocuments({ book_id: regexNewFormat });
+    const countOldFormat = await Book.countDocuments({ book_id: regexOldFormat });
+
+    // Step 3: Generate the next number (total count + 1)
+    const totalCount = countNewFormat + countOldFormat;
+    const nextNumber = totalCount + 1; // No padding, just the number (e.g., 1, 2, 3, ...)
+
+    // Step 4: Generate the book_id with an underscore
+    const bookId = `${initials}_${nextNumber}`; // e.g., "DTD_1"
+
+    return bookId;
+};
 
 // POST /api/admin/books - Manually add a new book (admin-only)
-router.post('/books', authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-        const {
-            name,
-            author,
-            language,
-            publisher,
-            genre,
-            description,
-            image_url,
-            audio_url,
-            ratings,
-            is_free,
-        } = req.body;
-
-        // Generate unique book_id (e.g., first letters of name + number)
-        const getFirstLetters = (str) => str.split(' ').map(word => word[0]).join('').toUpperCase();
-        const baseId = getFirstLetters(name);
-        let book_id = baseId + '1';
-        let count = 1;
-
-        while (await Book.findOne({ book_id })) {
-            count++;
-            book_id = `${baseId}${count}`;
+router.post(
+    '/books',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('name')
+            .notEmpty()
+            .withMessage('name is required')
+            .trim()
+            .matches(/^[A-Za-z\s]+$/)
+            .withMessage('name must contain only letters and spaces'),
+        body('author').notEmpty().withMessage('author is required').trim(),
+        body('language').notEmpty().withMessage('language is required').trim(),
+        body('ratings').optional().isInt({ min: 0, max: 5 }).withMessage('ratings must be between 0 and 5'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array()); // Debug log
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        const book = new Book({
-            book_id,
-            name,
-            author,
-            language,
-            publisher,
-            genre,
-            description,
-            image_url,
-            audio_url,
-            ratings: ratings || 0,
-            is_free: is_free || false,
-            keeper_type: 'cafe', // Default to cafe ownership
-            keeper_id: null,
-        });
+        try {
+            const {
+                name,
+                author,
+                language,
+                publisher,
+                genre,
+                description,
+                image_url,
+                audio_url,
+                ratings,
+                is_free,
+                available,
+                keeper_id,
+            } = req.body;
 
-        await book.save();
-        res.status(201).json({ message: 'Book added successfully', book });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+            console.log('Received book data:', req.body); // Debug log
+
+            // Generate the book_id
+            const bookId = await generateBookId(name);
+            console.log('Generated book_id:', bookId); // Debug log
+
+            const book = new Book({
+                book_id: bookId, // Set the generated book_id
+                name,
+                author,
+                language,
+                publisher,
+                genre,
+                description,
+                image_url,
+                audio_url,
+                ratings: ratings || 0,
+                is_free: is_free || false,
+                available: available !== undefined ? available : true,
+                keeper_id: keeper_id || null,
+            });
+
+            await book.save();
+            console.log('Book saved:', book); // Debug log
+            return res.status(201).json({ message: 'Book added successfully', book });
+        } catch (err) {
+            console.error('Error adding book:', err.message); // Debug log
+            return res.status(500).json({ error: 'Failed to add book: ' + err.message });
+        }
     }
-});
+);
 
 module.exports = router;

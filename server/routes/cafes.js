@@ -3,7 +3,7 @@ const router = express.Router();
 const Cafe = require('../models/Cafe');
 const User = require('../models/User');
 
-// Middleware to verify JWT (already implemented)
+// Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -29,37 +29,31 @@ const adminMiddleware = async (req, res, next) => {
     }
 };
 
-// Middleware to check cafe owner role and ownership
-const cafeOwnerMiddleware = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        if (user.role !== 'cafe') {
-            return res.status(403).json({ error: 'Cafe owner access required' });
-        }
-        const { cafe_id } = req.params;
-        if (user.user_id !== cafe_id) {
-            return res.status(403).json({ error: 'You can only modify your own cafe' });
-        }
-        next();
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-// GET /api/cafes - Retrieve list of cafes with filtering
+// GET /api/cafes - Retrieve list of cafes with case-insensitive filtering
 router.get('/', async (req, res) => {
     try {
-        const { location, ratings } = req.query;
+        const { location, average_bill, ratings } = req.query;
         let query = {};
 
-        if (location) query.location = new RegExp(location, 'i'); // Case-insensitive search
-        if (ratings) query.ratings = { $gte: parseInt(ratings) };
+        if (location) query.location = { $regex: location, $options: 'i' };
+        if (average_bill) query.average_bill = Number(average_bill);
+        if (ratings) query.ratings = Number(ratings);
 
         const cafes = await Cafe.find(query);
         res.status(200).json(cafes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/cafes/filters - Retrieve unique values for filters
+router.get('/filters', async (req, res) => {
+    try {
+        const locations = await Cafe.distinct('location');
+        const average_bills = await Cafe.distinct('average_bill');
+        const ratings = await Cafe.distinct('ratings');
+
+        res.status(200).json({ locations, average_bills, ratings });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -82,25 +76,9 @@ router.get('/:cafe_id', async (req, res) => {
 // POST /api/cafes - Create a new cafe (admin-only)
 router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const {
-            name,
-            location,
-            average_bill,
-            discount,
-            ratings,
-            specials,
-        } = req.body;
-
-        // Generate unique cafe_id (e.g., CAFE001)
-        let cafe_id = 'CAFE001';
-        let count = 1;
-        while (await Cafe.findOne({ cafe_id })) {
-            count++;
-            cafe_id = `CAFE${count.toString().padStart(3, '0')}`;
-        }
+        const { name, location, average_bill, discount, ratings, specials } = req.body;
 
         const cafe = new Cafe({
-            cafe_id,
             name,
             location,
             average_bill: average_bill || 0,
@@ -116,21 +94,11 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
     }
 });
 
-// PUT /api/cafes/:cafe_id - Update a cafe (admin or cafe owner)
-router.put('/:cafe_id', authMiddleware, async (req, res) => {
+// PUT /api/cafes/:cafe_id - Update a cafe (admin-only)
+router.put('/:cafe_id', authMiddleware, adminMiddleware, async (req, res) => {
     try {
         const { cafe_id } = req.params;
         const updates = req.body;
-
-        const user = await User.findById(req.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Allow update if user is admin or cafe owner of this cafe
-        if (user.role !== 'admin' && (user.role !== 'cafe' || user.user_id !== cafe_id)) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
 
         const cafe = await Cafe.findOne({ cafe_id });
         if (!cafe) {
@@ -138,6 +106,7 @@ router.put('/:cafe_id', authMiddleware, async (req, res) => {
         }
 
         Object.assign(cafe, updates);
+        cafe.updatedAt = Date.now();
         await cafe.save();
 
         res.status(200).json({ message: 'Cafe updated successfully', cafe });
@@ -155,7 +124,7 @@ router.delete('/:cafe_id', authMiddleware, adminMiddleware, async (req, res) => 
             return res.status(404).json({ error: 'Cafe not found' });
         }
 
-        await cafe.remove();
+        await cafe.deleteOne();
         res.status(200).json({ message: 'Cafe deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -15,29 +15,36 @@ const adminPortalRoutes = require('./routes/adminPortal');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Configure CORS to allow requests from the frontend
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 
-// Log all incoming requests
+// Log all incoming requests with body
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url} - IP: ${req.ip}`);
-  next();
+    logger.info(`${req.method} ${req.url} - IP: ${req.ip} - Body: ${JSON.stringify(req.body)}`);
+    next();
 });
 
 // Rate limiting for sensitive routes (e.g., auth endpoints)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: 'Too many requests from this IP, please try again after 15 minutes',
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+    message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/api/auth', authLimiter, authRoutes);// Apply rate limiting to auth routes
+app.use('/api/auth', authLimiter, authRoutes); // Apply rate limiting to auth routes
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/books', bookRoutes);
@@ -48,8 +55,8 @@ app.use('/api/admin', adminPortalRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
-  logger.error(`Error: ${err.message} - Stack: ${err.stack}`);
-  res.status(500).json({ error: 'Something went wrong, please try again later' });
+    logger.error(`Error: ${err.message} - Stack: ${err.stack}`);
+    res.status(500).json({ error: 'Something went wrong, please try again later' });
 });
 
 const PORT = process.env.PORT || 5000;
