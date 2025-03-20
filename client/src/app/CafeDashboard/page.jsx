@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import QRScanner from "../scanner/page"; // Adjust path as needed
 
 function CafeDashboard() {
   // Dummy cafe details
@@ -19,7 +20,7 @@ function CafeDashboard() {
   const initialTransactions = [
     {
       transaction_id: 1001,
-      book_id: "book_001",
+      book_id: "ABCD_1",
       user_id: "user_001",
       cafe_id: "cafe_001",
       status: "pickup_pending",
@@ -27,7 +28,7 @@ function CafeDashboard() {
     },
     {
       transaction_id: 1004,
-      book_id: "book_004",
+      book_id: "XYZ_4",
       user_id: "user_004",
       cafe_id: "cafe_001",
       status: "dropoff_pending",
@@ -36,16 +37,16 @@ function CafeDashboard() {
   ];
 
   const [cafeDetails, setCafeDetails] = useState(initialCafe);
-  const [transactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState(initialTransactions);
 
-  // State for editing cafe details (only name and discount)
+  // For editing cafe details (only name and discount)
   const [editForm, setEditForm] = useState({
     name: cafeDetails.name,
     discount: cafeDetails.discount,
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Filter transactions: only those for this cafe and with a pending status.
+  // Show only pending transactions for this cafe
   const pendingStatuses = ["pickup_pending", "dropoff_pending"];
   const filteredTransactions = transactions.filter(
     (tx) =>
@@ -99,23 +100,133 @@ function CafeDashboard() {
     tableRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
+  // ---------------------------------------------------------------------------
+  // Scanner Modal Handling
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState(null);
+  // We'll also display the raw scanned codes for debugging:
+  const [scannedCodes, setScannedCodes] = useState({ first: "", second: "" });
+
+  // Helper: extract alphabetic portion of book id, e.g. "ABCD_1" -> "ABCD"
+  const extractAlpha = (str) => {
+    if (!str) return "";
+    const parts = str.split("_");
+    return parts[0] || "";
+  };
+
+  // Handle scanned codes from the QRScanner component.
+  // Expected:
+  //   First QR code: "transactionId.user_id" (e.g., "1001.user_001")
+  //   Second QR code: Book_id (e.g., "ABCD_3")
+  const handleScanned = ({ firstCode, secondCode }) => {
+    // Save scanned codes for display
+    setScannedCodes({ first: firstCode, second: secondCode });
+
+    // 1) Parse the first code
+    const parts = firstCode.split(".");
+    if (parts.length !== 2) {
+      setScannerMessage("Invalid format for first QR code.");
+      return;
+    }
+    const scannedTransactionId = Number(parts[0]);
+    const scannedUserId = parts[1];
+
+    // 2) Find the pending transaction with that ID
+    const pendingTxIndex = transactions.findIndex(
+      (tx) =>
+        tx.transaction_id === scannedTransactionId &&
+        pendingStatuses.includes(tx.status)
+    );
+    if (pendingTxIndex === -1) {
+      setScannerMessage("Transaction not found or not pending.");
+      return;
+    }
+
+    const pendingTx = transactions[pendingTxIndex];
+
+    // 3) For pickup_pending: allow if the alphabetic portion matches.
+    if (pendingTx.status === "pickup_pending") {
+      const storedAlpha = extractAlpha(pendingTx.book_id);
+      const scannedAlpha = extractAlpha(secondCode);
+
+      if (storedAlpha !== scannedAlpha) {
+        setScannerMessage("Scanned book code does not match expected value.");
+        return;
+      }
+
+      // Approve pickup:
+      const updatedTx = {
+        ...pendingTx,
+        book_id: secondCode, // update with the scanned Book_id
+        status: "picked_up",
+      };
+
+      const newTransactions = [...transactions];
+      newTransactions[pendingTxIndex] = updatedTx;
+      setTransactions(newTransactions);
+
+      // Here, you would also update the Book record: update keeper_id = scannedUserId and available = false.
+
+      setScannerMessage("Pickup transaction approved!");
+    }
+    // 4) For dropoff_pending: exact match required.
+    else if (pendingTx.status === "dropoff_pending") {
+      if (
+        firstCode !== `${pendingTx.transaction_id}.${pendingTx.user_id}` ||
+        secondCode !== pendingTx.book_id
+      ) {
+        setScannerMessage("Scanned codes do not match for dropoff.");
+        return;
+      }
+
+      const updatedTx = {
+        ...pendingTx,
+        status: "dropped_off",
+      };
+
+      const newTransactions = [...transactions];
+      newTransactions[pendingTxIndex] = updatedTx;
+      setTransactions(newTransactions);
+
+      // Also update Book record accordingly in a real app.
+      setScannerMessage("Dropoff transaction approved!");
+    } else {
+      setScannerMessage("Transaction is not pending approval.");
+    }
+
+    // 5) Close the modal after a short delay
+    setTimeout(() => {
+      setShowScannerModal(false);
+      setScannerMessage(null);
+      setScannedCodes({ first: "", second: "" });
+    }, 1500);
+  };
+
+  // ---------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Cafe Dashboard</h1>
-        
+
         {/* Cafe Details Card */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-2xl font-bold mb-4">Cafe Details</h2>
           <div className="space-y-2">
-            <p><span className="font-semibold">Cafe ID:</span> {cafeDetails.cafe_id}</p>
-            <p><span className="font-semibold">Location:</span> {cafeDetails.location}</p>
             <p>
-              <span className="font-semibold">Average Bill:</span>{" "}
-              <span>₹{cafeDetails.average_bill}</span>
+              <span className="font-semibold">Cafe ID:</span> {cafeDetails.cafe_id}
             </p>
-            <p><span className="font-semibold">Ratings:</span> {cafeDetails.ratings}</p>
-            <p><span className="font-semibold">Specials:</span> {cafeDetails.specials}</p>
+            <p>
+              <span className="font-semibold">Location:</span> {cafeDetails.location}
+            </p>
+            <p>
+              <span className="font-semibold">Average Bill:</span> ₹{cafeDetails.average_bill}
+            </p>
+            <p>
+              <span className="font-semibold">Ratings:</span> {cafeDetails.ratings}
+            </p>
+            <p>
+              <span className="font-semibold">Specials:</span> {cafeDetails.specials}
+            </p>
           </div>
           <div className="mt-6 border-t pt-4">
             <div className="mb-4">
@@ -172,9 +283,17 @@ function CafeDashboard() {
           </div>
         </div>
 
-        {/* Transactions Section */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-4">Pending Transactions</h2>
+        {/* Pending Transactions Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">Pending Transactions</h2>
+            <button
+              onClick={() => setShowScannerModal(true)}
+              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Approve Transaction
+            </button>
+          </div>
           <div
             className="overflow-x-auto cursor-grab"
             ref={tableRef}
@@ -217,6 +336,45 @@ function CafeDashboard() {
           </div>
         </div>
       </div>
+
+      {/* QR Scanner Modal */}
+      {showScannerModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowScannerModal(false);
+          }}
+        >
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-hidden">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Scan Transaction QR Codes
+            </h2>
+            <div className="overflow-auto" style={{ maxHeight: "60vh" }}>
+              <QRScanner onScanned={handleScanned} />
+            </div>
+            {/* Display scanned codes for debugging */}
+            <div className="mt-4">
+              <p className="text-sm text-gray-700">
+                <strong>First QR Code:</strong> {scannedCodes.first}
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>Second QR Code:</strong> {scannedCodes.second}
+              </p>
+            </div>
+            {scannerMessage && (
+              <div className="mt-4 bg-green-50 text-green-700 p-2 rounded-lg text-center">
+                {scannerMessage}
+              </div>
+            )}
+            <button
+              onClick={() => setShowScannerModal(false)}
+              className="mt-4 px-4 py-2 block mx-auto rounded-full border text-gray-600 hover:bg-gray-100"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .dragging {

@@ -2,7 +2,7 @@
 import jsQR from "jsqr";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-function QRScanner() {
+function QRScanner({ onScanned }) {
   const [firstCode, setFirstCode] = useState(null);
   const [secondCode, setSecondCode] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
@@ -11,6 +11,9 @@ function QRScanner() {
   const [hasPermission, setHasPermission] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // Use a ref to reliably hold the first scanned value.
+  const firstCodeRef = useRef(null);
 
   useEffect(() => {
     requestCameraPermission();
@@ -80,23 +83,31 @@ function QRScanner() {
     (data) => {
       if (!data) return;
 
-      if (!firstCode) {
+      // If we haven't yet scanned the first code:
+      if (!firstCodeRef.current) {
         console.log("First QR Code:", data);
-        setFirstCode(data); //data of the first qr code
+        firstCodeRef.current = data;
+        setFirstCode(data);
         setWaitingForSecond(true);
         stopScanning();
 
+        // Wait before allowing the second scan
         setTimeout(() => {
           setWaitingForSecond(false);
           startScanning();
-        }, 2000); // Wait before allowing second scan
-      } else if (!secondCode && data !== firstCode) {
+        }, 2000);
+      } else if (!secondCode && data !== firstCodeRef.current) {
         console.log("Second QR Code:", data);
-        setSecondCode(data); //data of the second qr code
+        setSecondCode(data);
         stopScanning();
+        // Now we have both scanned values. Call the parent callback.
+        onScanned({
+          firstCode: firstCodeRef.current,
+          secondCode: data,
+        });
       }
     },
-    [firstCode, secondCode]
+    [secondCode, onScanned]
   );
 
   const stopCamera = () => {
@@ -109,6 +120,7 @@ function QRScanner() {
 
   const resetScanner = () => {
     setFirstCode(null);
+    firstCodeRef.current = null;
     setSecondCode(null);
     setWaitingForSecond(false);
     setError(null);
@@ -186,13 +198,7 @@ function QRScanner() {
           )}
 
           {firstCode && !secondCode && !waitingForSecond && (
-            <p className="text-gray-600">Ready to scan the second QR</p>
-          )}
-
-          {firstCode && secondCode && (
-            <div className="bg-green-50 text-green-700 p-4 rounded-lg">
-              Both QR codes scanned successfully!
-            </div>
+            <p className="text-gray-600">Ready to scan the second QR code</p>
           )}
 
           {error && (
