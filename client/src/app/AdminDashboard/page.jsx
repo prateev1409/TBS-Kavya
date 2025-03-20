@@ -19,6 +19,7 @@ function AdminDashboard() {
     const [formValues, setFormValues] = useState({});
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [modalError, setModalError] = useState(null); // New state for modal errors
 
     const modalScrollRef = useRef(null);
     const modalIsDown = useRef(false);
@@ -177,12 +178,13 @@ function AdminDashboard() {
             ];
         } else if (activeTab === "users") {
             return [
-                { name: "name", label: "User Name", type: "text" },
-                { name: "email", label: "Email", type: "email" },
-                { name: "phone_number", label: "Phone Number", type: "text" },
-                { name: "password", label: "Password", type: "password" },
-                { name: "subscription_type", label: "Subscription Type", type: "text" },
-                { name: "role", label: "Role", type: "text" },
+                { name: "user_id", label: "User ID", type: "text", readOnly: true },
+                { name: "name", label: "User Name *", type: "text" },
+                { name: "email", label: "Email *", type: "email" },
+                { name: "phone_number", label: "Phone Number *", type: "text" },
+                { name: "password", label: `Password${isEditing ? '' : ' *'}`, type: "password" },
+                { name: "subscription_type", label: "Subscription Type", type: "select", options: ['basic', 'standard', 'premium'] },
+                { name: "role", label: "Role", type: "select", options: ['user', 'admin'] },
             ];
         }
         return [];
@@ -219,12 +221,20 @@ function AdminDashboard() {
                 discount: 0,
                 ratings: 0,
             });
-        } else {
-            setFormValues({});
+        } else if (activeTab === "users") {
+            setFormValues({
+                name: '',
+                email: '',
+                phone_number: '',
+                password: '',
+                subscription_type: 'basic',
+                role: 'user',
+            });
         }
         setIsEditing(false);
         setEditItemId(null);
         setShowModal(true);
+        setModalError(null); // Clear any previous modal errors
     };
 
     const openEditModal = (item) => {
@@ -232,6 +242,7 @@ function AdminDashboard() {
         setIsEditing(true);
         setEditItemId(activeTab === "books" ? item.id : activeTab === "cafes" ? item.cafe_id : item.user_id);
         setShowModal(true);
+        setModalError(null); // Clear any previous modal errors
     };
 
     const closeModal = () => {
@@ -239,6 +250,7 @@ function AdminDashboard() {
         setIsEditing(false);
         setEditItemId(null);
         setFormValues({});
+        setModalError(null); // Clear modal error on close
     };
 
     const handleInputChange = (e) => {
@@ -295,12 +307,19 @@ function AdminDashboard() {
                     ratings: Number(formValues.ratings) || 0,
                     specials: formValues.specials || undefined,
                 };
-            } else {
+            } else if (activeTab === "users") {
                 url = isEditing
-                    ? `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}/${editItemId}`
-                    : `${process.env.NEXT_PUBLIC_API_URL}/${activeTab}`;
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/users/${editItemId}`
+                    : `${process.env.NEXT_PUBLIC_API_URL}/users`;
                 method = isEditing ? 'PUT' : 'POST';
-                requestData = formValues;
+                requestData = {
+                    name: formValues.name,
+                    email: formValues.email,
+                    phone_number: formValues.phone_number,
+                    password: formValues.password || undefined, // Only include password if provided
+                    subscription_type: formValues.subscription_type || 'basic',
+                    role: formValues.role || 'user',
+                };
             }
 
             console.log('Sending request to:', url);
@@ -330,7 +349,7 @@ function AdminDashboard() {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`, // Ensure the Bearer prefix is correct
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify(requestData),
                 });
@@ -380,11 +399,12 @@ function AdminDashboard() {
                 }
             }
             closeModal();
+            setModalError(null); // Clear any previous modal errors on success
         } catch (err) {
             console.error('Error in handleFormSubmit:', err);
-            setError(err.message);
-            // Only redirect to login if the error is specifically about token refresh failure
+            setModalError(err.message); // Display error in the modal
             if (err.message === 'Failed to refresh token') {
+                setError(err.message); // Use setError for critical errors that require redirect
                 localStorage.removeItem('token');
                 window.location.href = '/auth/signin';
             }
@@ -456,6 +476,9 @@ function AdminDashboard() {
                 >
                     <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-hidden">
                         <h2 className="text-2xl font-bold mb-4">{getModalTitle()}</h2>
+                        {modalError && (
+                            <div className="text-red-600 mb-4">{modalError}</div>
+                        )}
                         <div
                             className="overflow-auto cursor-grab"
                             ref={modalScrollRef}
@@ -482,34 +505,55 @@ function AdminDashboard() {
                                                     {field.label}
                                                 </label>
                                             </div>
+                                        ) : field.type === "select" ? (
+                                            <>
+                                                <label className="block mb-1 font-medium" htmlFor={field.name}>
+                                                    {field.label}
+                                                </label>
+                                                <select
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    value={formValues[field.name] || ""}
+                                                    onChange={handleInputChange}
+                                                    className="w-full border px-3 py-2 rounded-lg"
+                                                    required={field.label.includes('*')}
+                                                >
+                                                    {field.options.map((option, idx) => (
+                                                        <option key={idx} value={option}>{option}</option>
+                                                    ))}
+                                                </select>
+                                            </>
+                                        ) : field.type === "textarea" ? (
+                                            <>
+                                                <label className="block mb-1 font-medium" htmlFor={field.name}>
+                                                    {field.label}
+                                                </label>
+                                                <textarea
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    value={formValues[field.name] || ""}
+                                                    onChange={handleInputChange}
+                                                    className="w-full border px-3 py-2 rounded-lg"
+                                                    required={field.label.includes('*')}
+                                                />
+                                            </>
                                         ) : (
                                             <>
                                                 <label className="block mb-1 font-medium" htmlFor={field.name}>
                                                     {field.label}
                                                 </label>
-                                                {field.type === "textarea" ? (
-                                                    <textarea
-                                                        id={field.name}
-                                                        name={field.name}
-                                                        value={formValues[field.name] || ""}
-                                                        onChange={handleInputChange}
-                                                        className="w-full border px-3 py-2 rounded-lg"
-                                                        required={field.label.includes('*')}
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        id={field.name}
-                                                        name={field.name}
-                                                        type={field.type}
-                                                        value={formValues[field.name] || ""}
-                                                        onChange={field.readOnly ? undefined : handleInputChange}
-                                                        className={`w-full border px-3 py-2 rounded-lg ${field.readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                                        required={field.label.includes('*')}
-                                                        min={field.min}
-                                                        max={field.max}
-                                                        readOnly={field.readOnly}
-                                                    />
-                                                )}
+                                                <input
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    type={field.type}
+                                                    value={formValues[field.name] || ""}
+                                                    onChange={field.readOnly ? undefined : handleInputChange}
+                                                    className={`w-full border px-3 py-2 rounded-lg ${field.readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                    required={field.label.includes('*')}
+                                                    min={field.min}
+                                                    max={field.max}
+                                                    readOnly={field.readOnly}
+                                                />
                                             </>
                                         )}
                                     </div>

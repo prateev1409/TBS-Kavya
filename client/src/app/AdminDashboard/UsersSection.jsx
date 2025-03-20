@@ -60,12 +60,20 @@ function UsersSection({ data, setData, onEdit }) {
 
     const filteredData = data.filter((user) => {
         const searchLower = searchQuery.toLowerCase();
+        // Add defensive checks for undefined properties
+        const userName = user.name || "";
+        const userId = user.user_id || "";
+        const userSubscriptionType = user.subscription_type || "";
+        const userRole = user.role || "";
+        const filterSubscriptionType = filter.subscription_type || "";
+        const filterRole = filter.role || "";
+
         return (
-            (user.name.toLowerCase().includes(searchLower) ||
-                user.user_id.toLowerCase().includes(searchLower)) &&
-            (filter.subscription_type === "" ||
-                user.subscription_type.toLowerCase() === filter.subscription_type.toLowerCase()) &&
-            (filter.role === "" || user.role.toLowerCase() === filter.role.toLowerCase())
+            (userName.toLowerCase().includes(searchLower) ||
+            userId.toLowerCase().includes(searchLower)) &&
+            (filterSubscriptionType === "" ||
+                userSubscriptionType.toLowerCase() === filterSubscriptionType.toLowerCase()) &&
+            (filterRole === "" || userRole.toLowerCase() === filterRole.toLowerCase())
         );
     });
 

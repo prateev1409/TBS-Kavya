@@ -15,29 +15,37 @@ const userSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now },
 });
 
-// Pre-save hook to auto-generate user_id
+// Single pre-save hook to handle user_id generation, password hashing, and updatedAt
 userSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        let count = 1;
-        let user_id = `User_${String(count).padStart(3, '0')}`; // e.g., User_001
-
-        // Check for existing user_id and increment until unique
-        while (await mongoose.models.User.findOne({ user_id })) {
-            count++;
-            user_id = `User_${String(count).padStart(3, '0')}`;
+    try {
+        // Auto-generate user_id for new documents
+        if (this.isNew) {
+            console.log('Generating user_id for new user...');
+            const count = await mongoose.models.User.countDocuments();
+            console.log('User count:', count);
+            const userIdNumber = count + 1;
+            this.user_id = `User_${String(userIdNumber).padStart(3, '0')}`; // e.g., User_001
+            console.log('Generated user_id:', this.user_id);
         }
 
-        this.user_id = user_id;
-    }
-    next();
-});
+        // Hash password if modified
+        if (this.isModified('password')) {
+            console.log('Hashing password...');
+            this.password = await bcrypt.hash(this.password, 10);
+            console.log('Password hashed successfully');
+        }
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
+        // Update updatedAt for existing documents
+        if (!this.isNew) {
+            console.log('Updating updatedAt...');
+            this.updatedAt = Date.now();
+        }
+
+        next();
+    } catch (err) {
+        console.error('Error in pre-save hook:', err.message);
+        next(err);
     }
-    next();
 });
 
 module.exports = mongoose.model('User', userSchema);

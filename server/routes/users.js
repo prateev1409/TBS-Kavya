@@ -1,17 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken'); // Add this import
+const jwt = require('jsonwebtoken');
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    const authHeader = req.headers.authorization;
+    console.log('Authorization header:', authHeader);
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('No token provided or invalid format');
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    console.log('Token extracted:', token);
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token decoded:', decoded);
         req.userId = decoded.id;
         next();
     } catch (err) {
+        console.error('Token verification failed:', err.message);
         res.status(401).json({ error: 'Invalid token' });
     }
 };
@@ -20,11 +32,13 @@ const authMiddleware = (req, res, next) => {
 const adminMiddleware = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
+        console.log('User found in adminMiddleware:', user);
         if (!user || user.role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });
         }
         next();
     } catch (err) {
+        console.error('Admin middleware error:', err.message);
         res.status(500).json({ error: err.message });
     }
 };
@@ -45,9 +59,10 @@ router.get('/profile', authMiddleware, async (req, res) => {
             subscription_validity: user.subscription_validity,
             role: user.role,
             createdAt: user.createdAt,
-            updatedAt: user.updatedAt
+            updatedAt: user.updatedAt,
         });
     } catch (err) {
+        console.error('Error fetching user profile:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -62,8 +77,10 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
         if (role) query.role = { $regex: role, $options: 'i' };
 
         const users = await User.find(query);
+        console.log('Users fetched:', users);
         res.status(200).json(users);
     } catch (err) {
+        console.error('Error fetching users:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -74,8 +91,10 @@ router.get('/filters', authMiddleware, adminMiddleware, async (req, res) => {
         const subscription_types = await User.distinct('subscription_type');
         const roles = await User.distinct('role');
 
+        console.log('Filter options fetched:', { subscription_types, roles });
         res.status(200).json({ subscription_types, roles });
     } catch (err) {
+        console.error('Error fetching user filters:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -88,54 +107,168 @@ router.get('/:user_id', authMiddleware, adminMiddleware, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
+        console.log('User fetched:', user);
         res.status(200).json(user);
     } catch (err) {
+        console.error('Error fetching user:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
 // POST /api/users - Create a new user (admin-only)
-router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-        const { name, email, phone_number, password, subscription_type, role } = req.body;
-
-        const user = new User({
-            name,
-            email,
-            phone_number,
-            password,
-            subscription_type: subscription_type || 'basic',
-            role: role || 'user',
-            subscription_validity: new Date(),
-        });
-
-        await user.save();
-        res.status(201).json({ message: 'User created successfully', user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// PUT /api/users/:user_id - Update a user (admin-only)
-router.put('/:user_id', authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-        const { user_id } = req.params;
-        const updates = req.body;
-
-        const user = await User.findOne({ user_id });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+router.post(
+    '/',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('name')
+            .notEmpty()
+            .withMessage('Name is required')
+            .trim(),
+        body('email')
+            .isEmail()
+            .withMessage('Valid email is required')
+            .trim(),
+        body('phone_number')
+            .notEmpty()
+            .withMessage('Phone number is required')
+            .trim(),
+        body('password')
+            .notEmpty()
+            .withMessage('Password is required'),
+        body('subscription_type')
+            .optional()
+            .isIn(['basic', 'standard', 'premium'])
+            .withMessage('Subscription type must be basic, standard, or premium'),
+        body('role')
+            .optional()
+            .isIn(['user', 'admin'])
+            .withMessage('Role must be user or admin'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        Object.assign(user, updates);
-        user.updatedAt = Date.now();
-        await user.save();
+        try {
+            const { name, email, phone_number, password, subscription_type, role } = req.body;
 
-        res.status(200).json({ message: 'User updated successfully', user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+            const user = new User({
+                name,
+                email,
+                phone_number,
+                password,
+                subscription_type: subscription_type || 'basic',
+                role: role || 'user',
+                subscription_validity: new Date(),
+            });
+
+            // Fallback: Generate user_id if not set by the model
+            if (!user.user_id) {
+                console.log('user_id not set by model, generating manually...');
+                const count = await User.countDocuments();
+                user.user_id = `User_${String(count + 1).padStart(3, '0')}`;
+                console.log('Manually generated user_id:', user.user_id);
+            }
+
+            let savedUser;
+            let attempts = 0;
+            const maxAttempts = 3;
+
+            // Retry saving the user in case of duplicate user_id
+            while (attempts < maxAttempts) {
+                try {
+                    savedUser = await user.save();
+                    break; // Success, exit the loop
+                } catch (err) {
+                    if (err.code === 11000 && err.keyPattern && err.keyPattern.user_id) {
+                        // Duplicate key error for user_id, retry with a new user_id
+                        attempts++;
+                        console.log(`Duplicate user_id detected, retrying (${attempts}/${maxAttempts})...`);
+                        const count = await User.countDocuments();
+                        user.user_id = `User_${String(count + 1).padStart(3, '0')}`;
+                        continue;
+                    }
+                    throw err; // Other errors, throw immediately
+                }
+            }
+
+            if (!savedUser) {
+                throw new Error('Failed to save user after multiple attempts due to duplicate user_id');
+            }
+
+            console.log('User created:', savedUser);
+            res.status(201).json({ message: 'User created successfully', user: savedUser });
+        } catch (err) {
+            console.error('Error creating user:', err.message);
+            res.status(500).json({ error: err.message });
+        }
     }
-});
+);
+
+// PUT /api/users/:user_id - Update a user (admin-only)
+router.put(
+    '/:user_id',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('name')
+            .optional()
+            .notEmpty()
+            .withMessage('Name cannot be empty')
+            .trim(),
+        body('email')
+            .optional()
+            .isEmail()
+            .withMessage('Valid email is required')
+            .trim(),
+        body('phone_number')
+            .optional()
+            .notEmpty()
+            .withMessage('Phone number cannot be empty')
+            .trim(),
+        body('password')
+            .optional()
+            .notEmpty()
+            .withMessage('Password cannot be empty'),
+        body('subscription_type')
+            .optional()
+            .isIn(['basic', 'standard', 'premium'])
+            .withMessage('Subscription type must be basic, standard, or premium'),
+        body('role')
+            .optional()
+            .isIn(['user', 'admin'])
+            .withMessage('Role must be user or admin'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const { user_id } = req.params;
+            const updates = req.body;
+
+            const user = await User.findOne({ user_id });
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            Object.assign(user, updates);
+            await user.save(); // updatedAt will be set by the pre-save hook
+
+            console.log('User updated:', user);
+            res.status(200).json({ message: 'User updated successfully', user });
+        } catch (err) {
+            console.error('Error updating user:', err.message);
+            res.status(500).json({ error: err.message });
+        }
+    }
+);
 
 // DELETE /api/users/:user_id - Delete a user (admin-only)
 router.delete('/:user_id', authMiddleware, adminMiddleware, async (req, res) => {
@@ -147,8 +280,10 @@ router.delete('/:user_id', authMiddleware, adminMiddleware, async (req, res) => 
         }
 
         await user.deleteOne();
+        console.log('User deleted:', user);
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
+        console.error('Error deleting user:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -168,11 +303,12 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
 
         user.subscription_type = tier;
         user.subscription_validity = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year validity
-        user.updatedAt = Date.now();
-        await user.save();
+        await user.save(); // updatedAt will be set by the pre-save hook
 
+        console.log('User subscription updated:', user);
         res.status(200).json({ message: 'Subscription updated successfully', user });
     } catch (err) {
+        console.error('Error updating subscription:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
