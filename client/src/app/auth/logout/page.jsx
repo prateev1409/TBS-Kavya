@@ -1,12 +1,12 @@
 "use client";
 import ThemeToggle from "../../../components/ThemeToggle"; // Import ThemeToggle
-import { useAuth } from "../../hooks/useAuth"; // Assuming useAuth is a custom hook
+import { useAuth } from "../../Hooks/useAuth"; // Assuming useAuth is a custom hook
 
 function MainComponent() {
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut({
+    await logout({
       callbackUrl: "/",
       redirect: true,
     });

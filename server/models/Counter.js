@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const counterSchema = new mongoose.Schema({
-    _id: { type: String, required: true },
+    _id: { type: String, required: true }, // e.g., "transaction_id"
     sequence_value: { type: Number, default: 0 },
 });
 

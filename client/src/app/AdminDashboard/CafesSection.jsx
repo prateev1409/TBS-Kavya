@@ -210,6 +210,7 @@ function CafesSection({ data, setData, onEdit }) {
                             <th className="px-4 py-3 text-left">Discount</th>
                             <th className="px-4 py-3 text-left">Ratings</th>
                             <th className="px-4 py-3 text-left">Specials</th>
+                            <th className="px-4 py-3 text-left">Cafe Owner ID</th>
                             <th className="px-4 py-3 text-left">Created At</th>
                             <th className="px-4 py-3 text-left">Updated At</th>
                             <th className="px-4 py-3 text-left">Actions</th>
@@ -225,6 +226,7 @@ function CafesSection({ data, setData, onEdit }) {
                                 <td className="px-4 py-3">{cafe.discount}%</td>
                                 <td className="px-4 py-3">{cafe.ratings}</td>
                                 <td className="px-4 py-3">{cafe.specials || 'N/A'}</td>
+                                <td className="px-4 py-3">{cafe.cafe_owner_id || 'N/A'}</td>
                                 <td className="px-4 py-3">
                                     {new Date(cafe.createdAt).toLocaleDateString()}
                                 </td>

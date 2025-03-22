@@ -142,8 +142,8 @@ router.post(
             .withMessage('Subscription type must be basic, standard, or premium'),
         body('role')
             .optional()
-            .isIn(['user', 'admin'])
-            .withMessage('Role must be user or admin'),
+            .isIn(['user', 'admin', 'cafe'])
+            .withMessage('Role must be user or admin or cafe'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -239,8 +239,8 @@ router.put(
             .withMessage('Subscription type must be basic, standard, or premium'),
         body('role')
             .optional()
-            .isIn(['user', 'admin'])
-            .withMessage('Role must be user or admin'),
+            .isIn(['user', 'admin', 'cafe'])
+            .withMessage('Role must be user or admin or cafe'),
     ],
     async (req, res) => {
         const errors = validationResult(req);

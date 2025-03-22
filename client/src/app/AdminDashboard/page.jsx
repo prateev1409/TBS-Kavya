@@ -175,6 +175,7 @@ function AdminDashboard() {
                 { name: "discount", label: "Discount", type: "number", min: 0 },
                 { name: "ratings", label: "Ratings (0-5)", type: "number", min: 0, max: 5 },
                 { name: "specials", label: "Specials", type: "text" },
+                { name: "cafe_owner_id", label: "Cafe Owner ID", type: "text" },
             ];
         } else if (activeTab === "users") {
             return [
@@ -184,7 +185,7 @@ function AdminDashboard() {
                 { name: "phone_number", label: "Phone Number *", type: "text" },
                 { name: "password", label: `Password${isEditing ? '' : ' *'}`, type: "password" },
                 { name: "subscription_type", label: "Subscription Type", type: "select", options: ['basic', 'standard', 'premium'] },
-                { name: "role", label: "Role", type: "select", options: ['user', 'admin'] },
+                { name: "role", label: "Role", type: "select", options: ['user', 'admin', 'cafe'] },
             ];
         }
         return [];
@@ -220,6 +221,7 @@ function AdminDashboard() {
                 average_bill: 0,
                 discount: 0,
                 ratings: 0,
+                cafe_owner_id: '',
             });
         } else if (activeTab === "users") {
             setFormValues({
@@ -306,6 +308,7 @@ function AdminDashboard() {
                     discount: Number(formValues.discount) || 0,
                     ratings: Number(formValues.ratings) || 0,
                     specials: formValues.specials || undefined,
+                    cafe_owner_id: formValues.cafe_owner_id || undefined,
                 };
             } else if (activeTab === "users") {
                 url = isEditing

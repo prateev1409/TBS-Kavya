@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const Cafe = require('../models/Cafe');
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
@@ -12,20 +13,27 @@ const authMiddleware = (req, res, next) => {
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         console.log('No token provided or invalid format');
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
 
     const token = authHeader.split(' ')[1];
     console.log('Token extracted:', token);
 
+    if (!process.env.JWT_SECRET) {
+        console.error('JWT_SECRET is not defined in environment variables');
+        return res.status(500).json({ error: 'Internal server error: JWT_SECRET not configured' });
+    }
+    console.log('JWT_SECRET used for verification:', process.env.JWT_SECRET);
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Token decoded:', decoded);
         req.userId = decoded.id;
+        req.userRole = decoded.role;
         next();
     } catch (err) {
         console.error('Token verification failed:', err.message);
-        res.status(401).json({ error: 'Invalid token' });
+        res.status(401).json({ error: `Invalid token: ${err.message}` });
     }
 };
 
@@ -39,6 +47,23 @@ const adminMiddleware = async (req, res, next) => {
         console.log('User found in adminMiddleware:', user);
         next();
     } catch (err) {
+        console.error('Error in adminMiddleware:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Middleware to check cafe owner role
+const cafeOwnerMiddleware = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user || user.role !== 'cafe') {
+            return res.status(403).json({ error: 'Cafe owner access required' });
+        }
+        req.user = user;
+        console.log('User found in cafeOwnerMiddleware:', user);
+        next();
+    } catch (err) {
+        console.error('Error in cafeOwnerMiddleware:', err.message);
         res.status(500).json({ error: err.message });
     }
 };
@@ -46,16 +71,20 @@ const adminMiddleware = async (req, res, next) => {
 // GET /api/cafes - Retrieve list of cafes with case-insensitive filtering
 router.get('/', async (req, res) => {
     try {
-        const { location, average_bill, ratings } = req.query;
+        const { location, average_bill, ratings, cafe_owner_id } = req.query;
+        console.log('GET /api/cafes - Query:', req.query);
         let query = {};
 
         if (location) query.location = { $regex: location, $options: 'i' };
         if (average_bill) query.average_bill = Number(average_bill);
         if (ratings) query.ratings = Number(ratings);
+        if (cafe_owner_id) query.cafe_owner_id = cafe_owner_id;
 
         const cafes = await Cafe.find(query);
+        console.log('Cafes fetched:', cafes);
         res.status(200).json(cafes);
     } catch (err) {
+        console.error('Error fetching cafes:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -69,6 +98,7 @@ router.get('/filters', async (req, res) => {
 
         res.status(200).json({ locations, average_bills, ratings });
     } catch (err) {
+        console.error('Error fetching cafe filters:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -83,6 +113,74 @@ router.get('/:cafe_id', async (req, res) => {
         }
         res.status(200).json(cafe);
     } catch (err) {
+        console.error('Error fetching cafe:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/cafes/:cafe_id/transactions - Retrieve transactions for a specific cafe (cafe owner only)
+router.get('/:cafe_id/transactions', authMiddleware, cafeOwnerMiddleware, async (req, res) => {
+    try {
+        const { cafe_id } = req.params;
+
+        // Find the cafe by cafe_id (string) and get its ObjectId
+        const cafe = await Cafe.findOne({ cafe_id });
+        if (!cafe) {
+            console.log(`Cafe not found: ${cafe_id}`);
+            return res.status(404).json({ error: 'Cafe not found' });
+        }
+
+        // Verify that the authenticated user is the owner of this cafe
+        if (cafe.cafe_owner_id && cafe.cafe_owner_id !== req.user.user_id) {
+            console.log(`User ${req.user.user_id} is not the owner of cafe ${cafe_id}`);
+            return res.status(403).json({ error: 'You are not authorized to view transactions for this cafe' });
+        }
+
+        // Fetch transactions for the cafe using the cafe's ObjectId
+        const transactions = await Transaction.find({ cafe_id: cafe._id })
+            .populate('book_id')
+            .populate('user_id')
+            .populate('cafe_id');
+
+        console.log(`Transactions fetched for cafe ${cafe_id}:`, transactions);
+        res.status(200).json(transactions);
+    } catch (err) {
+        console.error(`Error fetching transactions for cafe ${req.params.cafe_id}:`, err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/cafes/:cafe_id/requests - Retrieve pending requests for a specific cafe (cafe owner only)
+router.get('/:cafe_id/requests', authMiddleware, cafeOwnerMiddleware, async (req, res) => {
+    try {
+        const { cafe_id } = req.params;
+
+        // Find the cafe by cafe_id (string) and get its ObjectId
+        const cafe = await Cafe.findOne({ cafe_id });
+        if (!cafe) {
+            console.log(`Cafe not found: ${cafe_id}`);
+            return res.status(404).json({ error: 'Cafe not found' });
+        }
+
+        // Verify that the authenticated user is the owner of this cafe
+        if (cafe.cafe_owner_id && cafe.cafe_owner_id !== req.user.user_id) {
+            console.log(`User ${req.user.user_id} is not the owner of cafe ${cafe_id}`);
+            return res.status(403).json({ error: 'You are not authorized to view requests for this cafe' });
+        }
+
+        // Fetch transactions with status 'pickup_pending' or 'dropoff_pending'
+        const requests = await Transaction.find({
+            cafe_id: cafe._id,
+            status: { $in: ['pickup_pending', 'dropoff_pending'] },
+        })
+            .populate('book_id')
+            .populate('user_id')
+            .populate('cafe_id');
+
+        console.log(`Requests fetched for cafe ${cafe_id}:`, requests);
+        res.status(200).json(requests);
+    } catch (err) {
+        console.error(`Error fetching requests for cafe ${req.params.cafe_id}:`, err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -113,6 +211,7 @@ router.post(
             .optional()
             .isFloat({ min: 0, max: 5 })
             .withMessage('Ratings must be between 0 and 5'),
+        body('cafe_owner_id').optional().trim(),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -122,12 +221,19 @@ router.post(
         }
 
         try {
-            const { name, location, average_bill, discount, ratings, specials } = req.body;
+            const { name, location, average_bill, discount, ratings, specials, cafe_owner_id } = req.body;
 
             // Generate a unique cafe_id
             const cafeCount = await Cafe.countDocuments();
             const cafeIdNumber = cafeCount + 1;
             const cafe_id = `cafe_${String(cafeIdNumber).padStart(3, '0')}`; // e.g., cafe_001, cafe_002, etc.
+
+            if (cafe_owner_id) {
+                const owner = await User.findOne({ user_id: cafe_owner_id, role: 'cafe' });
+                if (!owner) {
+                    return res.status(400).json({ error: 'Invalid cafe_owner_id or user is not a cafe owner' });
+                }
+            }
 
             const cafe = new Cafe({
                 cafe_id, // Add the generated cafe_id
@@ -137,6 +243,7 @@ router.post(
                 discount: discount || 0,
                 ratings: ratings || 0,
                 specials,
+                cafe_owner_id: cafe_owner_id || null,
             });
 
             await cafe.save();
@@ -149,35 +256,10 @@ router.post(
     }
 );
 
-// PUT /api/cafes/:cafe_id - Update a cafe (admin-only)
+// PUT /api/cafes/:cafe_id - Update a cafe (admin or cafe owner)
 router.put(
     '/:cafe_id',
     authMiddleware,
-    adminMiddleware,
-    [
-        body('name')
-            .optional()
-            .notEmpty()
-            .withMessage('Name cannot be empty')
-            .trim(),
-        body('location')
-            .optional()
-            .notEmpty()
-            .withMessage('Location cannot be empty')
-            .trim(),
-        body('average_bill')
-            .optional()
-            .isFloat({ min: 0 })
-            .withMessage('Average bill must be a positive number'),
-        body('discount')
-            .optional()
-            .isFloat({ min: 0 })
-            .withMessage('Discount must be a positive number'),
-        body('ratings')
-            .optional()
-            .isFloat({ min: 0, max: 5 })
-            .withMessage('Ratings must be between 0 and 5'),
-    ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -192,6 +274,22 @@ router.put(
             const cafe = await Cafe.findOne({ cafe_id });
             if (!cafe) {
                 return res.status(404).json({ error: 'Cafe not found' });
+            }
+
+            // Check if the user is an admin or the cafe owner
+            const user = await User.findById(req.userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            if (user.role !== 'admin' && (user.role !== 'cafe' || cafe.cafe_owner_id !== user.user_id)) {
+                return res.status(403).json({ error: 'Access denied. You are not authorized to update this cafe.' });
+            }
+
+            if (updates.cafe_owner_id) {
+                const owner = await User.findOne({ user_id: updates.cafe_owner_id, role: 'cafe' });
+                if (!owner) {
+                    return res.status(400).json({ error: 'Invalid cafe_owner_id or user is not a cafe owner' });
+                }
             }
 
             Object.assign(cafe, updates);

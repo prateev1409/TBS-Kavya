@@ -8,11 +8,14 @@ const Cafe = require('../models/Cafe');
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    console.log('Received token:', token); // Debug log
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    console.log('Received token:', authHeader); // Debug log
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('No token provided or invalid format');
         return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
+
+    const token = authHeader.split(' ')[1];
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Decoded token:', decoded); // Debug log

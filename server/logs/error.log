@@ -1,0 +1,7 @@
+2025-03-22 19:10:30 [ERROR]: Auth middleware error: invalid token
+2025-03-22 19:17:42 [ERROR]: Auth middleware error: invalid token
+2025-03-22 19:29:28 [ERROR]: Error creating dummy transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+2025-03-22 19:32:34 [ERROR]: Error creating dummy transaction: Schema hasn't been registered for model "Counter".
+Use mongoose.model(name, schema)
+2025-03-22 19:37:57 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
+2025-03-22 19:39:38 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
