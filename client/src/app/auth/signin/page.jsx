@@ -37,11 +37,13 @@ function MainComponent() {
             localStorage.setItem('token', data.token);
             console.log('Token saved:', localStorage.getItem('token')); // Debug log
             // Redirect based on user role
-            if (data.user.role === 'admin') {
-                window.location.href = '/AdminDashboard';
-            } else {
-                window.location.href = '/';
-            }
+        if (data.user.role === 'admin') {
+            window.location.href = '/AdminDashboard';
+        } else if (data.user.role === 'cafe') {
+            window.location.href = '/CafeDashboard';
+        } else {
+            window.location.href = '/';
+        }
         } catch (err) {
             setError(err.message);
             setLoading(false);
