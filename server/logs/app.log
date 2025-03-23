@@ -6158,3 +6158,5 @@ Use mongoose.model(name, schema)
 2025-03-22 23:21:28 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
 2025-03-22 23:33:41 [INFO]: POST /api/cafes - IP: ::1 - Body: {"name":"pushpa","location":"nobodweep","average_bill":4599,"discount":6,"ratings":5,"specials":"lulusingh"}
 >>>>>>> 8d9981c0602efed91bdfc5c131055f86334ea86d
+2025-03-23 12:38:30 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 12:38:30 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
