@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Cafe = require('../models/Cafe');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Book = require('../models/Book'); // Added to fetch book data
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
@@ -118,6 +119,37 @@ router.get('/:cafe_id', async (req, res) => {
     }
 });
 
+// GET /api/cafes/book/:book_id - Retrieve cafes where a specific book is available
+router.get('/book/:book_id', authMiddleware, async (req, res) => {
+    try {
+        const { book_id } = req.params;
+
+        // Find the book to ensure it exists and get its keeper_id
+        const book = await Book.findOne({ book_id });
+        if (!book) {
+            console.log(`Book not found: ${book_id}`);
+            return res.status(404).json({ error: 'Book not found' });
+        }
+        if (!book.available) {
+            console.log(`Book unavailable: ${book_id}`);
+            return res.status(400).json({ error: 'Book is currently unavailable' });
+        }
+
+        // Find cafes where this book is available (keeper_id matches cafe_id)
+        const cafes = await Cafe.find({ cafe_id: book.keeper_id });
+        console.log(`Cafes fetched for book ${book_id}:`, cafes);
+
+        if (cafes.length === 0) {
+            return res.status(200).json([]); // Return empty array if no cafes found
+        }
+
+        res.status(200).json(cafes);
+    } catch (err) {
+        console.error(`Error fetching cafes for book ${req.params.book_id}:`, err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET /api/cafes/:cafe_id/transactions - Retrieve transactions for a specific cafe (cafe owner only)
 router.get('/:cafe_id/transactions', authMiddleware, cafeOwnerMiddleware, async (req, res) => {
     try {
@@ -170,7 +202,7 @@ router.get('/:cafe_id/requests', authMiddleware, cafeOwnerMiddleware, async (req
 
         // Fetch transactions with status 'pickup_pending' or 'dropoff_pending'
         const requests = await Transaction.find({
-            cafe_id: cafe._id,
+            cafe_id: cafe._id, // Use the ObjectId instead of the string cafe_id
             status: { $in: ['pickup_pending', 'dropoff_pending'] },
         })
             .populate('book_id')

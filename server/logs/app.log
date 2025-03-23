@@ -6158,3 +6158,366 @@ Use mongoose.model(name, schema)
 2025-03-22 23:21:28 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
 2025-03-22 23:33:41 [INFO]: POST /api/cafes - IP: ::1 - Body: {"name":"pushpa","location":"nobodweep","average_bill":4599,"discount":6,"ratings":5,"specials":"lulusingh"}
 >>>>>>> 8d9981c0602efed91bdfc5c131055f86334ea86d
+2025-03-23 15:53:37 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 15:53:51 [INFO]: GET /api/cafes/book/null - IP: ::1 - Body: {}
+2025-03-23 15:59:52 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 15:59:52 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 15:59:52 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 15:59:52 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 15:59:53 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 15:59:53 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 15:59:53 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:00:07 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:13 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:13 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:14 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:14 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:15 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:16 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:16 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:16 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:00:20 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:00:20 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:05:23 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:05:23 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:05:23 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:05:24 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:07:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:07:33 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:07:33 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:07:36 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:07:36 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:07:36 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:11:31 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:11:32 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:11:32 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:11:32 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 16:11:32 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 16:11:44 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:11:47 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:47 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:48 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:49 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:49 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:49 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:51 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:51 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:53 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:53 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:53 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:11:54 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:12:26 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:12:26 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:12:26 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:12:26 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 16:12:27 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:16:24 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:16:24 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:16:26 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:16:26 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:16:29 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:16:29 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 16:25:59 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:27:58 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:27:58 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:28:16 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:28:16 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:28:42 [INFO]: PUT /api/books/S_1 - IP: ::1 - Body: {"name":"spectrum","author":"Aishik Ghosh","language":"JKJ","publisher":"JKJK","genre":"KJKJ","description":"KJKJK","ratings":0,"is_free":true,"available":true,"keeper_id":"cafe_005"}
+2025-03-23 16:28:51 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:28:51 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:00 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:00 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:00 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:01 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:01 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:01 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:14 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"cafe@example.com","password":"cafe"}
+2025-03-23 16:29:14 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:29:14 [INFO]: GET /api/cafes?cafe_owner_id=User_009 - IP: ::1 - Body: {}
+2025-03-23 16:29:14 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 16:29:25 [INFO]: PUT /api/cafes/cafe_004 - IP: ::1 - Body: {"name":"startbucks","discount":59}
+2025-03-23 16:29:25 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 16:29:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:29:35 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-23 16:29:36 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 16:29:36 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 16:29:36 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 16:29:36 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 16:29:36 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 16:29:38 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:29:39 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 16:30:10 [INFO]: GET /api/cafes/book/null - IP: ::1 - Body: {}
+2025-03-23 16:32:31 [INFO]: GET /api/cafes/book/null - IP: ::1 - Body: {}
+2025-03-23 17:02:14 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:02:15 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:02:27 [INFO]: GET /api/cafes/book/HOTD_1 - IP: ::1 - Body: {}
+2025-03-23 17:02:31 [INFO]: GET /api/cafes/book/DTD_1 - IP: ::1 - Body: {}
+2025-03-23 17:02:39 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:05:47 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:05:47 [ERROR]: Error creating transaction: transaction_id is not defined
+2025-03-23 17:06:20 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:06:20 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:06:23 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:06:27 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:06:28 [ERROR]: Error creating transaction: transaction_id is not defined
+2025-03-23 17:09:21 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:09:21 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:09:22 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:14:14 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:14:14 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:14:14 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:14:15 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:14:15 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:14:15 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:14:17 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:17 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:17 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:17 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:17 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:18 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:14:40 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:14:40 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:20:24 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:20:24 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:20:29 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:20:31 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:20:31 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+2025-03-23 17:29:43 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:29:43 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:29:47 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:29:49 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:29:49 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:31:10 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:31:10 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:31:10 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:31:10 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:31:10 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:31:11 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:11 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:12 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:12 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:12 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:12 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:15 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:31:15 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:07 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:36:07 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:36:07 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:36:07 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:36:07 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:36:09 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:09 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:09 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:09 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:09 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:10 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:36:15 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:36:16 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:36:18 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:36:20 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:36:20 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:37:19 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:37:19 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:37:20 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:37:22 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:37:22 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:46:12 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:46:12 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:46:15 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:46:17 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:46:17 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:46:50 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:46:50 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:47:00 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:47:00 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:47:00 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:47:00 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:47:00 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:47:01 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:01 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:01 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:02 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:02 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:02 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:47:14 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:47:29 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:47:29 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:47:36 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:47:37 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:47:37 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:53:08 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:53:08 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 17:53:15 [INFO]: GET /api/cafes/book/S_1 - IP: ::1 - Body: {}
+2025-03-23 17:53:16 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"S_1","cafe_id":"cafe_005","status":"pickup_pending"}
+2025-03-23 17:53:16 [INFO]: Transaction created successfully: TXN_1742732596671_3hlsng for user: User_003
+2025-03-23 17:53:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:53:44 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:53:44 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:53:45 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:53:45 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:53:45 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:53:48 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:53:48 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:53:48 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:53:48 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:53:49 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:53:50 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:56:52 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:57:01 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"cafe@example.com","password":"cafe"}
+2025-03-23 17:57:01 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:57:01 [INFO]: GET /api/cafes?cafe_owner_id=User_009 - IP: ::1 - Body: {}
+2025-03-23 17:57:02 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 17:59:22 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:59:22 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:59:25 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-23 17:59:26 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 17:59:26 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 17:59:26 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 17:59:26 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 17:59:26 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 17:59:27 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:27 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:28 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:28 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:28 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:28 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:29 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:29 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:30 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:30 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:34 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:34 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:35 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:35 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:35 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 17:59:35 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:00:15 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"cafe@example.com","password":"cafe"}
+2025-03-23 18:00:15 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:00:15 [INFO]: GET /api/cafes?cafe_owner_id=User_009 - IP: ::1 - Body: {}
+2025-03-23 18:00:15 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 18:11:19 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:11:19 [INFO]: GET /api/cafes?cafe_owner_id=User_009 - IP: ::1 - Body: {}
+2025-03-23 18:11:20 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 18:11:34 [INFO]: PUT /api/cafes/cafe_004 - IP: ::1 - Body: {"name":"startbucks","discount":63}
+2025-03-23 18:11:34 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 18:12:04 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-23 18:12:06 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:12:09 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-23 18:12:10 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:12:10 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 18:12:10 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 18:12:10 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 18:12:10 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 18:12:11 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:12:11 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:12:16 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:12:16 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:14:21 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:14:21 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:14:41 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:14:41 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:18 [INFO]: POST /api/admin/books - IP: ::1 - Body: {"name":"Witcher Geralt of rivia","author":"Th bird","language":"french","publisher":"frenchDoxx","genre":"action","description":"Geralt of rivia","image_url":"https://imgs.search.brave.com/YPk5OUtb8mpDw7az4kWFbKBl5IrhVkP0JdjI4opfNo0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NTFMaHE5V1Zmekwu/anBn","ratings":4,"is_free":true,"available":true}
+2025-03-23 18:17:26 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:17:26 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 18:17:26 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 18:17:26 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 18:17:26 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 18:17:34 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:34 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:36 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:36 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:43 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:17:43 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:18:04 [INFO]: PUT /api/books/WGOR_1 - IP: ::1 - Body: {"name":"Witcher Geralt of rivia","author":"Th bird","language":"french","publisher":"frenchDoxx","genre":"action","description":"Geralt of rivia","image_url":"https://imgs.search.brave.com/YPk5OUtb8mpDw7az4kWFbKBl5IrhVkP0JdjI4opfNo0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NTFMaHE5V1Zmekwu/anBn","ratings":4,"is_free":true,"available":true,"keeper_id":"cafe_006"}
+2025-03-23 18:18:08 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:18:08 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:18:10 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:18:10 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:18:22 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 18:18:22 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 18:18:29 [INFO]: GET /api/cafes/book/WGOR_1 - IP: ::1 - Body: {}
+2025-03-23 18:18:31 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"WGOR_1","cafe_id":"cafe_006","status":"pickup_pending"}
+2025-03-23 18:18:31 [INFO]: Transaction created successfully: TXN_1742734111761_t9xdn5 for user: User_003
+2025-03-23 18:18:50 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:19:15 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"dfd@example.com","password":"cafe"}
+2025-03-23 18:19:16 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:19:16 [INFO]: GET /api/cafes?cafe_owner_id=User_011 - IP: ::1 - Body: {}
+2025-03-23 18:19:16 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:19:46 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:20:16 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:20:46 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:21:16 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:21:47 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:22:19 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:22:21 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:22:21 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:22:24 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:22:24 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:19 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:23:20 [INFO]: POST /api/users - IP: ::1 - Body: {"name":"Dodo The Duck","email":"dodo@admin.com","phone_number":"4569873654","password":"admin","subscription_type":"premium","role":"admin"}
+2025-03-23 18:23:29 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:29 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:30 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:30 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:31 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:31 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 18:23:33 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 18:23:34 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:34 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:35 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:36 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:37 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:23:37 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-23 18:24:19 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:25:19 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:26:04 [INFO]: POST /api/admin/books - IP: ::1 - Body: {"name":"Paltine ka pokoda","author":"matur","language":"nibunda","publisher":"hjhja","genre":"hjkh","description":"jkh","image_url":"https://imgs.search.brave.com/qOKNl5YAtYj42loXoP4TaQtTMss3c9gTV2oxg98syFw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzgxVWJzaER2TmdM/LmpwZw","ratings":3,"is_free":true,"available":true,"keeper_id":"cafe_006"}
+2025-03-23 18:26:15 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 18:26:15 [INFO]: GET /api/books - IP: ::1 - Body: {}
+2025-03-23 18:26:19 [INFO]: GET /api/cafes/book/PKP_1 - IP: ::1 - Body: {}
+2025-03-23 18:26:19 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:26:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:26:33 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-23 18:26:34 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-23 18:26:34 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-23 18:26:34 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-23 18:26:37 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:26:37 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-23 18:26:52 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+2025-03-23 18:26:58 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-23 18:26:58 [INFO]: GET /api/cafes?cafe_owner_id=User_011 - IP: ::1 - Body: {}
+2025-03-23 18:26:58 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}

@@ -84,9 +84,9 @@ router.get('/:cafe_id/requests', authMiddleware, cafeOwnerMiddleware, async (req
         // Cafe already fetched in cafeOwnerMiddleware, available as req.cafe
         const cafe = req.cafe;
 
-        // Find pending transactions (pickup_pending or dropoff_pending)
+        // Find pending transactions (pickup_pending or dropoff_pending) using the cafe's ObjectId
         const transactions = await Transaction.find({
-            cafe_id,
+            cafe_id: cafe._id, // Use the ObjectId instead of the string cafe_id
             status: { $in: ['pickup_pending', 'dropoff_pending'] },
         }).populate('book_id user_id');
 
