@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const {Counter} = require('./Counter');
 // Function to get the next sequence value
 const getNextSequenceValue = async (sequenceName) => {
     const Counter = mongoose.model('Counter');
@@ -12,7 +12,7 @@ const getNextSequenceValue = async (sequenceName) => {
 };
 
 const transactionSchema = new mongoose.Schema({
-    transaction_id: { type: Number, required: true, unique: true },
+    transaction_id: { type: String, required: true, unique: true },
     book_id: { type: String, required: true, ref: 'Book' },
     user_id: { type: String, required: true, ref: 'User' },
     cafe_id: { type: String, required: true, ref: 'Cafe' },
