@@ -73,7 +73,7 @@ function BookExpanded({ book, onClose }) {
               </audio>
             )}
             <button
-            className="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
+            className="mt-4 bg-background-dark dark:bg-background-light text-text-dark dark:text-text-light px-4 py-2 rounded-lg hover:bg-primary-dark"
             onClick={() => window.location.href = `/book/${book.id}/cafes`} // navigate to selector
             >
               Get it at a Cafe
