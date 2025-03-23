@@ -1,6 +1,17 @@
 "use client"; // Ensure this is a Client Component
 
 function SubscriptionPlan({ plan, isSelected, onSelect, isCurrentPlan }) {
+  // If the plan is disabled, show a blank card with "Plan Coming Soon"
+  if (plan.disabled) {
+    return (
+      <div className="relative border rounded-xl p-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+        <p className="text-center text-text-light dark:text-text-dark font-medium">
+          Plan Coming Soon
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`

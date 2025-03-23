@@ -24,6 +24,7 @@ function MainComponent() {
       tier: "Basic",
       name: "Basic Plan",
       price: 9.99,
+      disabled: true,
       image:
         "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1934&q=80",
       features: [
@@ -51,6 +52,7 @@ function MainComponent() {
       tier: "Premium",
       name: "Premium Plan",
       price: 19.99,
+      disabled: true,
       image: "",
       features: [
         "Borrow 3 books at a time",
@@ -164,8 +166,8 @@ function MainComponent() {
             our extensive collection of books and exclusive features.
           </p>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div classname="flex justify-center">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto justify-center">
           {plans.map((plan) => (
             <SubscriptionPlan
               key={plan.id}
@@ -173,6 +175,7 @@ function MainComponent() {
                 name: plan.name,
                 price: plan.price,
                 booksPerMonth: plan.features.length,
+                disabled: plan.disabled,
                 cafeDiscount:
                   plan.tier === "Basic"
                     ? 5
@@ -187,7 +190,7 @@ function MainComponent() {
             />
           ))}
         </div>
-
+        </div>
         <div className="mt-12 text-center">
           <input
             type="text"
