@@ -9,6 +9,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 // Middleware to verify JWT
+/*
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -18,6 +19,28 @@ const authMiddleware = (req, res, next) => {
         next();
     } catch (err) {
         logger.error(`Auth middleware error: ${err.message}`);
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};*/
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    console.log('Authorization header:', authHeader);
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('No token provided or invalid format');
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    console.log('Token extracted:', token);
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token decoded:', decoded);
+        req.userId = decoded.id;
+        next();
+    } catch (err) {
+        console.error('Token verification failed:', err.message);
         res.status(401).json({ error: 'Invalid token' });
     }
 };
@@ -98,6 +121,7 @@ router.post(
             }
 
             const transaction = new Transaction({
+                transaction_id,
                 book_id,
                 user_id: user.user_id,
                 cafe_id,

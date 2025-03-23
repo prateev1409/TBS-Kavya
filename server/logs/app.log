@@ -6114,6 +6114,7 @@ Use mongoose.model(name, schema)
 2025-03-22 20:24:12 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
 2025-03-22 20:24:12 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
 2025-03-22 20:24:13 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+<<<<<<< HEAD
 2025-03-23 09:11:50 [INFO]: POST /api/auth/refresh-token - IP: ::1 - Body: {}
 2025-03-23 09:11:59 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"dodo@2001","password":"admin"}
 2025-03-23 09:12:32 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"dodo@2001","password":"ADMIN"}
@@ -6122,3 +6123,38 @@ Use mongoose.model(name, schema)
 2025-03-23 09:17:32 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
 2025-03-23 09:17:32 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
 2025-03-23 11:55:45 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+=======
+2025-03-22 22:36:32 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-22 22:37:15 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-22 22:38:31 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"admin@2001","password":"admin"}
+2025-03-22 22:38:33 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-22 22:38:33 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:33 [INFO]: GET /api/admin/inventory - IP: ::1 - Body: {}
+2025-03-22 22:38:33 [INFO]: GET /api/cafes - IP: ::1 - Body: {}
+2025-03-22 22:38:33 [INFO]: GET /api/users - IP: ::1 - Body: {}
+2025-03-22 22:38:33 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
+2025-03-22 22:38:41 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:41 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:42 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:43 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:43 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:44 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:44 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:44 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-22 22:38:45 [INFO]: GET /api/transactions/filters - IP: ::1 - Body: {}
+2025-03-22 22:39:04 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-22 22:39:25 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"cafe@example.com","password":"cafe"}
+2025-03-22 22:39:26 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
+2025-03-22 22:39:26 [INFO]: GET /api/cafes?cafe_owner_id=User_009 - IP: ::1 - Body: {}
+2025-03-22 22:39:26 [INFO]: GET /api/cafe/cafe_004/requests - IP: ::1 - Body: {}
+2025-03-22 22:39:57 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"user@example.com","password":"user"}
+2025-03-22 22:40:10 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"usertest@example.com","password":"user"}
+2025-03-22 22:47:15 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
+2025-03-22 22:47:15 [ERROR]: Auth middleware error: invalid token
+2025-03-22 23:12:42 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
+2025-03-22 23:13:08 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"usertest@example.com","password":"user"}
+2025-03-22 23:13:52 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
+2025-03-22 23:20:54 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"usertest@example.com","password":"user"}
+2025-03-22 23:21:28 [INFO]: POST /api/transactions - IP: ::1 - Body: {"book_id":"TEST_1","cafe_id":"cafe_004"}
+2025-03-22 23:33:41 [INFO]: POST /api/cafes - IP: ::1 - Body: {"name":"pushpa","location":"nobodweep","average_bill":4599,"discount":6,"ratings":5,"specials":"lulusingh"}
+>>>>>>> 8d9981c0602efed91bdfc5c131055f86334ea86d

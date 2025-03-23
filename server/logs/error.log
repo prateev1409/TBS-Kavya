@@ -5,3 +5,4 @@
 Use mongoose.model(name, schema)
 2025-03-22 19:37:57 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
 2025-03-22 19:39:38 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
+2025-03-22 22:47:15 [ERROR]: Auth middleware error: invalid token
