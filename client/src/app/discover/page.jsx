@@ -19,6 +19,21 @@ function MainComponent() {
     language: "",
     genre: "",
   });
+  const [books, setBooks] = useState([]);
+  const [cafes, setCafes] = useState([]);
+  const [loadingBooks, setLoadingBooks] = useState(true);
+  const [loadingCafes, setLoadingCafes] = useState(true);
+  const [error, setError] = useState(null);
+  const [bookFilterOptions, setBookFilterOptions] = useState({
+    authors: [],
+    languages: [],
+    genres: [],
+  });
+  const [cafeFilterOptions, setCafeFilterOptions] = useState({
+    locations: [],
+    average_bills: [],
+    ratings: [],
+  });
 
   const filterRef = useRef(null);
 
@@ -35,6 +50,224 @@ function MainComponent() {
       setActiveFilter(null);
     }
   };
+
+  // Fetch book filter options
+  const fetchBookFilters = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized: Please sign in again.");
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch book filters");
+      }
+
+      const { authors, languages, genres } = await res.json();
+      setBookFilterOptions({
+        authors: authors.slice(0, 5),
+        languages: languages.slice(0, 5),
+        genres: genres.slice(0, 5),
+      });
+    } catch (err) {
+      console.error("Error fetching book filters:", err.message);
+      setError(err.message);
+    }
+  };
+
+  // Fetch cafe filter options
+  const fetchCafeFilters = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized: Please sign in again.");
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch cafe filters");
+      }
+
+      const { locations, average_bills, ratings } = await res.json();
+      setCafeFilterOptions({
+        locations: locations.slice(0, 5),
+        average_bills: average_bills.sort((a, b) => a - b).slice(0, 3),
+        ratings: ratings.sort((a, b) => a - b).slice(0, 5),
+      });
+    } catch (err) {
+      console.error("Error fetching cafe filters:", err.message);
+      setError(err.message);
+    }
+  };
+
+  // Fetch books with filters
+  const fetchBooks = async () => {
+    setLoadingBooks(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const query = new URLSearchParams({
+        ...(bookFilters.author && { author: bookFilters.author }),
+        ...(bookFilters.language && { language: bookFilters.language }),
+        ...(bookFilters.genre && { genre: bookFilters.genre }),
+      }).toString();
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized: Please sign in again.");
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch books");
+      }
+
+      const data = await res.json();
+      const mappedBooks = data.map((book) => ({
+        book_id: book.book_id,
+        title: book.name,
+        cover: book.image_url || "https://picsum.photos/150",
+        genre: book.genre,
+        author: book.author,
+        publisher: book.publisher,
+        description: book.description,
+        audioSummary: book.audio_url,
+        ratings: book.ratings,
+        language: book.language,
+        available: book.available,
+        is_free: book.is_free,
+      }));
+      setBooks(mappedBooks);
+    } catch (err) {
+      console.error("Error fetching books:", err.message);
+      setError(err.message);
+      if (err.message.includes("Unauthorized")) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth/signin";
+      }
+    } finally {
+      setLoadingBooks(false);
+    }
+  };
+
+  // Fetch cafes with filters
+  const fetchCafes = async () => {
+    setLoadingCafes(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const query = new URLSearchParams({
+        ...(cafeFilters.distance && { distance: cafeFilters.distance }),
+        ...(cafeFilters.pricing && { average_bill: cafeFilters.pricing }),
+      }).toString();
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/cafes${query ? `?${query}` : ""}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized: Please sign in again.");
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch cafes");
+      }
+
+      const data = await res.json();
+      const mappedCafes = data.map((cafe) => ({
+        id: cafe.cafe_id,
+        name: cafe.name,
+        image: cafe.image || "https://picsum.photos/200",
+        distance: cafe.distance || "N/A",
+        priceRange: `₹${cafe.average_bill}`, // Changed from 'price' to 'priceRange' for CafeCard
+        rating: cafe.ratings,
+        location: cafe.location,
+        specialties: cafe.specials,
+        discounts: `${cafe.discount}%`,
+        description: cafe.description || "No description available",
+      }));
+      setCafes(mappedCafes);
+    } catch (err) {
+      console.error("Error fetching cafes:", err.message);
+      setError(err.message);
+      if (err.message.includes("Unauthorized")) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth/signin";
+      }
+    } finally {
+      setLoadingCafes(false);
+    }
+  };
+
+  // Handle filter changes
+  const handleCafeFilterChange = (filterType, value) => {
+    setCafeFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+    setActiveFilter(null); // Close dropdown after selection
+  };
+
+  const handleBookFilterChange = (filterType, value) => {
+    setBookFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+    setActiveFilter(null); // Close dropdown after selection
+  };
+
+  // Fetch data and filter options on mount and when filters change
+  useEffect(() => {
+    fetchBookFilters();
+    fetchCafeFilters();
+    fetchBooks();
+    fetchCafes();
+  }, []);
+
+  useEffect(() => {
+    fetchBooks();
+  }, [bookFilters]);
+
+  useEffect(() => {
+    fetchCafes();
+  }, [cafeFilters]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -60,109 +293,13 @@ function MainComponent() {
     ],
   };
 
-  // Dummy data for nearby cafes (non-expanded view)
-  const nearbyCafes = [
-    {
-      id: 1,
-      name: "Book & Bean",
-      image: "/cafe1.png",
-      distance: "0.8km",
-      price: "$15",
-      rating: "4.7",
-    },
-    {
-      id: 2,
-      name: "Chapter One Cafe",
-      image: "/cafe2.png",
-      distance: "1.2km",
-      price: "$18",
-      rating: "4.9",
-    },
-    {
-      id: 3,
-      name: "Literary Brew",
-      image: "/cafe3.png",
-      distance: "1.5km",
-      price: "$12",
-      rating: "4.8",
-    },
-    {
-      id: 4,
-      name: "Cafe Delight",
-      image: "/cafe4.png",
-      distance: "2.0km",
-      price: "$10",
-      rating: "4.6",
-    },
-    {
-      id: 5,
-      name: "Coffee Corner",
-      image: "/cafe5.png",
-      distance: "2.5km",
-      price: "$20",
-      rating: "4.5",
-    },
-    {
-      id: 6,
-      name: "Brewed Awakenings",
-      image: "/cafe6.png",
-      distance: "3.0km",
-      price: "$8",
-      rating: "4.4",
-    },
-  ];
-
-  // Dummy data for available books
-  const availableBooks = [
-    {
-      id: 1,
-      title: "The Midnight Library",
-      author: "Matt Haig",
-      genre: "Fiction",
-      cover: "/book1.png",
-      rating: "4.4",
-    },
-    {
-      id: 2,
-      title: "Atomic Habits",
-      author: "James Clear",
-      genre: "Self-Help",
-      cover: "/book2.png",
-      rating: "4.2",
-    },
-    {
-      id: 3,
-      title: "Project Hail Mary",
-      author: "Andy Weir",
-      genre: "Sci-Fi",
-      cover: "/book3.png",
-      rating: "3.4",
-    },
-    {
-      id: 4,
-      title: "Tomorrow",
-      author: "Gabrielle Zevin",
-      genre: "Fiction",
-      cover: "/book4.png",
-      rating: "2.4",
-    },
-    {
-      id: 5,
-      title: "The Silent Patient",
-      author: "Alex Michaelides",
-      genre: "Thriller",
-      cover: "/book5.png",
-      rating: "4.7",
-    },
-    {
-      id: 6,
-      title: "Where the Crawdads Sing",
-      author: "Delia Owens",
-      genre: "Mystery",
-      cover: "/book6.png",
-      rating: "5.0",
-    },
-  ];
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
@@ -208,20 +345,26 @@ function MainComponent() {
                 </svg>
               </button>
               {activeFilter === "distance" && (
-                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown">
+                <div
+                  className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
+                  onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                >
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="distance" value="1km" />
-                      <span>Within 1km</span>
-                    </label>
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="distance" value="3km" />
-                      <span>Within 3km</span>
-                    </label>
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="distance" value="5km" />
-                      <span>Within 5km</span>
-                    </label>
+                    {["1km", "3km", "5km"].map((dist) => (
+                      <label
+                        key={dist}
+                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="distance"
+                          value={dist}
+                          checked={cafeFilters.distance === dist}
+                          onChange={() => handleCafeFilterChange("distance", dist)}
+                        />
+                        <span>Within {dist}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               )}
@@ -249,35 +392,47 @@ function MainComponent() {
                 </svg>
               </button>
               {activeFilter === "pricing" && (
-                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown">
+                <div
+                  className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
+                  onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                >
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="pricing" value="low" />
-                      <span>$ (Under $10)</span>
-                    </label>
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="pricing" value="medium" />
-                      <span>$ ($10-$20)</span>
-                    </label>
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input type="radio" name="pricing" value="high" />
-                      <span>$ (Above $20)</span>
-                    </label>
+                    {cafeFilterOptions.average_bills.map((bill) => (
+                      <label
+                        key={bill}
+                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="pricing"
+                          value={bill}
+                          checked={cafeFilters.pricing === String(bill)}
+                          onChange={() => handleCafeFilterChange("pricing", String(bill))}
+                        />
+                        <span>₹{bill}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Nearby Cafes List using existing CafeExpansion component */}
+          {/* Nearby Cafes List */}
           <section className="mb-16">
             <h2 className="text-3xl font-header font-bold text-primary-light dark:text-primary-dark mb-6">
               Find a new Cafe!
             </h2>
-            <CafeExpansion cafes={nearbyCafes} />
+            {loadingCafes ? (
+              <div className="text-gray-600">Loading cafes...</div>
+            ) : cafes.length === 0 ? (
+              <div className="text-gray-600">No cafes available.</div>
+            ) : (
+              <CafeExpansion cafes={cafes} />
+            )}
           </section>
 
-          {/* Available Books List using existing Book component */}
+          {/* Available Books List */}
           <section className="mb-16">
             <h2 className="text-2xl font-header font-semibold mb-6">Available Books</h2>
             <div className="flex gap-4 mb-8 flex-wrap">
@@ -304,20 +459,33 @@ function MainComponent() {
                   </svg>
                 </button>
                 {activeFilter === "author" && (
-                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown">
+                  <div
+                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
+                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                  >
                     <input
                       type="text"
                       name="author-search"
                       placeholder="Search authors..."
                       className="w-full p-2 border rounded mb-2"
+                      value={bookFilters.author}
+                      onChange={(e) =>
+                        handleBookFilterChange("author", e.target.value)
+                      }
                     />
                     <div className="max-h-48 overflow-y-auto">
-                      {["Author 1", "Author 2", "Author 3"].map((author) => (
+                      {bookFilterOptions.authors.map((author) => (
                         <label
                           key={author}
                           className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
                         >
-                          <input type="checkbox" name={`author-${author}`} />
+                          <input
+                            type="radio"
+                            name="author"
+                            value={author}
+                            checked={bookFilters.author === author}
+                            onChange={() => handleBookFilterChange("author", author)}
+                          />
                           <span>{author}</span>
                         </label>
                       ))}
@@ -348,18 +516,27 @@ function MainComponent() {
                   </svg>
                 </button>
                 {activeFilter === "language" && (
-                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown">
-                    {["English", "Spanish", "French", "German"].map(
-                      (language) => (
-                        <label
-                          key={language}
-                          className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                        >
-                          <input type="checkbox" name={`language-${language}`} />
-                          <span>{language}</span>
-                        </label>
-                      )
-                    )}
+                  <div
+                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
+                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                  >
+                    {bookFilterOptions.languages.map((language) => (
+                      <label
+                        key={language}
+                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="language"
+                          value={language}
+                          checked={bookFilters.language === language}
+                          onChange={() =>
+                            handleBookFilterChange("language", language)
+                          }
+                        />
+                        <span>{language}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
               </div>
@@ -386,19 +563,22 @@ function MainComponent() {
                   </svg>
                 </button>
                 {activeFilter === "genre" && (
-                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown">
-                    {[
-                      "Fiction",
-                      "Non-Fiction",
-                      "Mystery",
-                      "Science Fiction",
-                      "Romance",
-                    ].map((genre) => (
+                  <div
+                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
+                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                  >
+                    {bookFilterOptions.genres.map((genre) => (
                       <label
                         key={genre}
                         className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
                       >
-                        <input type="checkbox" name={`genre-${genre}`} />
+                        <input
+                          type="radio"
+                          name="genre"
+                          value={genre}
+                          checked={bookFilters.genre === genre}
+                          onChange={() => handleBookFilterChange("genre", genre)}
+                        />
                         <span>{genre}</span>
                       </label>
                     ))}
@@ -406,12 +586,17 @@ function MainComponent() {
                 )}
               </div>
             </div>
-            <h2 className="text-2xl font-header font-semibold mt-12 mb-6">Available Books</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {availableBooks.map((book) => (
-                <Book key={book.id} book={book} />
-              ))}
-            </div>
+            {loadingBooks ? (
+              <div className="text-gray-600">Loading books...</div>
+            ) : books.length === 0 ? (
+              <div className="text-gray-600">No books available.</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {books.map((book) => (
+                  <Book key={book.book_id} book={book} />
+                ))}
+              </div>
+            )}
           </section>
         </section>
       </div>
