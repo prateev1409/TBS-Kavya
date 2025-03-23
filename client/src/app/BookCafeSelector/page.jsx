@@ -1,6 +1,7 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import CafeCard from "../../components/cafe"; // import just the card component (not the expanded view)
+import { CafeCard } from "../../components/cafe"; // Import CafeCard as named export
 
 // Dummy cafes, replace with real API or props later
 const cafes = [
@@ -39,9 +40,7 @@ export default function BookCafeSelector() {
             key={cafe.id}
             onClick={() => handleSelect(cafe)}
             className={`border-2 ${
-              selectedCafe?.id === cafe.id
-                ? "border-primary"
-                : "border-transparent"
+              selectedCafe?.id === cafe.id ? "border-primary" : "border-transparent"
             } rounded-xl p-1 transition-all`}
           >
             <CafeCard cafe={cafe} onExpand={() => {}} />
@@ -70,7 +69,10 @@ export default function BookCafeSelector() {
           >
             <h2 className="text-xl font-bold mb-4 text-text-light dark:text-text-dark">
               So you want to get <span className="text-primary">Book #{bookId}</span> from{" "}
-              <span className="text-primary">{selectedCafe.name}, {selectedCafe.location}</span>?
+              <span className="text-primary">
+                {selectedCafe.name}, {selectedCafe.location}
+              </span>
+              ?
             </h2>
             <div className="flex justify-end gap-4">
               <button

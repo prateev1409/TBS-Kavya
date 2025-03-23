@@ -1,5 +1,6 @@
 // src/components/book.jsx
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 function BookCard({ book, onExpand }) {
@@ -21,16 +22,16 @@ function BookCard({ book, onExpand }) {
 }
 
 function BookExpanded({ book, onClose }) {
-  if (!book) return null;
+  const router = useRouter(); // ✅ Hook should be here!
 
   return (
     <div
       className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50"
-      onClick={onClose} // Close on background click
+      onClick={onClose}
     >
       <div
         className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body"
-        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           className="absolute top-4 right-4 text-xl text-text-light dark:text-text-dark"
@@ -44,7 +45,7 @@ function BookExpanded({ book, onClose }) {
               src={book.cover}
               alt={book.title}
               className="w-48 h-72 object-cover rounded-lg"
-              loading="lazy" // Lazy loading
+              loading="lazy"
             />
             <div className="absolute bottom-4 left-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
               ⭐{book.rating}/5
@@ -73,8 +74,8 @@ function BookExpanded({ book, onClose }) {
               </audio>
             )}
             <button
-            className="mt-4 bg-background-dark dark:bg-background-light text-text-dark dark:text-text-light px-4 py-2 rounded-lg hover:bg-primary-dark"
-            onClick={() => window.location.href = `/BookcafeSelector`} // navigate to selector
+              className="mt-4 bg-background-dark dark:bg-background-light text-text-dark dark:text-text-light px-4 py-2 rounded-lg hover:bg-primary-dark"
+              onClick={() => router.push(`/BookCafeSelector?bookId=${book.id}`)}
             >
               Get it at a Cafe
             </button>
@@ -84,6 +85,7 @@ function BookExpanded({ book, onClose }) {
     </div>
   );
 }
+
 
 
 function Book({ book }) {

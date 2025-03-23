@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function CafeCard({ cafe, onExpand }) {
+export function CafeCard({ cafe, onExpand }) {
   return (
     <div
       className="relative cursor-pointer transform transition-transform hover:scale-105"
@@ -27,9 +27,8 @@ function CafeCard({ cafe, onExpand }) {
   );
 }
 
-function CafeExpanded({ cafe, onClose }) {
+export function CafeExpanded({ cafe, onClose }) {
   if (!cafe) return null;
-
   return (
     <div
       className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50"
@@ -51,7 +50,7 @@ function CafeExpanded({ cafe, onClose }) {
               src={cafe.image}
               alt={cafe.name}
               className="w-full h-[280px] object-cover rounded-lg"
-              loading="lazy" // Lazy loading
+              loading="lazy"
             />
             <div className="absolute bottom-4 left-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
               ⭐{cafe.rating}/5
@@ -86,8 +85,7 @@ function CafeExpanded({ cafe, onClose }) {
   );
 }
 
-
-function CafeExpansion({ cafes }) {
+export function CafeExpansion({ cafes }) {
   const [selectedCafe, setSelectedCafe] = useState(null);
 
   return (
@@ -102,4 +100,5 @@ function CafeExpansion({ cafes }) {
   );
 }
 
+// Optionally, you can still export a default export:
 export default CafeExpansion;
