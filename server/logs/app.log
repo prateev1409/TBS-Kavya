@@ -6114,3 +6114,5 @@ Use mongoose.model(name, schema)
 2025-03-22 20:24:12 [INFO]: GET /api/cafes/filters - IP: ::1 - Body: {}
 2025-03-22 20:24:12 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
 2025-03-22 20:24:13 [INFO]: GET /api/books/filters - IP: ::1 - Body: {}
+2025-03-23 09:11:50 [INFO]: POST /api/auth/refresh-token - IP: ::1 - Body: {}
+2025-03-23 09:11:59 [INFO]: POST /api/auth/login - IP: ::1 - Body: {"email":"dodo@2001","password":"admin"}

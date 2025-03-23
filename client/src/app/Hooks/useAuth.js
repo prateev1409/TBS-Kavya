@@ -1,11 +1,12 @@
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export const useAuth = () => {
     const router = useRouter();
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
     const [lastRefresh, setLastRefresh] = useState(0); // Track last refresh time
+    const isLoggedIn = !!token;
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -93,5 +94,5 @@ export const useAuth = () => {
         router.push('/auth/signin');
     };
 
-    return { user, setUser, token, refreshToken, logout };
+    return { user, setUser, token, refreshToken, logout, isLoggedIn };
 };

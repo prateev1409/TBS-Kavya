@@ -1,5 +1,5 @@
 import { useState } from "react";
-import CafeCard from "./cafe"; // Reusing your existing CafeCard component
+import CafeCard from "../../components/cafe"; // Reusing your existing CafeCard component
 
 function BookCafeSelector({ book, cafes }) {
   const [selectedCafe, setSelectedCafe] = useState(null);
