@@ -6552,6 +6552,7 @@ Use mongoose.model(name, schema)
 2025-03-23 19:49:46 [INFO]: GET /api/users/profile - IP: ::1 - Body: {}
 2025-03-23 19:49:47 [INFO]: GET /api/cafes?cafe_owner_id=User_011 - IP: ::1 - Body: {}
 2025-03-23 19:49:47 [INFO]: GET /api/cafe/cafe_006/requests - IP: ::1 - Body: {}
+<<<<<<< HEAD
 >>>>>>> da7c9f84f6fa49445f41bab2496cfcf9a24e4f71
 2025-03-23 22:50:40 [INFO]: GET /api/books/undefined - IP: ::1 - Body: {}
 2025-03-23 22:50:40 [INFO]: GET /api/cafes/book/undefined - IP: ::1 - Body: {}
@@ -6752,3 +6753,5 @@ Use mongoose.model(name, schema)
 2025-03-23 23:43:35 [INFO]: GET /api/transactions - IP: ::1 - Body: {}
 2025-03-23 23:43:37 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
 2025-03-23 23:43:37 [INFO]: GET /api/users/filters - IP: ::1 - Body: {}
+=======
+>>>>>>> 4a5ed8b4850e3d01dbf24b53d57c71df0cc25b16
