@@ -75,10 +75,10 @@ function BookExpanded({ book, onClose }) {
             )}
             <button
               className="mt-4 bg-background-dark dark:bg-background-light text-text-dark dark:text-text-light px-4 py-2 rounded-lg hover:bg-primary-dark"
-              onClick={() => router.push(`/BookCafeSelector?bookId=${book.book_id}`)} // Use book.book_id to match schema
-              >
-                Get it at a Cafe
-              </button>
+              onClick={() => router.push(`/BookCafeSelector?bookId=${book.id}`)}
+            >
+              Get it at a Cafe
+            </button>
           </div>
         </div>
       </div>

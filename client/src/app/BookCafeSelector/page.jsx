@@ -1,63 +1,51 @@
 "use client";
+import { useRouter, useSearchParams } from "next/navigation"; // Add useSearchParams
 import { useEffect, useState } from "react";
+import { CafeCard } from "../../components/cafe"; // Import CafeCard
 import { useAuth } from "../Hooks/useAuth";
 
 export default function BookCafeSelector() {
   const { refreshToken } = useAuth();
-  const [books, setBooks] = useState([]);
+  const router = useRouter();
+  const searchParams = useSearchParams(); // Get query params from URL
   const [selectedBookId, setSelectedBookId] = useState(null);
+  const [bookName, setBookName] = useState(""); // To store book name for popup
   const [cafes, setCafes] = useState([]);
   const [error, setError] = useState(null);
-  const [loadingBooks, setLoadingBooks] = useState(false);
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [transactionLoading, setTransactionLoading] = useState(false);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [selectedCafe, setSelectedCafe] = useState(null);
 
-  // Fetch all books
-  const fetchBooks = async () => {
-    if (loadingBooks) return;
-    setLoadingBooks(true);
+  // Fetch book details (to get the name)
+  const fetchBookDetails = async (bookId) => {
     try {
       let token = localStorage.getItem("token");
       if (!token) {
         window.location.href = "/auth/signin";
         return;
       }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (res.status === 401) {
         token = await refreshToken();
-        if (!token) {
-          throw new Error("Failed to refresh token");
-        }
+        if (!token) throw new Error("Failed to refresh token");
         localStorage.setItem("token", token);
-        const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
+        const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!retryRes.ok) {
-          const errorData = await retryRes.json();
-          throw new Error(`Failed to fetch books: ${errorData.error || retryRes.statusText}`);
-        }
-        const retryData = await retryRes.json();
-        setBooks(retryData);
+        if (!retryRes.ok) throw new Error("Failed to fetch book details");
+        const data = await retryRes.json();
+        setBookName(data.name);
       } else if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(`Failed to fetch books: ${errorData.error || res.statusText}`);
+        throw new Error("Failed to fetch book details");
       } else {
         const data = await res.json();
-        setBooks(data);
+        setBookName(data.name);
       }
     } catch (err) {
-      console.error("Error fetching books:", err);
       setError(err.message);
-      if (err.message.includes("Failed to refresh token")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
-    } finally {
-      setLoadingBooks(false);
     }
   };
 
@@ -78,39 +66,28 @@ export default function BookCafeSelector() {
 
       if (res.status === 401) {
         token = await refreshToken();
-        if (!token) {
-          throw new Error("Failed to refresh token");
-        }
+        if (!token) throw new Error("Failed to refresh token");
         localStorage.setItem("token", token);
         const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/book/${bookId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!retryRes.ok) {
-          const errorData = await retryRes.json();
-          throw new Error(`Failed to fetch cafes: ${errorData.error || retryRes.statusText}`);
-        }
+        if (!retryRes.ok) throw new Error("Failed to fetch cafes");
         const retryData = await retryRes.json();
         setCafes(retryData);
       } else if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(`Failed to fetch cafes: ${errorData.error || res.statusText}`);
+        throw new Error("Failed to fetch cafes");
       } else {
         const data = await res.json();
         setCafes(data);
       }
     } catch (err) {
-      console.error("Error fetching cafes:", err);
       setError(err.message);
-      if (err.message.includes("Failed to refresh token")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setLoadingCafes(false);
     }
   };
 
-  // Create a transaction when "Request The Book" is clicked
+  // Create a transaction
   const requestBook = async (cafeId) => {
     if (transactionLoading) return;
     setTransactionLoading(true);
@@ -136,9 +113,7 @@ export default function BookCafeSelector() {
 
       if (res.status === 401) {
         token = await refreshToken();
-        if (!token) {
-          throw new Error("Failed to refresh token");
-        }
+        if (!token) throw new Error("Failed to refresh token");
         localStorage.setItem("token", token);
         const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions`, {
           method: "POST",
@@ -152,41 +127,36 @@ export default function BookCafeSelector() {
             status: "pickup_pending",
           }),
         });
-        if (!retryRes.ok) {
-          const errorData = await retryRes.json();
-          throw new Error(`Failed to create transaction: ${errorData.error || retryRes.statusText}`);
-        }
+        if (!retryRes.ok) throw new Error("Failed to create transaction");
         alert("Book requested successfully!");
       } else if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(`Failed to create transaction: ${errorData.error || res.statusText}`);
+        throw new Error("Failed to create transaction");
       } else {
         alert("Book requested successfully!");
       }
     } catch (err) {
-      console.error("Error creating transaction:", err);
       setError(err.message);
-      if (err.message.includes("Failed to refresh token")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setTransactionLoading(false);
+      setShowConfirmPopup(false); // Close popup after transaction
     }
   };
 
-  // Fetch books on page load
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  // Fetch cafes when a book is selected
-  const handleTryItOut = (bookId) => {
-    setSelectedBookId(bookId);
-    fetchCafes(bookId);
-    // Scroll to the cafes section
-    document.getElementById("cafes-section")?.scrollIntoView({ behavior: "smooth" });
+  // Handle "Book at this Cafe" button click
+  const handleBookAtCafe = (cafe) => {
+    setSelectedCafe(cafe);
+    setShowConfirmPopup(true);
   };
+
+  // Load book ID from URL and fetch cafes
+  useEffect(() => {
+    const bookId = searchParams.get("bookId");
+    if (bookId) {
+      setSelectedBookId(bookId);
+      fetchBookDetails(bookId); // Fetch book name for popup
+      fetchCafes(bookId); // Fetch cafes immediately
+    }
+  }, [searchParams]);
 
   if (error) {
     return (
@@ -199,88 +169,70 @@ export default function BookCafeSelector() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Section 1: Books */}
-        <section className="mb-12">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">Select Your Favorite Book</h1>
-          {loadingBooks ? (
-            <div className="text-gray-600">Loading books...</div>
-          ) : books.length === 0 ? (
-            <div className="text-gray-600">No books found.</div>
+        <section id="cafes-section">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">
+            Cafes with Your Selected Book
+          </h1>
+          {loadingCafes ? (
+            <div className="text-gray-600">Loading cafes...</div>
+          ) : cafes.length === 0 ? (
+            <div className="text-gray-600">No cafes found for this book.</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {books.map((book) => (
-                <div
-                  key={book.book_id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <img
-                    src={book.image_url || "https://picsum.photos/150"} // Updated placeholder
-                    alt={book.name}
-                    className="w-full h-48 object-cover"
+              {cafes.map((cafe) => (
+                <div key={cafe.cafe_id}>
+                  <CafeCard
+                    cafe={{
+                      id: cafe.cafe_id,
+                      image: cafe.image_url || "https://picsum.photos/200",
+                      name: cafe.name,
+                      distance: cafe.distance || "N/A",
+                      rating: cafe.ratings,
+                      location: cafe.location,
+                      specialties: cafe.specials,
+                      discounts: `${cafe.discount}%`,
+                      priceRange: `₹${cafe.average_bill}`,
+                      description: cafe.description || "No description available",
+                    }}
+                    onExpand={() => {}} // No expansion needed here
                   />
-                  <div className="p-4">
-                    <h2 className="text-xl font-semibold text-gray-800">{book.name}</h2>
-                    <p className="text-gray-600">by {book.author}</p>
-                    <p className="text-gray-500 text-sm mt-1">Genre: {book.genre || "N/A"}</p>
-                    <p className="text-gray-500 text-sm">Language: {book.language}</p>
-                    <p className="text-yellow-500 mt-1">Rating: {book.ratings}/5</p>
-                    <button
-                      onClick={() => handleTryItOut(book.book_id)}
-                      className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Try It Out
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleBookAtCafe(cafe)}
+                    className="mt-2 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    disabled={transactionLoading}
+                  >
+                    {transactionLoading ? "Booking..." : "Book at this Cafe"}
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </section>
 
-        {/* Section 2: Cafes (shown only if a book is selected) */}
-        {selectedBookId && (
-          <section id="cafes-section">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">
-              Cafes with Your Selected Book
-            </h1>
-            {loadingCafes ? (
-              <div className="text-gray-600">Loading cafes...</div>
-            ) : cafes.length === 0 ? (
-              <div className="text-gray-600">No cafes found for this book.</div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {cafes.map((cafe) => (
-                  <div
-                    key={cafe.cafe_id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                  >
-                    <div className="p-4">
-                      <h2 className="text-xl font-semibold text-gray-800">{cafe.name}</h2>
-                      <p className="text-gray-600">Location: {cafe.location}</p>
-                      <p className="text-gray-500 text-sm mt-1">
-                        Average Bill: ₹{cafe.average_bill}
-                      </p>
-                      <p className="text-gray-500 text-sm">Discount: {cafe.discount}%</p>
-                      <p className="text-yellow-500 mt-1">Rating: {cafe.ratings}/5</p>
-                      <p className="text-gray-500 text-sm">
-                        Specials: {cafe.specials || "N/A"}
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        Owner: {cafe.cafe_owner_id || "N/A"}
-                      </p>
-                      <button
-                        onClick={() => requestBook(cafe.cafe_id)}
-                        className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        disabled={transactionLoading}
-                      >
-                        {transactionLoading ? "Requesting..." : "Request The Book"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+        {/* Confirmation Popup */}
+        {showConfirmPopup && selectedCafe && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-xl font-bold mb-4">
+                Do you want to book "{bookName}" from "{selectedCafe.name}"?
+              </h2>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowConfirmPopup(false)}
+                  className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => requestBook(selectedCafe.cafe_id)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  disabled={transactionLoading}
+                >
+                  {transactionLoading ? "Confirming..." : "Confirm Transaction"}
+                </button>
               </div>
-            )}
-          </section>
+            </div>
+          </div>
         )}
       </div>
     </div>
