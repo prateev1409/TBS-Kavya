@@ -1,12 +1,11 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
 import Footer from "../../components/footer";
 import Header from "../../components/header";
 import SubscriptionPlan from "../../components/subscriptionplans";
 import ThemeToggle from "../../components/ThemeToggle";
-import { useUser } from "../Hooks/useUser";
 import { useAuth } from "../Hooks/useAuth"; // Import useAuth for token refresh
+import { useUser } from "../Hooks/useUser";
 
 function MainComponent() {
     const [selectedPlan, setSelectedPlan] = useState(null);
