@@ -32,11 +32,11 @@ export function CafeExpanded({ cafe, onClose }) {
   return (
     <div
       className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50"
-      onClick={onClose} // Close on background click
+      onClick={onClose}
     >
       <div
         className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body"
-        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           className="absolute top-4 right-4 text-xl text-text-light dark:text-text-dark"
@@ -88,6 +88,11 @@ export function CafeExpanded({ cafe, onClose }) {
 export function CafeExpansion({ cafes }) {
   const [selectedCafe, setSelectedCafe] = useState(null);
 
+  // Safeguard against undefined or non-array cafes
+  if (!Array.isArray(cafes)) {
+    return <div>No cafes available to display.</div>;
+  }
+
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -100,5 +105,4 @@ export function CafeExpansion({ cafes }) {
   );
 }
 
-// Optionally, you can still export a default export:
 export default CafeExpansion;

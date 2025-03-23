@@ -16,6 +16,13 @@ const adminPortalRoutes = require('./routes/adminPortal');
 // Load environment variables from .env file
 dotenv.config();
 
+// Debug: Log environment variables to verify they are loaded
+console.log('Environment Variables:');
+console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID);
+console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
+console.log('MONGODB_URI:', process.env.MONGODB_URI);
+
 // Validate critical environment variables
 if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables');
@@ -25,17 +32,21 @@ if (!process.env.MONGODB_URI) {
     console.error('FATAL ERROR: MONGODB_URI is not defined in environment variables');
     process.exit(1);
 }
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    console.error('FATAL ERROR: Razorpay credentials (RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET) are not defined in environment variables');
+    process.exit(1);
+}
 
 const app = express();
 
 // Configure CORS
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production'
-        ? 'https://your-frontend-domain.com' // Replace with your production frontend URL
+        ? 'https://your-frontend-domain.com'
         : 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allow cookies or auth headers if needed
+    credentials: true,
 };
 app.use(cors(corsOptions));
 
@@ -69,36 +80,36 @@ const transactionLimiter = rateLimit({
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
-    // Optional: specify the database name if not included in MONGODB_URI
-    // dbName: 'your_database_name',
+    connectTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 5000,
 })
-    .then(() => {
+    .then(async () => {
         console.log('MongoDB connected');
+
+        // Register routes after MongoDB connection is confirmed
+        app.use('/api/auth', authLimiter, authRoutes);
+        app.use('/api/users', userRoutes);
+        app.use('/api/transactions', transactionLimiter, transactionRoutes);
+        app.use('/api/books', bookRoutes);
+        app.use('/api/cafes', cafeRoutes);
+        app.use('/api/cafe', cafePortalRoutes);
+        app.use('/api/client', clientPortalRoutes);
+        app.use('/api/admin', adminLimiter, adminPortalRoutes);
+
+        // Global error handler
+        app.use((err, req, res, next) => {
+            logger.error(`Error: ${err.message} - Stack: ${err.stack}`);
+            res.status(500).json({ error: 'Something went wrong, please try again later' });
+        });
+
+        // Start server
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        });
     })
     .catch(err => {
-        console.error('MongoDB connection error:', err);
-        process.exit(1); // Exit the process if MongoDB connection fails
+        console.error('MongoDB connection error:', err.message);
+        process.exit(1);
     });
-
-// Routes
-app.use('/api/auth', authLimiter, authRoutes); // Apply rate limiting to auth routes
-app.use('/api/users', userRoutes);
-app.use('/api/transactions', transactionLimiter, transactionRoutes); // Apply rate limiting to transaction routes
-app.use('/api/books', bookRoutes);
-app.use('/api/cafes', cafeRoutes); // Handles /api/cafes/* routes (e.g., /api/cafes, /api/cafes/:cafe_id)
-app.use('/api/cafe', cafePortalRoutes); // Handles /api/cafe/* routes (e.g., /api/cafe/:cafe_id/requests)
-app.use('/api/client', clientPortalRoutes);
-app.use('/api/admin', adminLimiter, adminPortalRoutes); // Apply rate limiting to admin routes
-
-// Global error handler
-app.use((err, req, res, next) => {
-    logger.error(`Error: ${err.message} - Stack: ${err.stack}`);
-    res.status(500).json({ error: 'Something went wrong, please try again later' });
-});
-
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});

@@ -6,3 +6,31 @@ Use mongoose.model(name, schema)
 2025-03-22 19:37:57 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
 2025-03-22 19:39:38 [ERROR]: Error fetching transactions: Cast to ObjectId failed for value "TEST_1" (type string) at path "_id" for model "Book"
 2025-03-22 22:47:15 [ERROR]: Auth middleware error: invalid token
+2025-03-23 17:05:47 [ERROR]: Error creating transaction: transaction_id is not defined
+2025-03-23 17:06:28 [ERROR]: Error creating transaction: transaction_id is not defined
+2025-03-23 17:20:31 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+2025-03-23 17:29:49 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:36:20 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:37:22 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:46:17 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2025-03-23 17:47:37 [ERROR]: Error creating transaction: Transaction validation failed: transaction_id: Path `transaction_id` is required., Stack: ValidationError: Transaction validation failed: transaction_id: Path `transaction_id` is required.
+    at Document.invalidate (D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3329:32)
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\document.js:3090:17
+    at D:\New folder\TBS-Kavya\server\node_modules\mongoose\lib\schemaType.js:1407:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)

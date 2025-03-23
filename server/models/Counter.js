@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 
 const counterSchema = new mongoose.Schema({
-    _id: { type: String, required: true }, // e.g., "transaction_id"
-    sequence_value: { type: Number, default: 0 },
+  _id: { type: String, required: true },
+  sequence_value: { type: Number, default: 0 },
 });
 
-module.exports = mongoose.model('Counter', counterSchema);
+const Counter = mongoose.model('Counter', counterSchema);
+console.log('Counter model registered');
+
+module.exports = Counter;

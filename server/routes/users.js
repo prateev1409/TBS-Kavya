@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const SubscriptionPayment = require('../models/SubscriptionPayment');
+const Razorpay = require('razorpay');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
@@ -288,12 +291,31 @@ router.delete('/:user_id', authMiddleware, adminMiddleware, async (req, res) => 
     }
 });
 
-// POST /api/users/create-subscription - Create or update user subscription
+// POST /api/users/create-subscription - Create a Razorpay order for subscription
 router.post('/create-subscription', authMiddleware, async (req, res) => {
     try {
-        const { tier } = req.body;
+        // Initialize Razorpay instance inside the route handler
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+
+        const { tier, amount } = req.body;
         if (!['basic', 'standard', 'premium'].includes(tier)) {
             return res.status(400).json({ error: 'Invalid subscription tier' });
+        }
+        if (!amount || typeof amount !== 'number') {
+            return res.status(400).json({ error: 'Amount is required and must be a number' });
+        }
+
+        // Define expected amounts for each plan (in INR)
+        const planAmounts = {
+            basic: 9.99,
+            standard: 14.99,
+            premium: 19.99,
+        };
+        if (planAmounts[tier] !== amount) {
+            return res.status(400).json({ error: `Invalid amount for ${tier} plan. Expected ${planAmounts[tier]} INR` });
         }
 
         const user = await User.findById(req.userId);
@@ -301,15 +323,88 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        user.subscription_type = tier;
-        user.subscription_validity = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year validity
-        await user.save(); // updatedAt will be set by the pre-save hook
+        // Create a Razorpay order
+        const options = {
+            amount: amount * 100, // Convert to paise (Razorpay expects amount in paise)
+            currency: 'INR',
+            receipt: `receipt_${user.user_id}_${Date.now()}`,
+            notes: {
+                user_id: user.user_id,
+                tier: tier,
+            },
+        };
 
-        console.log('User subscription updated:', user);
-        res.status(200).json({ message: 'Subscription updated successfully', user });
+        const order = await razorpay.orders.create(options);
+        console.log(`Razorpay order created for user ${user.user_id}: ${order.id}`);
+
+        res.status(200).json({
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            key: process.env.RAZORPAY_KEY_ID, // Send the Key ID to the frontend
+        });
     } catch (err) {
-        console.error('Error updating subscription:', err.message);
-        res.status(500).json({ error: err.message });
+        console.error('Error creating Razorpay order:', err.message);
+        res.status(500).json({ error: `Failed to create order: ${err.message}` });
+    }
+});
+
+// POST /api/users/verify-subscription-payment - Verify Razorpay payment and update subscription
+router.post('/verify-subscription-payment', authMiddleware, async (req, res) => {
+    try {
+        // Initialize Razorpay instance inside the route handler
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier, amount } = req.body;
+
+        // Validate the request
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !tier || !amount) {
+            return res.status(400).json({ error: 'Missing required payment details' });
+        }
+
+        // Verify the payment signature
+        const body = razorpay_order_id + '|' + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature !== razorpay_signature) {
+            console.warn(`Payment verification failed for order ${razorpay_order_id}`);
+            return res.status(400).json({ error: 'Payment verification failed' });
+        }
+
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Update the user's subscription
+        const transactionDate = new Date();
+        user.subscription_type = tier;
+        user.subscription_validity = new Date(transactionDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days validity
+        await user.save();
+
+        // Store the payment details in SubscriptionPayment
+        const subscriptionPayment = new SubscriptionPayment({
+            transaction_date: transactionDate,
+            payment_id: razorpay_payment_id,
+            user_id: user.user_id,
+            user_email: user.email,
+            validity: user.subscription_validity,
+            subscription_type: tier,
+            amount: amount,
+        });
+        await subscriptionPayment.save();
+
+        console.log(`Payment verified and subscription updated for user ${user.user_id}: Plan ${tier}`);
+        res.status(200).json({ message: 'Payment verified and subscription updated successfully' });
+    } catch (err) {
+        console.error('Error verifying Razorpay payment:', err.message);
+        res.status(500).json({ error: `Failed to verify payment: ${err.message}` });
     }
 });
 
