@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
-import QRScanner from "../scanner/page";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../Hooks/useAuth";
+import QRScanner from "../scanner/page";
 
 function CafeDashboard() {
     const { user, setUser, refreshToken } = useAuth();
@@ -284,15 +284,17 @@ function CafeDashboard() {
     const handleScanned = async ({ firstCode, secondCode }) => {
         setScannedCodes({ first: firstCode, second: secondCode });
         let token = localStorage.getItem('token');
-
+    
+        // Parse first QR code: "transactionId.user_id"
         const parts = firstCode.split(".");
         if (parts.length !== 2) {
             setScannerMessage("Invalid format for first QR code.");
             return;
         }
-        const scannedTransactionId = Number(parts[0]);
-        const scannedUserId = parts[1];
-
+        const scannedTransactionId = parts[0]; // Keep as string: "TXN_1742751402350_bk5arw"
+        const scannedUserId = parts[1]; // "User_001"
+    
+        // Find the pending transaction locally
         const pendingTx = transactions.find(
             (tx) => tx.transaction_id === scannedTransactionId && ['pickup_pending', 'dropoff_pending'].includes(tx.status)
         );
@@ -300,33 +302,50 @@ function CafeDashboard() {
             setScannerMessage("Transaction not found or not pending.");
             return;
         }
-
+    
+        // Helper to extract alphabetic prefix from book_id
+        const extractAlpha = (str) => {
+            if (!str) return "";
+            const parts = str.split("_");
+            return parts[0] || "";
+        };
+    
         try {
             if (pendingTx.status === "pickup_pending") {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/scan/book/${pendingTx.book_id.book_id || pendingTx.book_id}`, {
+                // Step 1: Verify the book QR code (secondCode) by prefix
+                const bookIdToVerify = pendingTx.book_id.book_id || pendingTx.book_id; // Handle nested or flat book_id
+                const scannedBookPrefix = extractAlpha(secondCode); // e.g., "HOTD" from "HOTD_3"
+                const expectedBookPrefix = extractAlpha(bookIdToVerify); // e.g., "HOTD" from "HOTD_1"
+                if (scannedBookPrefix !== expectedBookPrefix) {
+                    setScannerMessage("Scanned book QR code prefix does not match transaction.");
+                    return;
+                }
+    
+                // Use the scanned book_id (secondCode) for the API call if it's different
+                const bookRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/scan/book/${secondCode}`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (res.status === 401) {
+                if (bookRes.status === 401) {
                     token = await refreshToken();
                     if (!token) {
                         setError('Failed to refresh token. Please log in again.');
                         window.location.href = '/auth/signin';
-                        setLoading(false);
                         return;
                     }
                     localStorage.setItem('token', token);
-                    const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/scan/book/${pendingTx.book_id.book_id || pendingTx.book_id}`, {
+                    const retryBookRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/scan/book/${secondCode}`, {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${token}` },
                     });
-                    if (!retryRes.ok) throw new Error('Failed to verify book QR after token refresh');
-                    const data = await retryRes.json();
-                } else {
-                    if (!res.ok) throw new Error('Failed to verify book QR');
-                    const data = await res.json();
+                    if (!retryBookRes.ok) throw new Error('Failed to verify book QR after token refresh');
+                    await retryBookRes.json();
+                } else if (!bookRes.ok) {
+                    const errorData = await bookRes.json();
+                    throw new Error(`Failed to verify book QR: ${errorData.error || bookRes.statusText}`);
                 }
-
+    
+                // Step 2: Approve pickup with user QR code
                 const approveRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/scan/user/${scannedUserId}`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
@@ -336,7 +355,6 @@ function CafeDashboard() {
                     if (!token) {
                         setError('Failed to refresh token. Please log in again.');
                         window.location.href = '/auth/signin';
-                        setLoading(false);
                         return;
                     }
                     localStorage.setItem('token', token);
@@ -346,56 +364,82 @@ function CafeDashboard() {
                     });
                     if (!retryApproveRes.ok) throw new Error('Failed to approve pickup after token refresh');
                     const approveData = await retryApproveRes.json();
-                    setTransactions(transactions.map(tx =>
-                        tx.transaction_id === scannedTransactionId ? approveData.transaction : tx
-                    ));
+                    setTransactions((prev) =>
+                        prev.map((tx) =>
+                            tx.transaction_id === scannedTransactionId
+                                ? { ...tx, status: 'picked_up', book_id: secondCode, processed_at: new Date() }
+                                : tx
+                        )
+                    );
                     setScannerMessage("Pickup transaction approved!");
+                } else if (!approveRes.ok) {
+                    const errorData = await approveRes.json();
+                    throw new Error(`Failed to approve pickup: ${errorData.error || approveRes.statusText}`);
                 } else {
-                    if (!approveRes.ok) throw new Error('Failed to approve pickup');
                     const approveData = await approveRes.json();
-                    setTransactions(transactions.map(tx =>
-                        tx.transaction_id === scannedTransactionId ? approveData.transaction : tx
-                    ));
+                    setTransactions((prev) =>
+                        prev.map((tx) =>
+                            tx.transaction_id === scannedTransactionId
+                                ? { ...tx, status: 'picked_up', book_id: secondCode, processed_at: new Date() }
+                                : tx
+                        )
+                    );
                     setScannerMessage("Pickup transaction approved!");
                 }
             } else if (pendingTx.status === "dropoff_pending") {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/complete/${pendingTx.transaction_id}`, {
+                // Validate both QR codes match the transaction
+                const expectedFirstCode = `${pendingTx.transaction_id}.${pendingTx.user_id.user_id || pendingTx.user_id}`;
+                const expectedSecondCode = pendingTx.book_id.book_id || pendingTx.book_id;
+                if (firstCode !== expectedFirstCode || secondCode !== expectedSecondCode) {
+                    setScannerMessage("Scanned QR codes do not match transaction.");
+                    return;
+                }
+    
+                const completeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/complete/${scannedTransactionId}`, {
                     method: 'PUT',
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (res.status === 401) {
+                if (completeRes.status === 401) {
                     token = await refreshToken();
                     if (!token) {
                         setError('Failed to refresh token. Please log in again.');
                         window.location.href = '/auth/signin';
-                        setLoading(false);
                         return;
                     }
                     localStorage.setItem('token', token);
-                    const retryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/complete/${pendingTx.transaction_id}`, {
+                    const retryCompleteRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/complete/${scannedTransactionId}`, {
                         method: 'PUT',
                         headers: { Authorization: `Bearer ${token}` },
                     });
-                    if (!retryRes.ok) throw new Error('Failed to complete drop-off after token refresh');
-                    const data = await retryRes.json();
-                    setTransactions(transactions.map(tx =>
-                        tx.transaction_id === scannedTransactionId ? data.transaction : tx
-                    ));
+                    if (!retryCompleteRes.ok) throw new Error('Failed to complete drop-off after token refresh');
+                    const completeData = await retryCompleteRes.json();
+                    setTransactions((prev) =>
+                        prev.map((tx) =>
+                            tx.transaction_id === scannedTransactionId ? { ...tx, status: 'dropped_off', processed_at: new Date() } : tx
+                        )
+                    );
                     setScannerMessage("Dropoff transaction approved!");
+                } else if (!completeRes.ok) {
+                    const errorData = await completeRes.json();
+                    throw new Error(`Failed to complete drop-off: ${errorData.error || completeRes.statusText}`);
                 } else {
-                    if (!res.ok) throw new Error('Failed to complete drop-off');
-                    const data = await res.json();
-                    setTransactions(transactions.map(tx =>
-                        tx.transaction_id === scannedTransactionId ? data.transaction : tx
-                    ));
+                    const completeData = await completeRes.json();
+                    setTransactions((prev) =>
+                        prev.map((tx) =>
+                            tx.transaction_id === scannedTransactionId ? { ...tx, status: 'dropped_off', processed_at: new Date() } : tx
+                        )
+                    );
                     setScannerMessage("Dropoff transaction approved!");
                 }
             }
+    
+            // Refresh transactions to ensure consistency
+            await fetchTransactions();
         } catch (err) {
             console.error('Error in handleScanned:', err.message);
-            setScannerMessage(err.message);
+            setScannerMessage(`Error: ${err.message}`);
         }
-
+    
         setTimeout(() => {
             setShowScannerModal(false);
             setScannerMessage(null);
