@@ -214,11 +214,12 @@ function MainComponent() {
       const mappedCafes = data.map((cafe) => ({
         id: cafe.cafe_id,
         name: cafe.name,
-        image: cafe.image || "https://picsum.photos/200",
+        image: cafe.image_url || "https://picsum.photos/150",
         distance: cafe.distance || "N/A",
         priceRange: `₹${cafe.average_bill}`, // Changed from 'price' to 'priceRange' for CafeCard
         rating: cafe.ratings,
         location: cafe.location,
+        audioSummary: cafe.audio_url,
         specialties: cafe.specials,
         discounts: `${cafe.discount}%`,
         description: cafe.description || "No description available",

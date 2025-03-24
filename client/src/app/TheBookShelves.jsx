@@ -103,9 +103,10 @@ function TheBookShelves() {
       const mappedCafes = data.map((cafe) => ({
         id: cafe.cafe_id, // CafeExpansion expects 'id', but we'll use cafe_id
         name: cafe.name,
-        image: cafe.image || "https://picsum.photos/200", // Fallback image
+        image: cafe.image_url || "https://picsum.photos/200", // Fallback image
         distance: cafe.distance || "N/A", // Not in schema, assuming API might extend it later
         location: cafe.location,
+        audioSummary: cafe.audio_url,
         specialties: cafe.specials,
         discounts: `${cafe.discount}%`,
         priceRange: `₹${cafe.average_bill}`,

@@ -253,7 +253,7 @@ router.post(
         }
 
         try {
-            const { name, location, average_bill, discount, ratings, specials, cafe_owner_id } = req.body;
+            const { name, location, average_bill, discount, ratings, specials, cafe_owner_id , image_url, audio_url,} = req.body;
 
             // Generate a unique cafe_id
             const cafeCount = await Cafe.countDocuments();
@@ -271,6 +271,8 @@ router.post(
                 cafe_id, // Add the generated cafe_id
                 name,
                 location,
+                image_url,
+                audio_url,
                 average_bill: average_bill || 0,
                 discount: discount || 0,
                 ratings: ratings || 0,

@@ -189,6 +189,8 @@ function AdminDashboard() {
         { name: "cafe_id", label: "Cafe ID", type: "text", readOnly: true },
         { name: "name", label: "Cafe Name *", type: "text" },
         { name: "location", label: "Location *", type: "text" },
+        { name: "image_url", label: "Image URL", type: "text" },
+        { name: "audio_url", label: "Audio URL", type: "text" },
         { name: "average_bill", label: "Average Bill", type: "number", min: 0 },
         { name: "discount", label: "Discount", type: "number", min: 0 },
         { name: "ratings", label: "Ratings (0-5)", type: "number", min: 0, max: 5 },
@@ -322,6 +324,8 @@ function AdminDashboard() {
         requestData = {
           name: formValues.name,
           location: formValues.location,
+          image_url: formValues.image_url || undefined,
+          audio_url: formValues.audio_url || undefined,
           average_bill: Number(formValues.average_bill) || 0,
           discount: Number(formValues.discount) || 0,
           ratings: Number(formValues.ratings) || 0,

@@ -206,6 +206,8 @@ function CafesSection({ data, setData, onEdit }) {
                             <th className="px-4 py-3 text-left">Cafe ID</th>
                             <th className="px-4 py-3 text-left">Name</th>
                             <th className="px-4 py-3 text-left">Location</th>
+                            <th className="px-4 py-3 text-left">Image URL</th>
+                            <th className="px-4 py-3 text-left">Audio URL</th>
                             <th className="px-4 py-3 text-left">Avg Bill</th>
                             <th className="px-4 py-3 text-left">Discount</th>
                             <th className="px-4 py-3 text-left">Ratings</th>
@@ -222,6 +224,34 @@ function CafesSection({ data, setData, onEdit }) {
                                 <td className="px-4 py-3">{cafe.cafe_id}</td>
                                 <td className="px-4 py-3">{cafe.name}</td>
                                 <td className="px-4 py-3">{cafe.location}</td>
+                                <td className="px-4 py-3 truncate max-w-xs">
+                                {cafe.image_url ? (
+                                    <a
+                                    href={cafe.image_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                    >
+                                    View
+                                    </a>
+                                    ) : (
+                                        "N/A"
+                                    )}
+                                    </td>
+                                    <td className="px-4 py-3 truncate max-w-xs">
+                                    {cafe.audio_url ? (
+                                        <a
+                                        href={cafe.audio_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline"
+                                        >
+                                        Listen
+                                        </a>
+                                    ) : (
+                                        "N/A"
+                                    )}
+                                    </td>
                                 <td className="px-4 py-3">₹{cafe.average_bill}</td>
                                 <td className="px-4 py-3">{cafe.discount}%</td>
                                 <td className="px-4 py-3">{cafe.ratings}</td>
