@@ -528,7 +528,11 @@ function MainComponent() {
         {Object.keys(showQR).some((key) => showQR[key]) && (
           <div
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+<<<<<<< HEAD
             onClick={() => setShowQR({})}
+=======
+            onClick={() => setShowQR({})} // Close modal when clicking outside
+>>>>>>> a1a6aa5c96c0f31c70e89e21cd2a4c47deb3a069
           >
             {pendingTransactions.map((transaction) => {
               const qrData = `${transaction.transaction_id}.${user.user_id}`;
@@ -536,7 +540,11 @@ function MainComponent() {
                 <div
                   key={transaction.transaction_id}
                   className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative"
+<<<<<<< HEAD
                   onClick={(e) => e.stopPropagation()}
+=======
+                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+>>>>>>> a1a6aa5c96c0f31c70e89e21cd2a4c47deb3a069
                 >
                   <button
                     onClick={() => toggleQR(transaction.transaction_id)}
