@@ -503,14 +503,6 @@ function MainComponent() {
                               ? "Hide QR"
                               : "Show QR"}
                           </button>
-                          {showQR[transaction.transaction_id] && (
-                            <div className="mt-2 flex justify-end">
-                              <QRCodeGenerator
-                                bookName={transaction.book_id.name} // Use the actual book name
-                                bookId={qrData} // Use the constructed qrData
-                              />
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );
@@ -520,6 +512,52 @@ function MainComponent() {
             </div>
           )}
         </div>
+
+        {/* QR Code Modal */}
+        {Object.keys(showQR).some((key) => showQR[key]) && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            onClick={() => setShowQR({})} // Close modal when clicking outside
+          >
+            {pendingTransactions.map((transaction) => {
+              const qrData = `${transaction.transaction_id}.${user.user_id}`;
+              return showQR[transaction.transaction_id] ? (
+                <div
+                  key={transaction.transaction_id}
+                  className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative"
+                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                >
+                  <button
+                    onClick={() => toggleQR(transaction.transaction_id)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <h3 className="text-lg font-bold mb-4 text-black">
+                    QR Code for {transaction.book_id.name}
+                  </h3>
+                  <QRCodeGenerator
+                    bookName={transaction.book_id.name}
+                    bookId={qrData}
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        )}
 
         {/* Logout Section */}
         <div className="text-center">
