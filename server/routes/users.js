@@ -60,6 +60,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             phone_number: user.phone_number,
             subscription_type: user.subscription_type,
             subscription_validity: user.subscription_validity,
+            book_id: user.book_id,
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
