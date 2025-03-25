@@ -240,9 +240,8 @@ function TheBookShelves() {
             <CafeExpansion cafes={cafes} />
           )}
         </section>
-
-        <Footer/>
-      </main>
+        </main>
+      <Footer/>
       <ThemeToggle />
     </div>
   );
