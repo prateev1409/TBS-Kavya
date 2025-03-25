@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true }, // Will be hashed
     subscription_validity: { type: Date },
     subscription_type: { type: String, enum: ['basic', 'standard', 'premium'], default: 'basic' },
-    book_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', default: null },
+    book_id: {  type: String , default: null },
     role: { type: String, default: 'user' }, // e.g., 'user', 'admin'
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

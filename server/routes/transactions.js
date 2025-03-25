@@ -157,7 +157,7 @@ router.post(
       await book.save();
 
       // Update user to track the book they have
-      user.book_id = book._id;
+      user.book_id = book.book_id;
       user.updatedAt = Date.now();
       await user.save();
 
@@ -231,7 +231,7 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
     book.updatedAt = Date.now();
     await book.save();
 
-    user.book_id = book._id;
+    user.book_id = book.book_id;
     user.updatedAt = Date.now();
     await user.save();
 
