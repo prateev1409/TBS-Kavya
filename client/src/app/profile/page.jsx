@@ -1,5 +1,4 @@
 "use client";
-import QRCode from "qrcode.react";
 import { useEffect, useState } from "react";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useUser } from "../Hooks/useUser";
@@ -60,6 +59,8 @@ function MainComponent() {
       const pending = userTransactions.filter((t) =>
         ["pickup_pending", "dropoff_pending"].includes(t.status)
       );
+
+      console.log("Pending Transactions:", pending);
 
       setPreviousTransactions(previous);
       setPendingTransactions(pending);
@@ -178,7 +179,7 @@ function MainComponent() {
         body: JSON.stringify({
           book_id: currentBook.id,
           user_id: user.user_id,
-          cafe_id: currentBook.keeper_id, // Assuming keeper_id is the cafe holding the book
+          cafe_id: currentBook.keeper_id,
           status: "dropoff_pending",
         }),
       });
@@ -188,9 +189,9 @@ function MainComponent() {
         throw new Error(errorData.error || "Failed to create drop-off transaction");
       }
 
-      await refetch(); // Refresh user data to clear book_id
-      fetchTransactions(); // Refresh transactions to show new pending drop-off
-      setCurrentBook(null); // Clear current book locally
+      await refetch();
+      fetchTransactions();
+      setCurrentBook(null);
     } catch (err) {
       console.error("Error creating drop-off transaction:", err.message);
       setError(err.message);
@@ -198,10 +199,14 @@ function MainComponent() {
   };
 
   const toggleQR = (transactionId) => {
-    setShowQR((prev) => ({
-      ...prev,
-      [transactionId]: !prev[transactionId],
-    }));
+    setShowQR((prev) => {
+      const newState = {
+        ...prev,
+        [transactionId]: !prev[transactionId],
+      };
+      console.log("Toggling QR for transactionId:", transactionId, "New showQR state:", newState);
+      return newState;
+    });
   };
 
   if (loading) {
@@ -474,41 +479,42 @@ function MainComponent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingTransactions.map((transaction) => (
-                    <tr
-                      key={transaction.transaction_id}
-                      className="border-t border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <td className="px-4 py-2">{transaction.cafe_id.name}</td>
-                      <td className="px-4 py-2">{transaction.book_id.name}</td>
-                      <td className="px-4 py-2">
-                        {transaction.status === "pickup_pending"
-                          ? "Pickup"
-                          : "Drop-off"}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        <button
-                          onClick={() => toggleQR(transaction.transaction_id)}
-                          className="px-4 py-1 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
-                        >
-                          {showQR[transaction.transaction_id]
-                            ? "Hide QR"
-                            : "Show QR"}
-                        </button>
-                        {showQR[transaction.transaction_id] && (
-                          <div className="mt-2">
-                            <QRCode
-                              value={`${transaction.transaction_id}.${user.user_id}`}
-                              size={128}
-                              bgColor="#ffffff"
-                              fgColor="#000000"
-                              level="H"
-                            />
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {pendingTransactions.map((transaction) => {
+                    const qrData = `${transaction.transaction_id}.${user.user_id}`; // Construct the QR data string
+                    return (
+                      <tr
+                        key={transaction.transaction_id}
+                        className="border-t border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <td className="px-4 py-2">{transaction.cafe_id.name}</td>
+                        <td className="px-4 py-2">{transaction.book_id.name}</td>
+                        <td className="px-4 py-2">
+                          {transaction.status === "pickup_pending"
+                            ? "Pickup"
+                            : "Drop-off"}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          <button
+                            onClick={() => toggleQR(transaction.transaction_id)}
+                            className="px-4 py-1 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
+                          >
+                            {showQR[transaction.transaction_id]
+                              ? "Hide QR"
+                              : "Show QR"}
+                          </button>
+                          {showQR[transaction.transaction_id] && (
+                            <div className="mt-2 flex justify-end">
+                              <QRCodeGenerator 
+                                  bookName={`${transaction.transaction_id}"."${user.user_id}`}
+                                  bookId="HPATGOF1"
+                                  logoPath="/ExpandedLogo-Darkmode.png"
+                                />
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
