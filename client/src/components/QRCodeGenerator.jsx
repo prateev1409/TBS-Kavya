@@ -40,13 +40,13 @@ const QRCodeGenerator = ({
     const ctx = canvas.getContext("2d");
 
     const CANVAS_WIDTH = 550;
-    const CANVAS_HEIGHT = 900;
+    const CANVAS_HEIGHT = 550;
 
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     const cardWidth = 520;
-    const cardHeight = 720;
+    const cardHeight = 520;
     const cardX = (CANVAS_WIDTH - cardWidth) / 2;
     const cardY = 10;
     const radius = 25;
@@ -65,7 +65,7 @@ const QRCodeGenerator = ({
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = "#000000";
+    /*ctx.fillStyle = "#000000";
     ctx.font = "bold 32px Arial";
     ctx.textAlign = "center";
     const cardPadding = 40;
@@ -73,10 +73,10 @@ const QRCodeGenerator = ({
     const textY = cardY + cardPadding;
     const maxTextWidth = cardWidth - cardPadding * 2;
     const lineHeight = 36;
-    const numLines = wrapText(ctx, bookName, textX, textY, maxTextWidth, lineHeight);
+    const numLines = wrapText(ctx, bookName, textX, textY, maxTextWidth, lineHeight);*/
 
-    const qrMarginTop = 20;
-    const qrY = textY + numLines * lineHeight + qrMarginTop;
+    const qrMarginTop = 30;
+    const qrY = qrMarginTop;
     const qrSize = 480;
     const qrX = cardX + (cardWidth - qrSize) / 2;
     const qrDataUrl = qrRef.current.toDataURL("image/png");
@@ -85,13 +85,13 @@ const QRCodeGenerator = ({
     qrImage.onload = () => {
       ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
-      ctx.fillStyle = "#000000";
+      /*ctx.fillStyle = "#000000";
       ctx.font = "bold 28px Arial";
       const idMarginTop = 60;
       const idY = qrY + qrSize + idMarginTop;
-      ctx.fillText(bookId, cardX + cardWidth / 2, idY);
+      ctx.fillText(bookId, cardX + cardWidth / 2, idY);*/
 
-      const logoImg = new Image();
+      /*const logoImg = new Image();
       logoImg.src = logoPath;
       logoImg.onload = () => {
         const logoX = (CANVAS_WIDTH - cardWidth) / 2;
@@ -100,11 +100,11 @@ const QRCodeGenerator = ({
 
         const dataUrl = canvas.toDataURL("image/png");
         setFinalImageUrl(dataUrl);
-      };
-      logoImg.onerror = () => {
+      };*/
+      //logoImg.onerror = () => {
         const dataUrl = canvas.toDataURL("image/png");
         setFinalImageUrl(dataUrl);
-      };
+     // };
     };
   };
 
@@ -112,11 +112,11 @@ const QRCodeGenerator = ({
     generateImage();
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (finalImageUrl) {
       downloadImage();
     }
-  }, [finalImageUrl]);
+  }, [finalImageUrl]);*/
 
   const downloadImage = () => {
     if (finalImageUrl) {
@@ -129,7 +129,7 @@ const QRCodeGenerator = ({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <canvas ref={canvasRef} width={550} height={900} style={{ display: "none" }} />
+      <canvas ref={canvasRef} width={550} height={550} style={{ display: "none" }} />
       <QRCodeCanvas ref={qrRef} value={bookId} size={500} style={{ display: "none" }} />
 
       {finalImageUrl && (
