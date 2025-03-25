@@ -1,11 +1,11 @@
 "use client";
-import QRCode from "qrcode.react"; // Ensure qrcode.react is installed and imported correctly
+import QRCode from "qrcode.react";
 import { useEffect, useState } from "react";
-import ThemeToggle from "../../components/ThemeToggle"; // Ensure this is exported correctly
+import ThemeToggle from "../../components/ThemeToggle";
 import { useUser } from "../Hooks/useUser";
 
 function MainComponent() {
-  const { data: user, loading, refetch } = useUser();
+  const { data: user, loading, error: userError, refetch } = useUser();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [error, setError] = useState(null);
@@ -15,18 +15,15 @@ function MainComponent() {
   const [pendingTransactions, setPendingTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [showQR, setShowQR] = useState({});
-
-  const subscriptionDetails = {
-    basic: { booksAllowed: 1, borrowPeriod: "7 days", cafeDiscount: "5%" },
-    standard: { booksAllowed: 2, borrowPeriod: "14 days", cafeDiscount: "10%" },
-    premium: { booksAllowed: 3, borrowPeriod: "21 days", cafeDiscount: "15%" },
-  };
+  const [currentBook, setCurrentBook] = useState(null);
+  const [loadingBook, setLoadingBook] = useState(true);
 
   useEffect(() => {
     if (user) {
       setEmail(user.email || "");
-      setPhone(user.phone || "");
+      setPhone(user.phone_number || "");
       fetchTransactions();
+      fetchCurrentBook();
     }
   }, [user]);
 
@@ -78,6 +75,43 @@ function MainComponent() {
     }
   };
 
+  const fetchCurrentBook = async () => {
+    setLoadingBook(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !user.book_id) {
+        setCurrentBook(null);
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${user.book_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized: Please sign in again.");
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch book");
+      }
+
+      const bookData = await res.json();
+      setCurrentBook(bookData);
+    } catch (err) {
+      console.error("Error fetching current book:", err.message);
+      setError(err.message);
+      if (err.message.includes("Unauthorized")) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth/signin";
+      }
+    } finally {
+      setLoadingBook(false);
+    }
+  };
+
   const handleUpdateEmail = async (e) => {
     e.preventDefault();
     try {
@@ -115,7 +149,7 @@ function MainComponent() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ phone }),
+          body: JSON.stringify({ phone_number: phone }),
         }
       );
 
@@ -125,6 +159,41 @@ function MainComponent() {
       setShowPhoneForm(false);
     } catch (err) {
       setError("Failed to update phone number");
+    }
+  };
+
+  const handleDropOff = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !currentBook) {
+        throw new Error("No book to drop off or not authenticated");
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          book_id: currentBook.id,
+          user_id: user.user_id,
+          cafe_id: currentBook.keeper_id, // Assuming keeper_id is the cafe holding the book
+          status: "dropoff_pending",
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create drop-off transaction");
+      }
+
+      await refetch(); // Refresh user data to clear book_id
+      fetchTransactions(); // Refresh transactions to show new pending drop-off
+      setCurrentBook(null); // Clear current book locally
+    } catch (err) {
+      console.error("Error creating drop-off transaction:", err.message);
+      setError(err.message);
     }
   };
 
@@ -143,14 +212,25 @@ function MainComponent() {
     );
   }
 
+  if (userError) {
+    if (userError.includes("No token found") || userError.includes("Failed to fetch user")) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/signin";
+      return null;
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
+        <div className="text-warning-light dark:text-warning-dark p-3 rounded-lg font-body">
+          {userError}
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     window.location.href = "/auth/signin";
     return null;
   }
-
-  const currentPlan = user.subscription_tier
-    ? subscriptionDetails[user.subscription_tier]
-    : null;
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 lg:px-8">
@@ -174,7 +254,7 @@ function MainComponent() {
             {user.name || "No Name Set"}
           </h1>
           <p className="mt-1 text-sm text-text-light dark:text-text-dark font-body">
-            Customer ID: {user.user_id || user.id}
+            Customer ID: {user.user_id}
           </p>
         </div>
 
@@ -182,18 +262,20 @@ function MainComponent() {
         <div className="flex items-center justify-between px-6 py-3 rounded-lg border border-border-light dark:border-border-dark hover:border-border-light dark:hover:border-border-dark transition-colors">
           <div>
             <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark capitalize">
-              {user.subscription_tier?.toUpperCase()} SUBSCRIPTION
+              {user.subscription_type?.toUpperCase() || "BASIC"} SUBSCRIPTION
             </h2>
             <p className="text-text-light dark:text-text-dark font-body">
               Valid until{" "}
-              {new Date(user.subscription_valid_until).toLocaleDateString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              )}
+              {user.subscription_validity
+                ? new Date(user.subscription_validity).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )
+                : "Not set"}
             </p>
           </div>
           <a
@@ -273,13 +355,59 @@ function MainComponent() {
           ) : (
             <div className="flex items-center justify-between px-6 py-3 rounded-lg border border-border-light dark:border-border-dark hover:border-border-light dark:hover:border-border-dark transition-colors">
               <div className="font-body text-text-light dark:text-text-dark">
-                {user.phone || "Not set"}
+                {user.phone_number || "Not set"}
               </div>
               <button
                 onClick={() => setShowPhoneForm(true)}
                 className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
               >
                 Update Phone
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Current Book Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark">
+            Current Book
+          </h2>
+          {loadingBook ? (
+            <div className="text-text-light dark:text-text-dark">
+              Loading book...
+            </div>
+          ) : !currentBook ? (
+            <div className="px-6 py-3 rounded-lg border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-body">
+              No book currently borrowed.
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-6 py-3 rounded-lg border border-border-light dark:border-border-dark hover:border-border-light dark:hover:border-border-dark transition-colors">
+              <div className="flex items-center space-x-4">
+                {currentBook.image_url ? (
+                  <img
+                    src={currentBook.image_url}
+                    alt={currentBook.name}
+                    className="w-16 h-24 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-16 h-24 bg-backgroundSCD-light dark:bg-backgroundSCD-dark rounded flex items-center justify-center">
+                    <i className="fas fa-book text-2xl text-text-light dark:text-text-dark"></i>
+                  </div>
+                )}
+                <div className="font-body text-text-light dark:text-text-dark">
+                  <p>
+                    <strong>Name:</strong> {currentBook.name}
+                  </p>
+                  <p>
+                    <strong>Author:</strong> {currentBook.author}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDropOff}
+                className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
+              >
+                Drop Off
               </button>
             </div>
           )}
@@ -398,9 +526,9 @@ function MainComponent() {
         </div>
 
         {/* Error Display */}
-        {error && (
+        {(userError || error) && (
           <div className="bg-warning-light dark:bg-warning-dark text-warning-light dark:text-warning-dark p-3 rounded-lg font-body">
-            {error}
+            {userError || error}
           </div>
         )}
       </div>

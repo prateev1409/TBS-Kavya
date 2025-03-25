@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../Hooks/useAuth";
 import BooksSection from "./BooksSection";
 import CafesSection from "./CafesSection";
 import TransactionsSection from "./TransactionsSection";
 import UsersSection from "./UsersSection";
-import { useAuth } from "../Hooks/useAuth";
 
 function AdminDashboard() {
   const { refreshToken } = useAuth();
@@ -459,7 +459,19 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-3xl font-bold text-gray-800">Cafe Dashboard</h1>
+                    <button
+                        
+                        className="px-4 py-2 rounded-full bg-red-600 text-white font-medium hover:bg-red-700"
+                        >
+                            <a
+                            href="/auth/logout"
+                            >   
+                                Log Out
+                            </a>
+                        </button>
+                </div>
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-4">
             {["books", "cafes", "users", "transactions"].map((tab) => (
