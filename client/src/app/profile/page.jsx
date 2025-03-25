@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useUser } from "../Hooks/useUser";
+import QRCodeGenerator from "../../components/QRCodeGenerator";
 
 function MainComponent() {
   const { data: user, loading, error: userError, refetch } = useUser();
@@ -480,7 +481,7 @@ function MainComponent() {
                 </thead>
                 <tbody>
                   {pendingTransactions.map((transaction) => {
-                    const qrData = `${transaction.transaction_id}.${user.user_id}`; // Construct the QR data string
+                    const qrData = `${transaction.transaction_id}.${user.user_id}`;
                     return (
                       <tr
                         key={transaction.transaction_id}
@@ -504,11 +505,11 @@ function MainComponent() {
                           </button>
                           {showQR[transaction.transaction_id] && (
                             <div className="mt-2 flex justify-end">
-                              <QRCodeGenerator 
-                                  bookName={`${transaction.transaction_id}"."${user.user_id}`}
-                                  bookId="HPATGOF1"
-                                  logoPath="/ExpandedLogo-Darkmode.png"
-                                />
+                              <QRCodeGenerator
+                                bookName={transaction.book_id.name} // Use the actual book name
+                                bookId={qrData} // Use the constructed qrData
+                                logoPath="/ExpandedLogo-Darkmode.png"
+                              />
                             </div>
                           )}
                         </td>

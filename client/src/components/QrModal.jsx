@@ -1,4 +1,4 @@
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 const QRCodeModal = ({ transactionId, userId, onClose }) => {
   console.log("QRCodeModal Props:", { transactionId, userId, onClose });
@@ -20,7 +20,7 @@ const QRCodeModal = ({ transactionId, userId, onClose }) => {
         className="bg-white p-4 rounded-lg shadow-lg w-[300px] h-[300px] flex items-center justify-center"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
       >
-        <QRCode value="TXN_1742931061106_rqljkv.User_001" size={250} />
+        <QRCodeCanvas value={qrData} size={250} />
       </div>
     </div>
   );
