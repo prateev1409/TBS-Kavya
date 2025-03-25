@@ -179,10 +179,10 @@ router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
       logger.warn(`Book not found during scan: ${book_id}`);
       return res.status(404).json({ error: 'Book not found' });
     }
-    if (!book.available) {
+    /*if (!book.available) {
       logger.warn(`Book unavailable during scan: ${book_id}`);
       return res.status(400).json({ error: 'Book is currently unavailable' });
-    }
+    }*/
 
     const transaction = await Transaction.findOne({ book_id: book._id, status: 'pickup_pending' });
     if (!transaction) {
@@ -216,7 +216,8 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
     }
 
     const book = await Book.findById(transaction.book_id);
-    if (!book || !book.available) {
+    //if (!book || !book.available) 
+    if (!book ){
       logger.warn(`Book no longer available for transaction: ${transaction.book_id}`);
       return res.status(400).json({ error: 'Book is no longer available' });
     }
