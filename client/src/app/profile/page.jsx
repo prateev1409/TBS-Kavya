@@ -20,6 +20,8 @@ function MainComponent() {
 
   useEffect(() => {
     if (user) {
+      console.log("User object in useEffect:", user); // Debug log
+      console.log("User book_id:", user?.book_id); // Debug log
       setEmail(user.email || "");
       setPhone(user.phone_number || "");
       fetchTransactions();
@@ -81,7 +83,15 @@ function MainComponent() {
     setLoadingBook(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token || !user.book_id) {
+      console.log("Fetching current book for user:", user?.user_id); // Debug log
+      console.log("User book_id in fetchCurrentBook:", user?.book_id); // Debug log
+
+      if (!token) {
+        throw new Error("No authentication token found.");
+      }
+
+      if (!user?.book_id) {
+        console.log("No book_id found for user. Setting currentBook to null.");
         setCurrentBook(null);
         return;
       }
@@ -101,6 +111,7 @@ function MainComponent() {
       }
 
       const bookData = await res.json();
+      console.log("Fetched book data:", bookData); // Debug log
       setCurrentBook(bookData);
     } catch (err) {
       console.error("Error fetching current book:", err.message);
@@ -503,14 +514,6 @@ function MainComponent() {
                               ? "Hide QR"
                               : "Show QR"}
                           </button>
-                          {showQR[transaction.transaction_id] && (
-                            <div className="mt-2 flex justify-end">
-                              <QRCodeGenerator
-                                bookName={transaction.book_id.name} // Use the actual book name
-                                bookId={qrData} // Use the constructed qrData
-                              />
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );
@@ -520,6 +523,52 @@ function MainComponent() {
             </div>
           )}
         </div>
+
+        {/* QR Code Modal */}
+        {Object.keys(showQR).some((key) => showQR[key]) && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            onClick={() => setShowQR({})}
+          >
+            {pendingTransactions.map((transaction) => {
+              const qrData = `${transaction.transaction_id}.${user.user_id}`;
+              return showQR[transaction.transaction_id] ? (
+                <div
+                  key={transaction.transaction_id}
+                  className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => toggleQR(transaction.transaction_id)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <h3 className="text-lg font-bold mb-4 text-black">
+                    QR Code for {transaction.book_id.name}
+                  </h3>
+                  <QRCodeGenerator
+                    bookName={transaction.book_id.name}
+                    bookId={qrData}
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        )}
 
         {/* Logout Section */}
         <div className="text-center">
