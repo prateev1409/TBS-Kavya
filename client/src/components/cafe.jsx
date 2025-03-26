@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Book from "./book";
 
 export function CafeCard({ cafe, onExpand }) {
   return (
@@ -28,6 +29,56 @@ export function CafeCard({ cafe, onExpand }) {
 }
 
 export function CafeExpanded({ cafe, onClose }) {
+  const [books, setBooks] = useState([]);
+  const [loadingBooks, setLoadingBooks] = useState(true);
+
+  useEffect(() => {
+    if (cafe) {
+      fetchBooksForCafe();
+    }
+  }, [cafe]);
+
+  const fetchBooksForCafe = async () => {
+    setLoadingBooks(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found.");
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books?keeper_id=${cafe.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch books for cafe");
+      }
+
+      const data = await res.json();
+      const mappedBooks = data.map((book) => ({
+        book_id: book.book_id,
+        title: book.name,
+        cover: book.image_url || "https://picsum.photos/150",
+        genre: book.genre,
+        author: book.author,
+        publisher: book.publisher,
+        description: book.description,
+        audioSummary: book.audio_url,
+        ratings: book.ratings,
+        language: book.language,
+        available: book.available,
+        is_free: book.is_free,
+      }));
+      setBooks(mappedBooks);
+    } catch (err) {
+      console.error("Error fetching books for cafe:", err.message);
+    } finally {
+      setLoadingBooks(false);
+    }
+  };
+
   if (!cafe) return null;
   return (
     <div
@@ -44,40 +95,59 @@ export function CafeExpanded({ cafe, onClose }) {
         >
           ✖
         </button>
-        <div className="flex flex-col md:flex-row">
-          <div className="relative">
-            <img
-              src={cafe.image}
-              alt={cafe.name}
-              className="w-full h-[280px] object-cover rounded-lg"
-              loading="lazy"
-            />
-            <div className="absolute bottom-4 left-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
-              ⭐{cafe.rating}/5
+        <div className="flex flex-col">
+          <div className="flex flex-col md:flex-row">
+            <div className="relative">
+              <img
+                src={cafe.image}
+                alt={cafe.name}
+                className="w-full h-[280px] object-cover rounded-lg"
+                loading="lazy"
+              />
+              <div className="absolute bottom-4 left-4 bg-white dark:bg-black text-black dark:text-white px-3 py-1 rounded-full shadow-md">
+                ⭐{cafe.rating}/5
+              </div>
+            </div>
+            <div className="ml-6">
+              <h2 className="text-2xl font-header font-bold mb-2 text-text-light dark:text-text-dark">
+                {cafe.name}
+              </h2>
+              <p className="text-text-light dark:text-text-dark mb-2">
+                <strong>Location:</strong> {cafe.location}
+              </p>
+              <p className="text-text-light dark:text-text-dark mb-2">
+                <strong>Distance:</strong> {cafe.distance} km
+              </p>
+              <p className="text-text-light dark:text-text-dark mb-2">
+                <strong>Specialties:</strong> {cafe.specialties}
+              </p>
+              <p className="text-text-light dark:text-text-dark mb-2">
+                <strong>Special Discounts:</strong> {cafe.discounts}
+              </p>
+              <p className="text-text-light dark:text-text-dark mb-4">
+                <strong>Price Range:</strong> {cafe.priceRange}
+              </p>
+              <p className="text-text-light dark:text-text-dark mb-4">
+                {cafe.description}
+              </p>
             </div>
           </div>
-          <div className="ml-6">
-            <h2 className="text-2xl font-header font-bold mb-2 text-text-light dark:text-text-dark">
-              {cafe.name}
-            </h2>
-            <p className="text-text-light dark:text-text-dark mb-2">
-              <strong>Location:</strong> {cafe.location}
-            </p>
-            <p className="text-text-light dark:text-text-dark mb-2">
-              <strong>Distance:</strong> {cafe.distance} km
-            </p>
-            <p className="text-text-light dark:text-text-dark mb-2">
-              <strong>Specialties:</strong> {cafe.specialties}
-            </p>
-            <p className="text-text-light dark:text-text-dark mb-2">
-              <strong>Special Discounts:</strong> {cafe.discounts}
-            </p>
-            <p className="text-text-light dark:text-text-dark mb-4">
-              <strong>Price Range:</strong> {cafe.priceRange}
-            </p>
-            <p className="text-text-light dark:text-text-dark mb-4">
-              {cafe.description}
-            </p>
+          {/* Available Books Section */}
+          <div className="mt-6">
+            <h3 className="text-xl font-header font-bold mb-4 text-text-light dark:text-text-dark">
+              Available Books
+            </h3>
+            {loadingBooks ? (
+              <div className="text-text-light dark:text-text-dark">Loading books...</div>
+            ) : books.length === 0 ? (
+              <div className="text-text-light dark:text-text-dark">No books available at this cafe.</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {books.map((book) => (
+                  <Book key={book.book_id} book={book} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -88,7 +158,6 @@ export function CafeExpanded({ cafe, onClose }) {
 export function CafeExpansion({ cafes }) {
   const [selectedCafe, setSelectedCafe] = useState(null);
 
-  // Safeguard against undefined or non-array cafes
   if (!Array.isArray(cafes)) {
     return <div>No cafes available to display.</div>;
   }

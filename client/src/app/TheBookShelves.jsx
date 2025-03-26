@@ -14,6 +14,7 @@ function TheBookShelves() {
   const [loadingBooks, setLoadingBooks] = useState(true);
   const [loadingCafes, setLoadingCafes] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Carousel auto-slide logic
   useEffect(() => {
@@ -24,7 +25,7 @@ function TheBookShelves() {
   }, []);
 
   // Fetch books from the database
-  const fetchBooks = async () => {
+  const fetchBooks = async (query = "") => {
     setLoadingBooks(true);
     try {
       const token = localStorage.getItem("token");
@@ -32,7 +33,12 @@ function TheBookShelves() {
         throw new Error("No authentication token found. Please sign in.");
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/books`;
+      if (query) {
+        url += `?name=${encodeURIComponent(query)}&author=${encodeURIComponent(query)}`;
+      }
+
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -47,11 +53,10 @@ function TheBookShelves() {
       }
 
       const data = await res.json();
-      // Map the API response to match Book component props
       const mappedBooks = data.map((book) => ({
         book_id: book.book_id,
         title: book.name,
-        cover: book.image_url || "https://picsum.photos/150", // Fallback image
+        cover: book.image_url || "https://picsum.photos/150",
         genre: book.genre,
         author: book.author,
         publisher: book.publisher,
@@ -76,7 +81,7 @@ function TheBookShelves() {
   };
 
   // Fetch cafes from the database
-  const fetchCafes = async () => {
+  const fetchCafes = async (query = "") => {
     setLoadingCafes(true);
     try {
       const token = localStorage.getItem("token");
@@ -84,7 +89,12 @@ function TheBookShelves() {
         throw new Error("No authentication token found. Please sign in.");
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes`, {
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
+      if (query) {
+        url += `?name=${encodeURIComponent(query)}&location=${encodeURIComponent(query)}`;
+      }
+
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -99,19 +109,18 @@ function TheBookShelves() {
       }
 
       const data = await res.json();
-      // Map the API response to match CafeExpansion component props
       const mappedCafes = data.map((cafe) => ({
-        id: cafe.cafe_id, // CafeExpansion expects 'id', but we'll use cafe_id
+        id: cafe.cafe_id,
         name: cafe.name,
-        image: cafe.image_url || "https://picsum.photos/200", // Fallback image
-        distance: cafe.distance || "N/A", // Not in schema, assuming API might extend it later
+        image: cafe.image_url || "https://picsum.photos/200",
+        distance: cafe.distance || "N/A",
         location: cafe.location,
         audioSummary: cafe.audio_url,
         specialties: cafe.specials,
         discounts: `${cafe.discount}%`,
         priceRange: `₹${cafe.average_bill}`,
         description: cafe.description || "No description available",
-        rating: cafe.ratings, // CafeExpansion expects 'rating', not 'ratings'
+        rating: cafe.ratings,
       }));
       setCafes(mappedCafes);
     } catch (err) {
@@ -124,6 +133,14 @@ function TheBookShelves() {
     } finally {
       setLoadingCafes(false);
     }
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    fetchBooks(query);
+    fetchCafes(query);
   };
 
   // Fetch data on component mount
@@ -172,7 +189,7 @@ function TheBookShelves() {
       <Header
         location="New Town, Kolkata"
         onLocationChange={() => {}}
-        onSearch={() => {}}
+        onSearch={handleSearch}
       />
       <main className="px-4 md:px-8 max-w-7xl mx-auto py-12">
         {/* Carousel Section */}
@@ -240,8 +257,8 @@ function TheBookShelves() {
             <CafeExpansion cafes={cafes} />
           )}
         </section>
-        </main>
-      <Footer/>
+      </main>
+      <Footer />
       <ThemeToggle />
     </div>
   );

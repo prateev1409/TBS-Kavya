@@ -34,6 +34,7 @@ function MainComponent() {
     average_bills: [],
     ratings: [],
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filterRef = useRef(null);
 
@@ -119,7 +120,7 @@ function MainComponent() {
     }
   };
 
-  // Fetch books with filters
+  // Fetch books with filters and search
   const fetchBooks = async () => {
     setLoadingBooks(true);
     try {
@@ -129,6 +130,11 @@ function MainComponent() {
       }
 
       const query = new URLSearchParams({
+        available: true, // Default to available books
+        ...(searchQuery && {
+          name: searchQuery,
+          author: searchQuery,
+        }),
         ...(bookFilters.author && { author: bookFilters.author }),
         ...(bookFilters.language && { language: bookFilters.language }),
         ...(bookFilters.genre && { genre: bookFilters.genre }),
@@ -179,7 +185,7 @@ function MainComponent() {
     }
   };
 
-  // Fetch cafes with filters
+  // Fetch cafes with filters and search
   const fetchCafes = async () => {
     setLoadingCafes(true);
     try {
@@ -189,6 +195,10 @@ function MainComponent() {
       }
 
       const query = new URLSearchParams({
+        ...(searchQuery && {
+          name: searchQuery,
+          location: searchQuery,
+        }),
         ...(cafeFilters.distance && { distance: cafeFilters.distance }),
         ...(cafeFilters.pricing && { average_bill: cafeFilters.pricing }),
       }).toString();
@@ -216,7 +226,7 @@ function MainComponent() {
         name: cafe.name,
         image: cafe.image_url || "https://picsum.photos/150",
         distance: cafe.distance || "N/A",
-        priceRange: `₹${cafe.average_bill}`, // Changed from 'price' to 'priceRange' for CafeCard
+        priceRange: `₹${cafe.average_bill}`,
         rating: cafe.ratings,
         location: cafe.location,
         audioSummary: cafe.audio_url,
@@ -254,7 +264,13 @@ function MainComponent() {
     setActiveFilter(null); // Close dropdown after selection
   };
 
-  // Fetch data and filter options on mount and when filters change
+  // Handle search
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+  };
+
+  // Fetch data and filter options on mount and when filters/search change
   useEffect(() => {
     fetchBookFilters();
     fetchCafeFilters();
@@ -264,11 +280,11 @@ function MainComponent() {
 
   useEffect(() => {
     fetchBooks();
-  }, [bookFilters]);
+  }, [bookFilters, searchQuery]);
 
   useEffect(() => {
     fetchCafes();
-  }, [cafeFilters]);
+  }, [cafeFilters, searchQuery]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -287,7 +303,11 @@ function MainComponent() {
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
-      <Header />
+      <Header
+        location="New Town, Kolkata"
+        onLocationChange={() => {}}
+        onSearch={handleSearch}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl font-header font-bold mb-12">
@@ -331,7 +351,7 @@ function MainComponent() {
               {activeFilter === "distance" && (
                 <div
                   className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                  onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="space-y-2">
                     {["1km", "3km", "5km"].map((dist) => (
@@ -378,7 +398,7 @@ function MainComponent() {
               {activeFilter === "pricing" && (
                 <div
                   className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                  onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="space-y-2">
                     {cafeFilterOptions.average_bills.map((bill) => (
@@ -445,7 +465,7 @@ function MainComponent() {
                 {activeFilter === "author" && (
                   <div
                     className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <input
                       type="text"
@@ -502,7 +522,7 @@ function MainComponent() {
                 {activeFilter === "language" && (
                   <div
                     className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {bookFilterOptions.languages.map((language) => (
                       <label
@@ -549,7 +569,7 @@ function MainComponent() {
                 {activeFilter === "genre" && (
                   <div
                     className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()} // Prevent closing on click inside
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {bookFilterOptions.genres.map((genre) => (
                       <label
@@ -585,7 +605,7 @@ function MainComponent() {
         </section>
       </div>
 
-      <Footer/>
+      <Footer />
 
       <ThemeToggle />
 

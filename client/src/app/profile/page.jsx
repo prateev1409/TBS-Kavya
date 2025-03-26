@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import QRCodeGenerator from "../../components/QRCodeGenerator";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useUser } from "../Hooks/useUser";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
 function MainComponent() {
   const { data: user, loading, error: userError, refetch } = useUser();
@@ -17,11 +18,12 @@ function MainComponent() {
   const [showQR, setShowQR] = useState({});
   const [currentBook, setCurrentBook] = useState(null);
   const [loadingBook, setLoadingBook] = useState(true);
+  const router = useRouter(); // Initialize router
 
   useEffect(() => {
     if (user) {
-      console.log("User object in useEffect:", user); // Debug log
-      console.log("User book_id:", user?.book_id); // Debug log
+      console.log("User object in useEffect:", user);
+      console.log("User book_id:", user?.book_id);
       setEmail(user.email || "");
       setPhone(user.phone_number || "");
       fetchTransactions();
@@ -83,8 +85,8 @@ function MainComponent() {
     setLoadingBook(true);
     try {
       const token = localStorage.getItem("token");
-      console.log("Fetching current book for user:", user?.user_id); // Debug log
-      console.log("User book_id in fetchCurrentBook:", user?.book_id); // Debug log
+      console.log("Fetching current book for user:", user?.user_id);
+      console.log("User book_id in fetchCurrentBook:", user?.book_id);
 
       if (!token) {
         throw new Error("No authentication token found.");
@@ -111,7 +113,7 @@ function MainComponent() {
       }
 
       const bookData = await res.json();
-      console.log("Fetched book data:", bookData); // Debug log
+      console.log("Fetched book data:", bookData);
       setCurrentBook(bookData);
     } catch (err) {
       console.error("Error fetching current book:", err.message);
@@ -175,39 +177,13 @@ function MainComponent() {
     }
   };
 
-  const handleDropOff = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token || !currentBook) {
-        throw new Error("No book to drop off or not authenticated");
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          book_id: currentBook.id,
-          user_id: user.user_id,
-          cafe_id: currentBook.keeper_id,
-          status: "dropoff_pending",
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to create drop-off transaction");
-      }
-
-      await refetch();
-      fetchTransactions();
-      setCurrentBook(null);
-    } catch (err) {
-      console.error("Error creating drop-off transaction:", err.message);
-      setError(err.message);
+  const handleDropOff = () => {
+    if (!currentBook) {
+      setError("No book to drop off");
+      return;
     }
+    // Redirect to the drop-off page with the current book's book_id
+    router.push(`/drop-off?book_id=${currentBook.book_id}`);
   };
 
   const toggleQR = (transactionId) => {
@@ -423,8 +399,19 @@ function MainComponent() {
               <button
                 onClick={handleDropOff}
                 className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
+                disabled={pendingTransactions.some(
+                  (t) =>
+                    t.book_id.book_id === currentBook.book_id &&
+                    t.status === "dropoff_pending"
+                )}
               >
-                Drop Off
+                {pendingTransactions.some(
+                  (t) =>
+                    t.book_id.book_id === currentBook.book_id &&
+                    t.status === "dropoff_pending"
+                )
+                  ? "Drop-off Pending"
+                  : "Drop Off"}
               </button>
             </div>
           )}

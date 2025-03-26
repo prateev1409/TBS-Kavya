@@ -319,17 +319,26 @@ router.put('/complete/:transaction_id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const cafe = await Cafe.findById(transaction.cafe_id);
+    if (!cafe) {
+      logger.warn(`Cafe not found for drop-off completion: ${transaction.cafe_id}`);
+      return res.status(404).json({ error: 'Cafe not found' });
+    }
+
+    // Update transaction status
     transaction.status = 'dropped_off';
     transaction.processed_at = new Date();
     await transaction.save();
 
+    // Update book: make it available and set keeper_id to cafe's string cafe_id
     book.available = true;
-    book.keeper_id = transaction.cafe_id;
-    book.updatedAt = Date.now();
+    book.keeper_id = cafe.cafe_id; // Use the string cafe_id (e.g., CAFE_006)
+    book.updatedAt = new Date();
     await book.save();
 
+    // Clear user's book_id
     user.book_id = null;
-    user.updatedAt = Date.now();
+    user.updatedAt = new Date();
     await user.save();
 
     logger.info(`Drop-off completed successfully: ${transaction.transaction_id}`);
