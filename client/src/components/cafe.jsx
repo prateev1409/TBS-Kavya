@@ -30,7 +30,9 @@ export function CafeCard({ cafe, onExpand }) {
 
 export function CafeExpanded({ cafe, onClose }) {
   const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (cafe) {
@@ -46,11 +48,15 @@ export function CafeExpanded({ cafe, onClose }) {
         throw new Error("No authentication token found.");
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books?keeper_id=${cafe.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Fetch books where keeper_id matches cafe.id (cafe_id) and available is true
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/books?keeper_id=${cafe.id}&available=true`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Failed to fetch books for cafe");
@@ -72,6 +78,7 @@ export function CafeExpanded({ cafe, onClose }) {
         is_free: book.is_free,
       }));
       setBooks(mappedBooks);
+      setFilteredBooks(mappedBooks); // Initialize filteredBooks with all fetched books
     } catch (err) {
       console.error("Error fetching books for cafe:", err.message);
     } finally {
@@ -79,14 +86,25 @@ export function CafeExpanded({ cafe, onClose }) {
     }
   };
 
+  // Handle search filtering on the frontend
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    const filtered = books.filter((book) =>
+      book.title.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredBooks(filtered);
+  };
+
   if (!cafe) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50"
+      className="fixed inset-0 bg-background-dark bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body"
+        className="bg-background-light dark:bg-background-dark p-6 rounded-2xl max-w-4xl w-full shadow-xl relative font-body max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -96,6 +114,7 @@ export function CafeExpanded({ cafe, onClose }) {
           ✖
         </button>
         <div className="flex flex-col">
+          {/* Cafe Details */}
           <div className="flex flex-col md:flex-row">
             <div className="relative">
               <img
@@ -108,7 +127,7 @@ export function CafeExpanded({ cafe, onClose }) {
                 ⭐{cafe.rating}/5
               </div>
             </div>
-            <div className="ml-6">
+            <div className="ml-0 md:ml-6 mt-4 md:mt-0">
               <h2 className="text-2xl font-header font-bold mb-2 text-text-light dark:text-text-dark">
                 {cafe.name}
               </h2>
@@ -119,12 +138,12 @@ export function CafeExpanded({ cafe, onClose }) {
                 <strong>Distance:</strong> {cafe.distance} km
               </p>
               <p className="text-text-light dark:text-text-dark mb-2">
-                <strong>Specialties:</strong> {cafe.specialties}
+                <strong>Specialties:</strong> {cafe.specialties || "N/A"}
               </p>
               <p className="text-text-light dark:text-text-dark mb-2">
                 <strong>Special Discounts:</strong> {cafe.discounts}
               </p>
-              <p className="text-text-light dark:text-text-dark mb-4">
+              <p className="text-text-light dark:text-text-dark mb-2">
                 <strong>Price Range:</strong> {cafe.priceRange}
               </p>
               <p className="text-text-light dark:text-text-dark mb-4">
@@ -132,18 +151,31 @@ export function CafeExpanded({ cafe, onClose }) {
               </p>
             </div>
           </div>
+
           {/* Available Books Section */}
           <div className="mt-6">
             <h3 className="text-xl font-header font-bold mb-4 text-text-light dark:text-text-dark">
               Available Books
             </h3>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearch}
+                placeholder="Search books by name..."
+                className="w-full p-2 border rounded-lg text-text-light dark:text-text-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+              />
+            </div>
             {loadingBooks ? (
               <div className="text-text-light dark:text-text-dark">Loading books...</div>
-            ) : books.length === 0 ? (
-              <div className="text-text-light dark:text-text-dark">No books available at this cafe.</div>
+            ) : filteredBooks.length === 0 ? (
+              <div className="text-text-light dark:text-text-dark">
+                No available books found at this cafe.
+              </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {books.map((book) => (
+                {filteredBooks.map((book) => (
                   <Book key={book.book_id} book={book} />
                 ))}
               </div>

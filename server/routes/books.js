@@ -40,22 +40,22 @@ const adminMiddleware = async (req, res, next) => {
 // GET /api/books - Retrieve list of books with case-insensitive filtering
 router.get('/', async (req, res) => {
     try {
-        const { genre, author, language, name } = req.query;
-        let query = {};
-
-        if (genre) query.genre = { $regex: genre, $options: 'i' };
-        if (author) query.author = { $regex: author, $options: 'i' };
-        if (language) query.language = { $regex: language, $options: 'i' };
-        if (name) query.name = { $regex: name, $options: 'i' }; // Add search by book name
-
-        const books = await Book.find(query);
-        console.log('Books fetched with query:', query, 'Results:', books);
-        res.status(200).json(books);
+      const { genre, author, language, name, keeper_id, available } = req.query;
+      let query = {};
+  
+      if (genre) query.genre = { $regex: genre, $options: 'i' };
+      if (author) query.author = { $regex: author, $options: 'i' };
+      if (language) query.language = { $regex: language, $options: 'i' };
+      if (name) query.name = { $regex: name, $options: 'i' };
+      if (keeper_id) query.keeper_id = keeper_id; // Matches cafe_id
+      if (available) query.available = available === 'true'; // Converts string to boolean
+  
+      const books = await Book.find(query);
+      res.status(200).json(books);
     } catch (err) {
-        console.error('Error fetching books:', err.message);
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-});
+  });
 
 // GET /api/books/filters - Retrieve unique values for filters
 router.get('/filters', async (req, res) => {
