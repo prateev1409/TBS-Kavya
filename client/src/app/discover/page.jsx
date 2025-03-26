@@ -253,7 +253,7 @@ function MainComponent() {
   const handleBookFilterChange = (filterType, value) => {
     setBookFilters((prev) => ({
       ...prev,
-      [filterType]: value,
+      [filterType]: value || "", // Ensure empty string if value is undefined
     }));
     setActiveFilter(null); // Close dropdown after selection
   };
@@ -433,7 +433,7 @@ function MainComponent() {
           {/* Available Books List */}
           <section className="mb-16">
             <h2 className="text-2xl font-header font-semibold mb-6">Available Books</h2>
-            <div className="flex gap-4 mb-8 flex-wrap">
+            <div className="flex gap-4 mb-8 flex-wrap" ref={filterRef}>
               <div className="relative">
                 <button
                   onClick={() => handleFilterClick("author")}
@@ -465,13 +465,23 @@ function MainComponent() {
                       type="text"
                       name="author-search"
                       placeholder="Search authors..."
-                      className="w-full p-2 border rounded mb-2"
+                      className="w-full p-2 border rounded mb-2 text-text-light dark:text-text-dark bg-background-light dark:bg-background-dark"
                       value={bookFilters.author}
-                      onChange={(e) =>
-                        handleBookFilterChange("author", e.target.value)
-                      }
+                      onChange={(e) => handleBookFilterChange("author", e.target.value)}
                     />
                     <div className="max-h-48 overflow-y-auto">
+                      <label
+                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="author"
+                          value=""
+                          checked={bookFilters.author === ""}
+                          onChange={(e) => handleBookFilterChange("author", e.target.value)}
+                        />
+                        <span>Reset</span>
+                      </label>
                       {bookFilterOptions.authors.map((author) => (
                         <label
                           key={author}
@@ -482,7 +492,7 @@ function MainComponent() {
                             name="author"
                             value={author}
                             checked={bookFilters.author === author}
-                            onChange={() => handleBookFilterChange("author", author)}
+                            onChange={(e) => handleBookFilterChange("author", e.target.value)}
                           />
                           <span>{author}</span>
                         </label>
@@ -518,23 +528,35 @@ function MainComponent() {
                     className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {bookFilterOptions.languages.map((language) => (
+                    <div className="space-y-2">
                       <label
-                        key={language}
                         className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="language"
-                          value={language}
-                          checked={bookFilters.language === language}
-                          onChange={() =>
-                            handleBookFilterChange("language", language)
-                          }
+                          value=""
+                          checked={bookFilters.language === ""}
+                          onChange={(e) => handleBookFilterChange("language", e.target.value)}
                         />
-                        <span>{language}</span>
+                        <span>Reset</span>
                       </label>
-                    ))}
+                      {bookFilterOptions.languages.map((language) => (
+                        <label
+                          key={language}
+                          className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="language"
+                            value={language}
+                            checked={bookFilters.language === language}
+                            onChange={(e) => handleBookFilterChange("language", e.target.value)}
+                          />
+                          <span>{language}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -565,21 +587,35 @@ function MainComponent() {
                     className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {bookFilterOptions.genres.map((genre) => (
+                    <div className="space-y-2">
                       <label
-                        key={genre}
                         className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="genre"
-                          value={genre}
-                          checked={bookFilters.genre === genre}
-                          onChange={() => handleBookFilterChange("genre", genre)}
+                          value=""
+                          checked={bookFilters.genre === ""}
+                          onChange={(e) => handleBookFilterChange("genre", e.target.value)}
                         />
-                        <span>{genre}</span>
+                        <span>Reset</span>
                       </label>
-                    ))}
+                      {bookFilterOptions.genres.map((genre) => (
+                        <label
+                          key={genre}
+                          className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="genre"
+                            value={genre}
+                            checked={bookFilters.genre === genre}
+                            onChange={(e) => handleBookFilterChange("genre", e.target.value)}
+                          />
+                          <span>{genre}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
