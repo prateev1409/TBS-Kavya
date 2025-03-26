@@ -11,8 +11,6 @@ function QRScanner({ onScanned }) {
   const [hasPermission, setHasPermission] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-
-  // Use a ref to reliably hold the first scanned value.
   const firstCodeRef = useRef(null);
 
   useEffect(() => {
@@ -50,7 +48,7 @@ function QRScanner({ onScanned }) {
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true }); // Optimize canvas performance
 
     if (video.readyState !== video.HAVE_ENOUGH_DATA) {
       requestAnimationFrame(scanFrame);
@@ -70,7 +68,9 @@ function QRScanner({ onScanned }) {
       handleScan(qrCode.data);
     }
 
-    requestAnimationFrame(scanFrame);
+    if (isScanning) {
+      requestAnimationFrame(scanFrame);
+    }
   }, [isScanning]);
 
   useEffect(() => {
@@ -81,9 +81,8 @@ function QRScanner({ onScanned }) {
 
   const handleScan = useCallback(
     (data) => {
-      if (!data) return;
+      if (!data || !isScanning) return;
 
-      // If we haven't yet scanned the first code:
       if (!firstCodeRef.current) {
         console.log("First QR Code:", data);
         firstCodeRef.current = data;
@@ -91,7 +90,6 @@ function QRScanner({ onScanned }) {
         setWaitingForSecond(true);
         stopScanning();
 
-        // Wait before allowing the second scan
         setTimeout(() => {
           setWaitingForSecond(false);
           startScanning();
@@ -99,15 +97,14 @@ function QRScanner({ onScanned }) {
       } else if (!secondCode && data !== firstCodeRef.current) {
         console.log("Second QR Code:", data);
         setSecondCode(data);
-        stopScanning();
-        // Now we have both scanned values. Call the parent callback.
+        stopScanning(); // Stop scanning immediately
         onScanned({
           firstCode: firstCodeRef.current,
           secondCode: data,
         });
       }
     },
-    [secondCode, onScanned]
+    [secondCode, onScanned, isScanning]
   );
 
   const stopCamera = () => {
@@ -142,9 +139,7 @@ function QRScanner({ onScanned }) {
 
             {hasPermission === false && (
               <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 rounded-lg p-4">
-                <p className="text-red-600 mb-4 text-center">
-                  Camera access denied
-                </p>
+                <p className="text-red-600 mb-4 text-center">Camera access denied</p>
                 <button
                   onClick={requestCameraPermission}
                   className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
@@ -171,17 +166,13 @@ function QRScanner({ onScanned }) {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div
-                className={`w-3 h-3 rounded-full ${
-                  firstCode ? "bg-green-500" : "bg-gray-300"
-                }`}
+                className={`w-3 h-3 rounded-full ${firstCode ? "bg-green-500" : "bg-gray-300"}`}
               ></div>
               <span className="text-gray-700">First QR Code</span>
             </div>
             <div className="flex items-center space-x-3">
               <div
-                className={`w-3 h-3 rounded-full ${
-                  secondCode ? "bg-green-500" : "bg-gray-300"
-                }`}
+                className={`w-3 h-3 rounded-full ${secondCode ? "bg-green-500" : "bg-gray-300"}`}
               ></div>
               <span className="text-gray-700">Second QR Code</span>
             </div>
@@ -189,22 +180,12 @@ function QRScanner({ onScanned }) {
         </div>
 
         <div className="text-center space-y-4">
-          {!firstCode && (
-            <p className="text-gray-600">Please scan the first QR code</p>
-          )}
-
-          {waitingForSecond && (
-            <p className="text-gray-600">Now scan the second QR code...</p>
-          )}
-
+          {!firstCode && <p className="text-gray-600">Please scan the first QR code</p>}
+          {waitingForSecond && <p className="text-gray-600">Now scan the second QR code...</p>}
           {firstCode && !secondCode && !waitingForSecond && (
             <p className="text-gray-600">Ready to scan the second QR code</p>
           )}
-
-          {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
-          )}
-
+          {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>}
           <button
             onClick={resetScanner}
             className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"

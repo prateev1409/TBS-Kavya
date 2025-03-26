@@ -15,6 +15,7 @@ function CafeDashboard() {
   const [isEditing, setIsEditing] = useState(false);
 
   const hasFetchedUserAndCafe = useRef(false);
+  const isProcessingScan = useRef(false); // Prevent multiple scan processes
 
   const fetchUserAndCafeData = useCallback(async () => {
     let token = localStorage.getItem("token");
@@ -171,7 +172,9 @@ function CafeDashboard() {
     if (!cafeDetails || error) return;
 
     const interval = setInterval(() => {
-      fetchTransactions();
+      if (!isProcessingScan.current) { // Only fetch if not processing a scan
+        fetchTransactions();
+      }
     }, 30000);
 
     return () => clearInterval(interval);
@@ -261,12 +264,16 @@ function CafeDashboard() {
   const [scannedCodes, setScannedCodes] = useState({ first: "", second: "" });
 
   const handleScanned = async ({ firstCode, secondCode }) => {
+    if (isProcessingScan.current) return; // Prevent re-entry
+    isProcessingScan.current = true;
+
     setScannedCodes({ first: firstCode, second: secondCode });
     let token = localStorage.getItem("token");
 
     const parts = firstCode.split(".");
     if (parts.length !== 2) {
       setScannerMessage("Invalid format for first QR code.");
+      isProcessingScan.current = false;
       return;
     }
     const scannedTransactionId = parts[0];
@@ -277,6 +284,7 @@ function CafeDashboard() {
     );
     if (!pendingTx) {
       setScannerMessage("Transaction not found or not pending.");
+      isProcessingScan.current = false;
       return;
     }
 
@@ -288,6 +296,7 @@ function CafeDashboard() {
 
         if (scannedBookPrefix !== expectedBookPrefix) {
           setScannerMessage("Scanned book QR code prefix does not match transaction.");
+          isProcessingScan.current = false;
           return;
         }
 
@@ -301,6 +310,7 @@ function CafeDashboard() {
           if (!token) {
             setError("Failed to refresh token. Please log in again.");
             window.location.href = "/auth/signin";
+            isProcessingScan.current = false;
             return;
           }
           localStorage.setItem("token", token);
@@ -325,6 +335,7 @@ function CafeDashboard() {
           if (!token) {
             setError("Failed to refresh token. Please log in again.");
             window.location.href = "/auth/signin";
+            isProcessingScan.current = false;
             return;
           }
           localStorage.setItem("token", token);
@@ -361,6 +372,7 @@ function CafeDashboard() {
         const expectedSecondCode = pendingTx.book_id.book_id || pendingTx.book_id;
         if (firstCode !== expectedFirstCode || secondCode !== expectedSecondCode) {
           setScannerMessage("Scanned QR codes do not match transaction.");
+          isProcessingScan.current = false;
           return;
         }
 
@@ -374,6 +386,7 @@ function CafeDashboard() {
           if (!token) {
             setError("Failed to refresh token. Please log in again.");
             window.location.href = "/auth/signin";
+            isProcessingScan.current = false;
             return;
           }
           localStorage.setItem("token", token);
@@ -410,18 +423,18 @@ function CafeDashboard() {
         }
       }
 
-      // Optionally refetch transactions to ensure consistency
-      await fetchTransactions();
+      await fetchTransactions(); // Refresh transactions after successful approval
     } catch (err) {
       console.error("Error in handleScanned:", err.message);
       setScannerMessage(`Error: ${err.message}`);
+    } finally {
+      isProcessingScan.current = false;
+      setTimeout(() => {
+        setShowScannerModal(false);
+        setScannerMessage(null);
+        setScannedCodes({ first: "", second: "" });
+      }, 1500);
     }
-
-    setTimeout(() => {
-      setShowScannerModal(false);
-      setScannerMessage(null);
-      setScannedCodes({ first: "", second: "" });
-    }, 1500);
   };
 
   const extractAlpha = (str) => {

@@ -168,7 +168,7 @@ router.post(
     }
   }
 );
-
+/*
 // POST /api/transactions/scan/book/:book_id - Verify book QR code
 router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
   const { book_id } = req.params;
@@ -178,12 +178,12 @@ router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
     if (!book) {
       logger.warn(`Book not found during scan: ${book_id}`);
       return res.status(404).json({ error: 'Book not found' });
-    }
+    }*/
     /*if (!book.available) {
       logger.warn(`Book unavailable during scan: ${book_id}`);
       return res.status(400).json({ error: 'Book is currently unavailable' });
     }*/
-
+/*
     const transaction = await Transaction.findOne({ book_id: book._id, status: 'pickup_pending' });
     if (!transaction) {
       logger.warn(`No pending transaction for book: ${book_id}`);
@@ -242,6 +242,88 @@ router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+*/
+// ... (other imports and middleware remain unchanged)
+
+// POST /api/transactions/scan/book/:book_id - Verify book QR code
+router.post('/scan/book/:book_id', authMiddleware, async (req, res) => {
+  const { book_id } = req.params;
+
+  try {
+    const book = await Book.findOne({ book_id });
+    if (!book) {
+      logger.warn(`Book not found during scan: ${book_id}`);
+      return res.status(404).json({ error: 'Book not found' });
+    }
+
+    const transaction = await Transaction.findOne({ book_id: book._id, status: 'pickup_pending' });
+    if (!transaction) {
+      logger.warn(`No pending transaction for book: ${book_id}`);
+      return res.status(404).json({ error: 'No pending transaction found for this book' });
+    }
+
+    logger.info(`Book QR code verified successfully: ${book_id}, transaction: ${transaction.transaction_id}`);
+    res.status(200).json({ message: 'Book verified successfully', transaction_id: transaction.transaction_id });
+  } catch (err) {
+    logger.error(`Error scanning book QR code: ${err.message}`);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/transactions/scan/user/:user_id - Verify user QR code and approve transaction
+router.post('/scan/user/:user_id', authMiddleware, async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    const user = await User.findOne({ user_id });
+    if (!user) {
+      logger.warn(`User not found during scan: ${user_id}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const transaction = await Transaction.findOne({ user_id: user._id, status: 'pickup_pending' });
+    if (!transaction) {
+      logger.warn(`No pending transaction for user: ${user_id}`);
+      return res.status(404).json({ error: 'No pending transaction found for this user' });
+    }
+
+    const book = await Book.findById(transaction.book_id);
+    if (!book) {
+      logger.warn(`Book not found for transaction: ${transaction.book_id}`);
+      return res.status(400).json({ error: 'Book not found' });
+    }
+
+    // Idempotent check: if already picked up, return success without modifying
+    if (transaction.status === 'picked_up') {
+      logger.info(`Transaction already approved: ${transaction.transaction_id}, user: ${user_id}`);
+      return res.status(200).json({ message: 'Transaction already approved', transaction });
+    }
+
+    transaction.status = 'picked_up';
+    transaction.processed_at = new Date();
+    await transaction.save();
+
+    book.available = false;
+    book.keeper_id = user.user_id;
+    book.updatedAt = new Date();
+    await book.save();
+
+    user.book_id = book.book_id;
+    user.updatedAt = new Date();
+    await user.save();
+
+    logger.info(`Transaction approved successfully: ${transaction.transaction_id}, user: ${user_id}`);
+    res.status(200).json({ message: 'Transaction approved, book picked up successfully', transaction });
+  } catch (err) {
+    logger.error(`Error approving transaction: ${err.message}`);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ... (other routes remain unchanged)
+
+module.exports = router;
+
 
 // PUT /api/transactions/drop-off/:book_id - Initiate drop-off process
 router.put('/drop-off/:book_id', authMiddleware, async (req, res) => {
