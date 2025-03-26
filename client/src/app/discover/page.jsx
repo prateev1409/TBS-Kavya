@@ -131,10 +131,7 @@ function MainComponent() {
 
       const query = new URLSearchParams({
         available: true, // Default to available books
-        ...(searchQuery && {
-          name: searchQuery,
-          author: searchQuery,
-        }),
+        ...(searchQuery && { name: searchQuery }), // Search only by name
         ...(bookFilters.author && { author: bookFilters.author }),
         ...(bookFilters.language && { language: bookFilters.language }),
         ...(bookFilters.genre && { genre: bookFilters.genre }),
@@ -195,10 +192,7 @@ function MainComponent() {
       }
 
       const query = new URLSearchParams({
-        ...(searchQuery && {
-          name: searchQuery,
-          location: searchQuery,
-        }),
+        ...(searchQuery && { name: searchQuery }), // Search only by name
         ...(cafeFilters.distance && { distance: cafeFilters.distance }),
         ...(cafeFilters.pricing && { average_bill: cafeFilters.pricing }),
       }).toString();
@@ -430,7 +424,7 @@ function MainComponent() {
             {loadingCafes ? (
               <div className="text-gray-600">Loading cafes...</div>
             ) : cafes.length === 0 ? (
-              <div className="text-gray-600">No cafes available.</div>
+              <div className="text-gray-600">No cafes found.</div>
             ) : (
               <CafeExpansion cafes={cafes} />
             )}
@@ -593,7 +587,7 @@ function MainComponent() {
             {loadingBooks ? (
               <div className="text-gray-600">Loading books...</div>
             ) : books.length === 0 ? (
-              <div className="text-gray-600">No books available.</div>
+              <div className="text-gray-600">No books found.</div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {books.map((book) => (

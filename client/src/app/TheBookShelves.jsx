@@ -35,7 +35,7 @@ function TheBookShelves() {
 
       let url = `${process.env.NEXT_PUBLIC_API_URL}/books`;
       if (query) {
-        url += `?name=${encodeURIComponent(query)}&author=${encodeURIComponent(query)}`;
+        url += `?name=${encodeURIComponent(query)}`; // Search only by name
       }
 
       const res = await fetch(url, {
@@ -91,7 +91,7 @@ function TheBookShelves() {
 
       let url = `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
       if (query) {
-        url += `?name=${encodeURIComponent(query)}&location=${encodeURIComponent(query)}`;
+        url += `?name=${encodeURIComponent(query)}`; // Search only by name
       }
 
       const res = await fetch(url, {

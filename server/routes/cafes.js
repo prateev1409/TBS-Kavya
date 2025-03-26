@@ -72,7 +72,7 @@ const cafeOwnerMiddleware = async (req, res, next) => {
 // GET /api/cafes - Retrieve list of cafes with case-insensitive filtering
 router.get('/', async (req, res) => {
     try {
-        const { location, average_bill, ratings, cafe_owner_id } = req.query;
+        const { location, average_bill, ratings, cafe_owner_id, name } = req.query;
         console.log('GET /api/cafes - Query:', req.query);
         let query = {};
 
@@ -80,6 +80,7 @@ router.get('/', async (req, res) => {
         if (average_bill) query.average_bill = Number(average_bill);
         if (ratings) query.ratings = Number(ratings);
         if (cafe_owner_id) query.cafe_owner_id = cafe_owner_id;
+        if (name) query.name = { $regex: name, $options: 'i' }; // Add search by cafe name
 
         const cafes = await Cafe.find(query);
         console.log('Cafes fetched:', cafes);
