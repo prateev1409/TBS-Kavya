@@ -24,10 +24,10 @@ const Carousel = ({ title, description, buttonText, images }) => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between">
       <div className="w-full md:w-[70%] pr-0 md:pr-32 mb-2 md:mb-0 relative z-10">
-        <h1 className="text-4xl md:text-5xl font-header text-primary-light dark:text-primary-dark mb-4">
+        <h1 className="text-4xl md:text-5xl font-header text-text-light dark:text-text-dark mb-4">
           {title}
         </h1>
-        <p className="text-secondary-light dark:text-secondary-dark font-body mb-6">
+        <p className="text-textscd-light dark:text-textscd-dark font-body mb-6">
           {description}
         </p>
         <Link

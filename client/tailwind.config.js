@@ -12,7 +12,7 @@ module.exports = {
           dark: '#1266f1',  // Example primary color for dark mode
         },
         secondary: {
-          light: '#10b981', // Example secondary color for light mode
+          light: '#A1C2C8', // Example secondary color for light mode
           dark: '#a83283',  // Example secondary color for dark mode
         },
         tertiary: {
@@ -30,6 +30,10 @@ module.exports = {
         text: {
           light: '#1f2937', // Text color for light mode
           dark: '#f9fafb',  // Text color for dark mode
+        },
+        textscd: {
+          light: '#252525', // Text color for light mode
+          dark: '#e5e5e5',  // Text color for dark mode
         },
         border: {
           light: '#e5e7eb', // Border color for light mode

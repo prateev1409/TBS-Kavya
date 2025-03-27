@@ -7,7 +7,7 @@ const Header = ({ location, onLocationChange, onSearch }) => {
 
   return (
     <header className="border-b border-border-light dark:border-border-dark px-2 md:px-8 py-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div className="w-full sm:w-[80%] mx-auto flex items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/">

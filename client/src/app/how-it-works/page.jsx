@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import Footer from "../../components/footer"; // Corrected path
 import Header from "../../components/header"; // Also corrected for consistency
 import ThemeToggle from "../../components/ThemeToggle"; // Import ThemeToggle
@@ -52,9 +53,11 @@ function MainComponent() {
                   Create an account and choose a subscription plan that works
                   for you.
                 </p>
-                <button className="mt-6 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark px-6 py-3 rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition font-ibm-plex-sans">
-                  View Plans
-                </button>
+                <Link href="/Subscription">
+                  <button className="mt-6 bg-primary-light dark:bg-primary-dark text-text-dark px-6 py-3 rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition font-ibm-plex-sans">
+                    View Plans
+                  </button>
+                </Link>
               </div>
               <div className="md:w-2/3">
                 <img
@@ -157,7 +160,7 @@ function MainComponent() {
             <p className="text-text-light dark:text-text-dark font-ibm-plex-sans mb-8">
               Join our community of book lovers and coffee enthusiasts today!
             </p>
-            <button className="bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-light dark:hover:bg-primary-dark transition font-ibm-plex-sans">
+            <button className="bg-primary-light dark:bg-primary-dark text-text-dark px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-light dark:hover:bg-primary-dark transition font-ibm-plex-sans">
               Join Us Now
             </button>
           </div>
