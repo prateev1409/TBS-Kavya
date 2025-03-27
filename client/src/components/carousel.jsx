@@ -110,35 +110,4 @@ const Carousel = ({ title, description, buttonText, images }) => {
   );
 };
 
-const CarouselStory = () => {
-  const sampleData = {
-    title: "Featured Books",
-    description: "Discover our latest collection of must-read books",
-    buttonText: "Browse Collection",
-    images: ["/book1.png", "/book2.png", "/book3.png"],
-  };
-
-  const singleImageData = {
-    title: "Book of the Month",
-    description: "Check out our featured book for this month",
-    buttonText: "Learn More",
-    images: ["/book1.png"],
-  };
-
-  const twoImageData = {
-    title: "Staff Picks",
-    description: "Recommended reads from our book experts",
-    buttonText: "View Selection",
-    images: ["/book1.png", "/book2.png"],
-  };
-
-  return (
-    <div className="space-y-8">
-      <Carousel {...sampleData} />
-      <Carousel {...singleImageData} />
-      <Carousel {...twoImageData} />
-    </div>
-  );
-};
-
 export default Carousel;

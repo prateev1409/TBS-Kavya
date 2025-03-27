@@ -35,7 +35,7 @@ function TheBookShelves() {
 
       let url = `${process.env.NEXT_PUBLIC_API_URL}/books`;
       if (query) {
-        url += `?name=${encodeURIComponent(query)}`; // Search only by name
+        url += `?name=${encodeURIComponent(query)}`;
       }
 
       const res = await fetch(url, {
@@ -62,7 +62,7 @@ function TheBookShelves() {
         publisher: book.publisher,
         description: book.description,
         audioSummary: book.audio_url,
-        ratings: book.ratings,
+        ratings: book.ratings || "N/A",
         language: book.language,
         available: book.available,
         is_free: book.is_free,
@@ -91,7 +91,7 @@ function TheBookShelves() {
 
       let url = `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
       if (query) {
-        url += `?name=${encodeURIComponent(query)}`; // Search only by name
+        url += `?name=${encodeURIComponent(query)}`;
       }
 
       const res = await fetch(url, {
@@ -120,7 +120,7 @@ function TheBookShelves() {
         discounts: `${cafe.discount}%`,
         priceRange: `₹${cafe.average_bill}`,
         description: cafe.description || "No description available",
-        rating: cafe.ratings,
+        rating: cafe.ratings || "N/A",
       }));
       setCafes(mappedCafes);
     } catch (err) {
@@ -191,44 +191,46 @@ function TheBookShelves() {
         onLocationChange={() => {}}
         onSearch={handleSearch}
       />
-      <main className="px-4 md:px-8 max-w-7xl mx-auto py-12">
+      <main className="px-4 sm:px-4 md:px-6 py-8 w-full sm:w-[80%] mx-auto">
         {/* Carousel Section */}
-        <section className="relative mb-16 h-[650px] md:h-[400px] overflow-hidden">
-          <div className="relative h-full bg-[url('/cafe-background.jpg')] bg-cover bg-center">
-            {carouselSlides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`absolute inset-0 transition-opacity duration-500 ${
-                  currentSlide === index ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <Carousel
-                  title={slide.title}
-                  description={slide.description}
-                  buttonText={slide.buttonText}
-                  images={slide.images}
+        <section className="mb-12 w-full">
+          <div className="relative w-full h-[600px] sm:h-[500px] md:h-[400px] overflow-hidden">
+            <div className="relative w-full h-full bg-[url('/cafe-background.jpg')] bg-cover bg-center">
+              {carouselSlides.map((slide, index) => (
+                <div
+                  key={slide.id}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    currentSlide === index ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <Carousel
+                    title={slide.title}
+                    description={slide.description}
+                    buttonText={slide.buttonText}
+                    images={slide.images}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {carouselSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    currentSlide === index
+                      ? "bg-primary-light dark:bg-primary-dark"
+                      : "bg-secondary-light dark:bg-secondary-dark"
+                  }`}
                 />
-              </div>
-            ))}
-          </div>
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {carouselSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  currentSlide === index
-                    ? "bg-primary-light dark:bg-primary-dark"
-                    : "bg-secondary-light dark:bg-secondary-dark"
-                }`}
-              />
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Books Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
+        <section className="mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-4 sm:mb-6">
             Read something new!
           </h2>
           {loadingBooks ? (
@@ -236,7 +238,7 @@ function TheBookShelves() {
           ) : books.length === 0 ? (
             <div className="text-gray-600">No books available.</div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
               {books.map((book) => (
                 <Book key={book.book_id} book={book} />
               ))}
@@ -245,8 +247,8 @@ function TheBookShelves() {
         </section>
 
         {/* Cafes Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-6">
+        <section className="mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-4 sm:mb-6">
             Find a new Cafe!
           </h2>
           {loadingCafes ? (
@@ -254,12 +256,16 @@ function TheBookShelves() {
           ) : cafes.length === 0 ? (
             <div className="text-gray-600">No cafes available.</div>
           ) : (
-            <CafeExpansion cafes={cafes} />
+            <div className="w-full">
+              <CafeExpansion cafes={cafes} />
+            </div>
           )}
         </section>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
       </main>
       <Footer />
-      <ThemeToggle />
     </div>
   );
 }
