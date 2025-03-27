@@ -45,18 +45,8 @@ export function CafeExpanded({ cafe, onClose }) {
   const fetchBooksForCafe = async () => {
     setLoadingBooks(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found.");
-      }
-
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/books?keeper_id=${cafe.id}&available=true`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${process.env.NEXT_PUBLIC_API_URL}/books?keeper_id=${cafe.id}&available=true`
       );
 
       if (!res.ok) {

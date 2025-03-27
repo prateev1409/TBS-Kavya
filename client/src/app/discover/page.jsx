@@ -52,24 +52,12 @@ function MainComponent() {
     }
   };
 
-  // Fetch book filter options
+  // Fetch book filter options (no auth required)
   const fetchBookFilters = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`);
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch book filters");
       }
@@ -86,24 +74,12 @@ function MainComponent() {
     }
   };
 
-  // Fetch cafe filter options
+  // Fetch cafe filter options (no auth required)
   const fetchCafeFilters = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`);
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch cafe filters");
       }
@@ -120,15 +96,10 @@ function MainComponent() {
     }
   };
 
-  // Fetch books with filters and search
+  // Fetch books with filters and search (no auth required)
   const fetchBooks = async () => {
     setLoadingBooks(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
       const query = new URLSearchParams({
         available: true, // Default to available books
         ...(searchQuery && { name: searchQuery }), // Search only by name
@@ -138,18 +109,10 @@ function MainComponent() {
       }).toString();
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`
       );
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch books");
       }
@@ -173,24 +136,15 @@ function MainComponent() {
     } catch (err) {
       console.error("Error fetching books:", err.message);
       setError(err.message);
-      if (err.message.includes("Unauthorized")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setLoadingBooks(false);
     }
   };
 
-  // Fetch cafes with filters and search
+  // Fetch cafes with filters and search (no auth required)
   const fetchCafes = async () => {
     setLoadingCafes(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
       const query = new URLSearchParams({
         ...(searchQuery && { name: searchQuery }), // Search only by name
         ...(cafeFilters.distance && { distance: cafeFilters.distance }),
@@ -198,18 +152,10 @@ function MainComponent() {
       }).toString();
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/cafes${query ? `?${query}` : ""}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${process.env.NEXT_PUBLIC_API_URL}/cafes${query ? `?${query}` : ""}`
       );
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch cafes");
       }
@@ -232,10 +178,6 @@ function MainComponent() {
     } catch (err) {
       console.error("Error fetching cafes:", err.message);
       setError(err.message);
-      if (err.message.includes("Unauthorized")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setLoadingCafes(false);
     }
@@ -344,9 +286,20 @@ function MainComponent() {
               {activeFilter === "distance" && (
                 <div
                   className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="space-y-2">
+                    <label
+                      className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="distance"
+                        value=""
+                        checked={cafeFilters.distance === ""}
+                        onChange={() => handleCafeFilterChange("distance", "")}
+                      />
+                      <span>Reset</span>
+                    </label>
                     {["1km", "3km", "5km"].map((dist) => (
                       <label
                         key={dist}
@@ -391,9 +344,20 @@ function MainComponent() {
               {activeFilter === "pricing" && (
                 <div
                   className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="space-y-2">
+                    <label
+                      className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="pricing"
+                        value=""
+                        checked={cafeFilters.pricing === ""}
+                        onChange={() => handleCafeFilterChange("pricing", "")}
+                      />
+                      <span>Reset</span>
+                    </label>
                     {cafeFilterOptions.average_bills.map((bill) => (
                       <label
                         key={bill}

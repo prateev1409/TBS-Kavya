@@ -69,7 +69,7 @@ const cafeOwnerMiddleware = async (req, res, next) => {
     }
 };
 
-// GET /api/cafes - Retrieve list of cafes with case-insensitive filtering
+// GET /api/cafes - Retrieve list of cafes with case-insensitive filtering (public access)
 router.get('/', async (req, res) => {
     try {
         const { location, average_bill, ratings, cafe_owner_id, name } = req.query;
@@ -91,7 +91,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /api/cafes/filters - Retrieve unique values for filters
+// GET /api/cafes/filters - Retrieve unique values for filters (public access)
 router.get('/filters', async (req, res) => {
     try {
         const locations = await Cafe.distinct('location');
@@ -105,7 +105,7 @@ router.get('/filters', async (req, res) => {
     }
 });
 
-// GET /api/cafes/:cafe_id - Retrieve a specific cafe
+// GET /api/cafes/:cafe_id - Retrieve a specific cafe (public access)
 router.get('/:cafe_id', async (req, res) => {
     try {
         const { cafe_id } = req.params;
