@@ -8,42 +8,59 @@ const Header = ({ location, onLocationChange, onSearch }) => {
   return (
     <header className="border-b border-border-light dark:border-border-dark px-2 md:px-8 py-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-      <div className="flex items-center">
+        {/* Logo */}
+        <div className="flex items-center">
           <Link href="/">
-            <div className="w-full h-12 cursor-pointer">
-              {!isLoggedIn ? (
-                <>
-                  <img
-                    src="/ExpandedLogo-Lightmode.png"
-                    alt="The Book Shelves Logo"
-                    className="w-full h-full object-contain dark:hidden"
-                  />
-                  <img
-                    src="/ExpandedLogo-Darkmode.png"
-                    alt="The Book Shelves Logo"
-                    className="w-full h-full object-contain hidden dark:block"
-                  />
-                </>
-              ) : (
-                <>
-                  <img
-                    src="/Logo-Lightmode.png"
-                    alt="The Book Shelves Logo"
-                    className="w-full h-full object-contain dark:hidden"
-                  />
-                  <img
-                    src="/Logo-Darkmode.png"
-                    alt="The Book Shelves Logo"
-                    className="w-full h-full object-contain hidden dark:block"
-                  />
-                </>
-              )}
+            <div className="w-12 h-12 cursor-pointer">
+              {/* Mobile: Always show regular logo (logged in or out) */}
+              <div className="md:hidden">
+                <img
+                  src="/Logo-Lightmode.png"
+                  alt="The Book Shelves Logo"
+                  className="w-full h-full object-contain dark:hidden"
+                />
+                <img
+                  src="/Logo-Darkmode.png"
+                  alt="The Book Shelves Logo"
+                  className="w-full h-full object-contain hidden dark:block"
+                />
+              </div>
+              {/* Desktop: Show expanded logo when logged out, regular logo when logged in */}
+              <div className={`hidden md:block ${isLoggedIn ? "w-12" : "w-48"}`}>
+                {isLoggedIn ? (
+                  <>
+                    <img
+                      src="/Logo-Lightmode.png"
+                      alt="The Book Shelves Logo"
+                      className="w-full h-full object-contain dark:hidden"
+                    />
+                    <img
+                      src="/Logo-Darkmode.png"
+                      alt="The Book Shelves Logo"
+                      className="w-full h-full object-contain hidden dark:block"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src="/ExpandedLogo-Lightmode.png"
+                      alt="The Book Shelves Logo"
+                      className="w-full h-full object-contain dark:hidden"
+                    />
+                    <img
+                      src="/ExpandedLogo-Darkmode.png"
+                      alt="The Book Shelves Logo"
+                      className="w-full h-full object-contain hidden dark:block"
+                    />
+                  </>
+                )}
+              </div>
             </div>
           </Link>
         </div>
 
         {/* Search Section */}
-        <div className="flex-1 max-w-3xl md:flex hidden">
+        <div className={`flex-1 md:flex hidden mr-4 ${isLoggedIn ? "max-w-4xl" : "max-w-2xl ml-4"} ${isLoggedIn ? "" : "translate-x-[5vw]"}` }>
           <div className="relative flex items-center bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-full p-2 w-full">
             {isLoggedIn && (
               <div className="min-w-[180px] border-r border-border-light dark:border-border-dark pr-4 mr-4">
