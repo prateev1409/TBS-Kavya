@@ -25,30 +25,18 @@ function TheBookShelves() {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch books from the database
+  // Fetch books from the database (no auth required)
   const fetchBooks = async (query = "") => {
     setLoadingBooks(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
       let url = `${process.env.NEXT_PUBLIC_API_URL}/books`;
       if (query) {
         url += `?name=${encodeURIComponent(query)}`;
       }
 
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(url);
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch books");
       }
@@ -72,39 +60,23 @@ function TheBookShelves() {
     } catch (err) {
       console.error("Error fetching books:", err.message);
       setError(err.message);
-      if (err.message.includes("Unauthorized")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setLoadingBooks(false);
     }
   };
 
-  // Fetch cafes from the database
+  // Fetch cafes from the database (no auth required)
   const fetchCafes = async (query = "") => {
     setLoadingCafes(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found. Please sign in.");
-      }
-
       let url = `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
       if (query) {
         url += `?name=${encodeURIComponent(query)}`;
       }
 
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(url);
 
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Please sign in again.");
-        }
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch cafes");
       }
@@ -127,10 +99,6 @@ function TheBookShelves() {
     } catch (err) {
       console.error("Error fetching cafes:", err.message);
       setError(err.message);
-      if (err.message.includes("Unauthorized")) {
-        localStorage.removeItem("token");
-        window.location.href = "/auth/signin";
-      }
     } finally {
       setLoadingCafes(false);
     }
@@ -267,13 +235,13 @@ function TheBookShelves() {
         <ThemeToggle />
       </main>
       {/* Discover All Button (Mobile Only) */}
-        <div className="flex justify-center mb-12 md:hidden">
-          <Link href="/discover">
-            <button className="px-6 py-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full font-button hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 transition-colors">
-              Discover All
-            </button>
-          </Link>
-        </div>
+      <div className="flex justify-center mb-12 md:hidden">
+        <Link href="/discover">
+          <button className="px-6 py-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full font-button hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 transition-colors">
+            Discover All
+          </button>
+        </Link>
+      </div>
       <Footer />
     </div>
   );
