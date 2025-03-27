@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link"; // Import Link for navigation
 import { useEffect, useState } from "react";
 import Book from "../components/book";
 import CafeExpansion from "../components/cafe";
@@ -265,6 +266,14 @@ function TheBookShelves() {
         {/* Theme Toggle */}
         <ThemeToggle />
       </main>
+      {/* Discover All Button (Mobile Only) */}
+        <div className="flex justify-center mb-12 md:hidden">
+          <Link href="/discover">
+            <button className="px-6 py-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full font-button hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 transition-colors">
+              Discover All
+            </button>
+          </Link>
+        </div>
       <Footer />
     </div>
   );
