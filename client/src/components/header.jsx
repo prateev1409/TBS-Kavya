@@ -122,36 +122,36 @@ const Header = ({ location, onLocationChange, onSearch }) => {
 
         {/* Mobile Search Section (consolidated) */}
         <div className="flex-1 flex md:hidden items-center">
-          <div className="flex-1 flex items-center bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-full p-2">
-            <input
-              type="text"
-              name="search"
-              placeholder="Search..."
-              className="flex-1 text-sm text-text-light dark:text-text-dark outline-none bg-transparent px-3 py-1.5"
-              onChange={onSearch}
-            />
-            <button
-              onClick={onSearch}
-              className="ml-2 p-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
-              aria-label="Search"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+  <div className="flex-1 flex items-center bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-full p-2">
+    <input
+      type="text"
+      name="search"
+      placeholder="Search..."
+      className="flex-1 text-sm text-text-light dark:text-text-dark outline-none bg-transparent px-3 py-1.5"
+      onChange={onSearch}
+    />
+    <button
+      onClick={onSearch}
+      className="ml-2 p-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
+      aria-label="Search"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+        className="w-5 h-5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
