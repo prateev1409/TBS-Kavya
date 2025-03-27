@@ -6,7 +6,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="fixed bottom-4 right-4 sm:right-[calc(10%+1rem)] p-2 bg-primary-light dark:bg-primary-dark rounded-full shadow-lg font-button z-50"
+      className="fixed bottom-4 right-4 sm:right-[1rem] p-2 bg-primary-light dark:bg-primary-dark rounded-full shadow-lg font-button z-50"
       aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
     >
       <svg
