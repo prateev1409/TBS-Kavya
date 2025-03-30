@@ -460,7 +460,7 @@ function AdminDashboard() {
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Cafe Dashboard</h1>
+                    <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
                     <button
                         
                         className="px-4 py-2 rounded-full bg-red-600 text-white font-medium hover:bg-red-700"
