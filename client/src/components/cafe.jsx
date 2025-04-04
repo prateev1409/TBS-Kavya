@@ -140,6 +140,12 @@ export function CafeExpanded({ cafe, onClose }) {
             <p className="text-xs sm:text-sm text-text-light dark:text-text-dark mb-4">
               {cafe.description}
             </p>
+            {cafe.audioSummary && (
+              <audio controls className="w-full mb-4">
+                <source src={cafe.audioSummary} type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+            )}
           </div>
 
           {/* Available Books Section */}
