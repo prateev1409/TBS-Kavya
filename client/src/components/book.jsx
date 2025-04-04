@@ -30,6 +30,12 @@ function BookCard({ book, onExpand }) {
 
 function BookExpanded({ book, onClose }) {
   const router = useRouter();
+  const handleDownloadPdf = () => {
+    if (book.pdfUrl) {
+      // Open the PDF in a new tab for viewing or downloading
+      window.open(book.pdfUrl, '_blank');
+    }
+  };
 
   return (
     <div
@@ -79,6 +85,14 @@ function BookExpanded({ book, onClose }) {
                 <source src={book.audioSummary} type="audio/mpeg" />
                 Your browser does not support the audio element.
               </audio>
+            )}
+            {book.pdfUrl && (
+              <button
+                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm sm:text-base"
+                onClick={handleDownloadPdf}
+              >
+                View/Download Book in a Nutshell (PDF)
+              </button>
             )}
             <button
               className="mt-4 bg-background-dark dark:bg-background-light text-text-dark dark:text-text-light px-4 py-2 rounded-lg hover:bg-primary-dark text-sm sm:text-base"

@@ -50,6 +50,7 @@ function TheBookShelves() {
         publisher: book.publisher,
         description: book.description,
         audioSummary: book.audio_url,
+        pdfUrl: book.pdf_url,
         ratings: book.ratings || "N/A",
         language: book.language,
         available: book.available,

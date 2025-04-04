@@ -260,6 +260,7 @@ function BooksSection({ data, setData, onEdit }) {
               <th className="px-4 py-3 text-left">Description</th>
               <th className="px-4 py-3 text-left">Image URL</th>
               <th className="px-4 py-3 text-left">Audio URL</th>
+              <th className="px-4 py-3 text-left">PDF URL</th>
               <th className="px-4 py-3 text-left">Ratings</th>
               <th className="px-4 py-3 text-left">Available</th>
               <th className="px-4 py-3 text-left">Is Free</th>
@@ -302,6 +303,20 @@ function BooksSection({ data, setData, onEdit }) {
                       className="text-blue-600 hover:underline"
                     >
                       Listen
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
+                <td className="px-4 py-3 truncate max-w-xs">
+                  {book.pdf_url ? (
+                    <a
+                      href={book.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      View
                     </a>
                   ) : (
                     "N/A"

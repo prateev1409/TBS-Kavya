@@ -11,6 +11,7 @@ const bookSchema = new mongoose.Schema({
     description: { type: String },
     image_url: { type: String },
     audio_url: { type: String },
+    pdf_url: { type: String },
     ratings: { type: Number, min: 0, max: 5, default: 0 },
     available: { type: Boolean, default: true }, // Shows up for the reservation only if available
     keeper_id: { type: String }, // References either a user_id or cafe_id

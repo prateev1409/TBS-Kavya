@@ -112,6 +112,7 @@ router.post(
         description,
         image_url,
         audio_url,
+        pdf_url,
         ratings,
         is_free,
         available,
@@ -127,6 +128,7 @@ router.post(
         description,
         image_url,
         audio_url,
+        pdf_url,
         ratings: ratings || 0,
         is_free: is_free || false,
         available: available !== undefined ? available : true,
@@ -170,6 +172,7 @@ router.put(
         description,
         image_url,
         audio_url,
+        pdf_url,
         ratings,
         is_free,
         available,
@@ -189,6 +192,7 @@ router.put(
       book.description = description !== undefined ? description : book.description;
       book.image_url = image_url !== undefined ? image_url : book.image_url;
       book.audio_url = audio_url !== undefined ? audio_url : book.audio_url;
+      book.pdf_url = pdf_url !== undefined ? pdf_url : book.pdf_url;
       book.ratings = ratings !== undefined ? ratings : book.ratings;
       book.is_free = is_free !== undefined ? is_free : book.is_free;
       book.available = available !== undefined ? available : book.available;
