@@ -1,12 +1,14 @@
-"use client"; // Added "use client" directive
+"use client";
 import Link from "next/link";
 import { useState } from "react";
-import ThemeToggle from "../../../components/ThemeToggle"; // Corrected import path
+import ThemeToggle from "../../../components/ThemeToggle";
 
 function MainComponent() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
+    phone_number: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -21,41 +23,53 @@ function MainComponent() {
     });
   };
 
+  const validateForm = () => {
+    if (!formData.name || !formData.phone_number || !formData.email || !formData.password || !formData.confirmPassword) {
+      return "Please fill in all fields";
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      return "Invalid email format";
+    }
+    if (formData.password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!/[!@#$%^&*]/.test(formData.password)) {
+      return "Password must contain at least one special character";
+    }
+    if (formData.password !== formData.confirmPassword) {
+      return "Passwords do not match";
+    }
+    if (!/^\d{10}$/.test(formData.phone_number)) {
+      return "Phone number must be 10 digits";
+    }
+    return null;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
-      setError(
-        <span className="text-text-light dark:text-text-dark">
-          Please fill in all fields
-        </span>
-      );
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       setLoading(false);
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
-    console.log("Sign up attempted with:", formData);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'User', // Add a default name or collect it in the form
-          phone_number: '7345678945', // Add a default or collect it
+          name: formData.name,
+          phone_number: formData.phone_number,
           email: formData.email,
           password: formData.password,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
       localStorage.setItem('token', data.token);
       window.location.href = '/';
     } catch (err) {
@@ -64,17 +78,11 @@ function MainComponent() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    setError("Google sign-in not implemented yet");
-  };
-
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
       setPasswordVisible(!passwordVisible);
-      setTimeout(() => setPasswordVisible(false), 15000);
     } else if (field === "confirmPassword") {
       setConfirmPasswordVisible(!confirmPasswordVisible);
-      setTimeout(() => setConfirmPasswordVisible(false), 15000);
     }
   };
 
@@ -89,6 +97,24 @@ function MainComponent() {
           <form onSubmit={onSubmit} className="space-y-6">
             <div>
               <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                onChange={handleInputChange}
+                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
+              />
+            </div>
+            <div>
+              <input
+                type="tel"
+                name="phone_number"
+                placeholder="Phone Number"
+                onChange={handleInputChange}
+                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
+              />
+            </div>
+            <div>
+              <input
                 type="email"
                 name="email"
                 placeholder="Email"
@@ -96,7 +122,6 @@ function MainComponent() {
                 className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-dark focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors"
               />
             </div>
-
             <div className="relative">
               <input
                 type={passwordVisible ? "text" : "password"}
@@ -113,7 +138,6 @@ function MainComponent() {
                 {passwordVisible ? "🙈" : "👁️"}
               </button>
             </div>
-
             <div className="relative">
               <input
                 type={confirmPasswordVisible ? "text" : "password"}
@@ -130,13 +154,11 @@ function MainComponent() {
                 {confirmPasswordVisible ? "🙈" : "👁️"}
               </button>
             </div>
-
             {error && (
               <div className="rounded-full bg-warning-light dark:bg-warning-dark p-3 text-sm text-warning-light dark:text-warning-dark">
                 {error}
               </div>
             )}
-
             <button
               type="submit"
               disabled={loading}
@@ -145,28 +167,25 @@ function MainComponent() {
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
-
+          {/* Rest of the UI remains unchanged */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
             <span className="px-4 text-text-light dark:text-text-dark text-sm">Or</span>
             <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
           </div>
-
           <div className="space-y-4">
             <button
-              onClick={handleGoogleSignIn}
+              onClick={() => setError("Google sign-in not implemented yet")}
               className="w-full rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2"
             >
               <i className="fab fa-google mr-2"></i>
               Continue with Google
             </button>
-
             <button className="w-full rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2">
               <i className="fab fa-apple mr-2"></i>
               Continue with Apple
             </button>
           </div>
-
           <p className="mt-8 text-center text-sm text-text-light dark:text-text-dark">
             Already have an account?{" "}
             <Link href="/auth/signin" className="font-medium text-primary-light dark:text-primary-dark hover:text-primary-light dark:hover:text-primary-dark">
@@ -175,7 +194,6 @@ function MainComponent() {
           </p>
         </div>
       </div>
-
       <div className="hidden lg:flex w-1/2 items-center justify-center bg-background-light dark:bg-background-dark p-12">
         <div className="relative">
           <img
@@ -185,7 +203,7 @@ function MainComponent() {
           />
         </div>
       </div>
-      <ThemeToggle /> {/* Add ThemeToggle component */}
+      <ThemeToggle />
     </div>
   );
 }

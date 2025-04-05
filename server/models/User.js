@@ -19,14 +19,19 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function (next) {
     try {
         // Auto-generate user_id for new documents
-        if (this.isNew) {
-            console.log('Generating user_id for new user...');
-            const count = await mongoose.models.User.countDocuments();
-            console.log('User count:', count);
-            const userIdNumber = count + 1;
-            this.user_id = `User_${String(userIdNumber).padStart(3, '0')}`; // e.g., User_001
-            console.log('Generated user_id:', this.user_id);
+    if (this.isNew) {
+        console.log('Generating user_id for new user...');
+        const lastUser = await mongoose.models.User.findOne().sort({ createdAt: -1 });//sort by createdAt in descending order
+        console.log('Last user found:', lastUser); // Debug log
+        let userIdNumber;
+        if (lastUser) {
+          userIdNumber = parseInt(lastUser.user_id.split('_')[1], 10) + 1;
+        } else {
+          userIdNumber = 1; // First user
         }
+        this.user_id = `User_${String(userIdNumber).padStart(3, '0')}`; // e.g., User_001
+        console.log('Generated user_id:', this.user_id);
+      }
 
         // Hash password if modified
         if (this.isModified('password')) {

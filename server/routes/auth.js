@@ -8,6 +8,19 @@ router.post('/register', async (req, res) => {
     try {
         const { name, phone_number, email, password } = req.body;
 
+        // Server-side validation
+        if (!name || !phone_number || !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+        if (password.length < 8 || !/[!@#$%^&*]/.test(password)) {
+            return res.status(400).json({ message: "Password must be 8+ characters with a special character" });
+        }
+        if (!/^\d{10}$/.test(phone_number)) {
+            return res.status(400).json({ message: "Phone number must be 10 digits" });
+        }
         // Check if the user already exists
         let existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -20,7 +33,7 @@ router.post('/register', async (req, res) => {
 
         // Create a new user
         const newUser = new User({
-            user_id,
+           user_id,
             name,
             phone_number,
             email,
