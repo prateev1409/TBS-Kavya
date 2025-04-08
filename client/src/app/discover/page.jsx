@@ -10,40 +10,25 @@ import ThemeToggle from "../../components/ThemeToggle";
 
 function MainComponent() {
   const [activeFilter, setActiveFilter] = useState(null);
-  const [cafeFilters, setCafeFilters] = useState({
-    distance: "",
-    pricing: "",
-  });
-  const [bookFilters, setBookFilters] = useState({
-    author: "",
-    language: "",
-    genre: "",
-  });
+  const [cafeFilters, setCafeFilters] = useState({ distance: "", pricing: "" });
+  const [bookFilters, setBookFilters] = useState({ author: "", language: "", genre: "" });
   const [books, setBooks] = useState([]);
   const [cafes, setCafes] = useState([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
   const [loadingCafes, setLoadingCafes] = useState(true);
   const [error, setError] = useState(null);
   const [bookFilterOptions, setBookFilterOptions] = useState({
-    authors: [],
-    languages: [],
-    genres: [],
+    authors: [], languages: [], genres: [],
   });
   const [cafeFilterOptions, setCafeFilterOptions] = useState({
-    locations: [],
-    average_bills: [],
-    ratings: [],
+    locations: [], average_bills: [], ratings: [],
   });
   const [searchQuery, setSearchQuery] = useState("");
 
   const filterRef = useRef(null);
 
   const handleFilterClick = (filterName) => {
-    if (activeFilter === filterName) {
-      setActiveFilter(null);
-    } else {
-      setActiveFilter(filterName);
-    }
+    setActiveFilter(activeFilter === filterName ? null : filterName);
   };
 
   const handleClickOutside = (event) => {
@@ -52,16 +37,11 @@ function MainComponent() {
     }
   };
 
-  // Fetch book filter options (no auth required)
+  // Fetch book filter options
   const fetchBookFilters = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/filters`);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch book filters");
-      }
-
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch book filters");
       const { authors, languages, genres } = await res.json();
       setBookFilterOptions({
         authors: authors.slice(0, 5),
@@ -74,16 +54,11 @@ function MainComponent() {
     }
   };
 
-  // Fetch cafe filter options (no auth required)
+  // Fetch cafe filter options
   const fetchCafeFilters = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch cafe filters");
-      }
-
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch cafe filters");
       const { locations, average_bills, ratings } = await res.json();
       setCafeFilterOptions({
         locations: locations.slice(0, 5),
@@ -96,27 +71,20 @@ function MainComponent() {
     }
   };
 
-  // Fetch books with filters and search (no auth required)
+  // Fetch books
   const fetchBooks = async () => {
     setLoadingBooks(true);
     try {
       const query = new URLSearchParams({
-        available: true, // Default to available books
-        ...(searchQuery && { name: searchQuery }), // Search only by name
+        available: true,
+        ...(searchQuery && { name: searchQuery }),
         ...(bookFilters.author && { author: bookFilters.author }),
         ...(bookFilters.language && { language: bookFilters.language }),
         ...(bookFilters.genre && { genre: bookFilters.genre }),
       }).toString();
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch books");
-      }
-
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`);
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch books");
       const data = await res.json();
       const mappedBooks = data.map((book) => ({
         book_id: book.book_id,
@@ -141,25 +109,18 @@ function MainComponent() {
     }
   };
 
-  // Fetch cafes with filters and search (no auth required)
+  // Fetch cafes
   const fetchCafes = async () => {
     setLoadingCafes(true);
     try {
       const query = new URLSearchParams({
-        ...(searchQuery && { name: searchQuery }), // Search only by name
+        ...(searchQuery && { name: searchQuery }),
         ...(cafeFilters.distance && { distance: cafeFilters.distance }),
         ...(cafeFilters.pricing && { average_bill: cafeFilters.pricing }),
       }).toString();
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/cafes${query ? `?${query}` : ""}`
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch cafes");
-      }
-
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes${query ? `?${query}` : ""}`);
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch cafes");
       const data = await res.json();
       const mappedCafes = data.map((cafe) => ({
         id: cafe.cafe_id,
@@ -185,19 +146,13 @@ function MainComponent() {
 
   // Handle filter changes
   const handleCafeFilterChange = (filterType, value) => {
-    setCafeFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
-    setActiveFilter(null); // Close dropdown after selection
+    setCafeFilters((prev) => ({ ...prev, [filterType]: value }));
+    setActiveFilter(null);
   };
 
   const handleBookFilterChange = (filterType, value) => {
-    setBookFilters((prev) => ({
-      ...prev,
-      [filterType]: value || "", // Ensure empty string if value is undefined
-    }));
-    setActiveFilter(null); // Close dropdown after selection
+    setBookFilters((prev) => ({ ...prev, [filterType]: value || "" }));
+    setActiveFilter(null);
   };
 
   // Handle search
@@ -206,7 +161,7 @@ function MainComponent() {
     setSearchQuery(query);
   };
 
-  // Fetch data and filter options on mount and when filters/search change
+  // Fetch data on mount and when filters/search change
   useEffect(() => {
     fetchBookFilters();
     fetchCafeFilters();
@@ -224,9 +179,7 @@ function MainComponent() {
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (error) {
@@ -245,17 +198,18 @@ function MainComponent() {
         onSearch={handleSearch}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-header font-bold mb-12">
-          Discover Your Next Reading Adventure
-        </h1>
-
-        {/* Featured Section */}
-        <section className="mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <MustVisitCafe />
-            <MustReadBook />
-          </div>
-        </section>
+        {/* Featured Section - Hidden during search */}
+        {!searchQuery && (
+          <section className="mb-16">
+              <h1 className="text-4xl font-header font-bold mb-12">
+                Discover Your Next Reading Adventure 
+              </h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <MustVisitCafe />
+              <MustReadBook />
+            </div>
+          </section>
+        )}
 
         {/* Filters & Lists Section */}
         <section className="mb-16">
@@ -266,31 +220,20 @@ function MainComponent() {
                 onClick={() => handleFilterClick("distance")}
                 className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
               >
-                Distance
+                {cafeFilters.distance || "Distance"}
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeFilter === "distance" ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 transition-transform ${activeFilter === "distance" ? "rotate-180" : ""}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {activeFilter === "distance" && (
-                <div
-                  className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                >
+                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
                   <div className="space-y-2">
-                    <label
-                      className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                    >
+                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                       <input
                         type="radio"
                         name="distance"
@@ -324,31 +267,20 @@ function MainComponent() {
                 onClick={() => handleFilterClick("pricing")}
                 className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
               >
-                Pricing
+                {cafeFilters.pricing ? `₹${cafeFilters.pricing}` : "Pricing"}
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeFilter === "pricing" ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 transition-transform ${activeFilter === "pricing" ? "rotate-180" : ""}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {activeFilter === "pricing" && (
-                <div
-                  className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                >
+                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
                   <div className="space-y-2">
-                    <label
-                      className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                    >
+                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                       <input
                         type="radio"
                         name="pricing"
@@ -381,9 +313,6 @@ function MainComponent() {
 
           {/* Nearby Cafes List */}
           <section className="mb-16">
-            <h2 className="text-3xl font-header font-bold text-primary-light dark:text-primary-dark mb-6">
-              Find a new Cafe!
-            </h2>
             {loadingCafes ? (
               <div className="text-gray-600">Loading cafes...</div>
             ) : cafes.length === 0 ? (
@@ -402,28 +331,18 @@ function MainComponent() {
                   onClick={() => handleFilterClick("author")}
                   className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
                 >
-                  Author
+                  {bookFilters.author || "Author"}
                   <svg
-                    className={`w-4 h-4 transition-transform ${
-                      activeFilter === "author" ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-transform ${activeFilter === "author" ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {activeFilter === "author" && (
-                  <div
-                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
                     <input
                       type="text"
                       name="author-search"
@@ -433,9 +352,7 @@ function MainComponent() {
                       onChange={(e) => handleBookFilterChange("author", e.target.value)}
                     />
                     <div className="max-h-48 overflow-y-auto">
-                      <label
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                      >
+                      <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                         <input
                           type="radio"
                           name="author"
@@ -469,32 +386,20 @@ function MainComponent() {
                   onClick={() => handleFilterClick("language")}
                   className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
                 >
-                  Language
+                  {bookFilters.language || "Language"}
                   <svg
-                    className={`w-4 h-4 transition-transform ${
-                      activeFilter === "language" ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-transform ${activeFilter === "language" ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {activeFilter === "language" && (
-                  <div
-                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
                     <div className="space-y-2">
-                      <label
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                      >
+                      <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                         <input
                           type="radio"
                           name="language"
@@ -528,32 +433,20 @@ function MainComponent() {
                   onClick={() => handleFilterClick("genre")}
                   className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
                 >
-                  Genre
+                  {bookFilters.genre || "Genre"}
                   <svg
-                    className={`w-4 h-4 transition-transform ${
-                      activeFilter === "genre" ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-transform ${activeFilter === "genre" ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {activeFilter === "genre" && (
-                  <div
-                    className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-10 animate-slideDown"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
                     <div className="space-y-2">
-                      <label
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                      >
+                      <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                         <input
                           type="radio"
                           name="genre"
@@ -599,19 +492,12 @@ function MainComponent() {
       </div>
 
       <Footer />
-
       <ThemeToggle />
 
       <style jsx>{`
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .animate-slideDown {
           animation: slideDown 0.2s ease-out;

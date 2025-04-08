@@ -160,9 +160,11 @@ function MainComponent() {
             <p className="text-text-light dark:text-text-dark font-ibm-plex-sans mb-8">
               Join our community of book lovers and coffee enthusiasts today!
             </p>
+            <Link href="/Subscription">
             <button className="bg-primary-light dark:bg-primary-dark text-text-dark px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-light dark:hover:bg-primary-dark transition font-ibm-plex-sans">
               Join Us Now
             </button>
+            </Link>
           </div>
         </div>
       </main>
