@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link"; // Import Link for navigation
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Book from "../components/book";
 import CafeExpansion from "../components/cafe";
@@ -17,29 +17,21 @@ function TheBookShelves() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Carousel auto-slide logic
+  // Carousel auto-slide
   useEffect(() => {
-  const timer = setInterval(() => {
-    setCurrentSlide((prev) => (prev + 1) % 3);
-  }, 5000);
-  return () => clearInterval(timer);
-}, []);
-  // Fetch books from the database (no auth required)
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   const fetchBooks = async (query = "") => {
     setLoadingBooks(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/books`;
-      if (query) {
-        url += `?name=${encodeURIComponent(query)}`;
-      }
-
+      if (query) url += `?name=${encodeURIComponent(query)}`;
       const res = await fetch(url);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch books");
-      }
-
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch books");
       const data = await res.json();
       const mappedBooks = data.map((book) => ({
         book_id: book.book_id,
@@ -65,22 +57,13 @@ function TheBookShelves() {
     }
   };
 
-  // Fetch cafes from the database (no auth required)
   const fetchCafes = async (query = "") => {
     setLoadingCafes(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/cafes`;
-      if (query) {
-        url += `?name=${encodeURIComponent(query)}`;
-      }
-
+      if (query) url += `?name=${encodeURIComponent(query)}`;
       const res = await fetch(url);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch cafes");
-      }
-
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch cafes");
       const data = await res.json();
       const mappedCafes = data.map((cafe) => ({
         id: cafe.cafe_id,
@@ -104,7 +87,6 @@ function TheBookShelves() {
     }
   };
 
-  // Handle search
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -112,7 +94,6 @@ function TheBookShelves() {
     fetchCafes(query);
   };
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchBooks();
     fetchCafes();
@@ -161,7 +142,6 @@ function TheBookShelves() {
         onSearch={handleSearch}
       />
       <main className="px-4 sm:px-4 md:px-6 py-8 w-full sm:w-[80%] mx-auto">
-        {/* Carousel Section - Hidden during search */}
         {!searchQuery && (
           <section id="Carousel" className="mb-12 w-full">
             <div className="relative w-full h-[600px] sm:h-[500px] md:h-[400px] overflow-hidden">
@@ -199,7 +179,7 @@ function TheBookShelves() {
           </section>
         )}
 
-        {/* Books Section - Always visible */}
+        {/* Books Section */}
         <section id="Book Section" className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-4 sm:mb-6">
             Read something new!
@@ -209,15 +189,24 @@ function TheBookShelves() {
           ) : books.length === 0 ? (
             <div className="text-gray-600">No books available.</div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
-              {books.map((book) => (
-                <Book key={book.book_id} book={book} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
+                {books.slice(0, 10).map((book) => (
+                  <Book key={book.book_id} book={book} />
+                ))}
+              </div>
+              <div className="flex justify-center mt-6">
+                <Link href="/discover">
+                  <button className="px-6 py-2 rounded-full bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark font-button hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 transition-colors">
+                    Discover the rest
+                  </button>
+                </Link>
+              </div>
+            </>
           )}
         </section>
 
-        {/* Cafes Section - Always visible */}
+        {/* Cafes Section */}
         <section id="Cafe Section" className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold font-header text-primary-light dark:text-primary-dark mb-4 sm:mb-6">
             Find a new Cafe!
@@ -227,16 +216,24 @@ function TheBookShelves() {
           ) : cafes.length === 0 ? (
             <div className="text-gray-600">No cafes available.</div>
           ) : (
-            <div className="w-full">
-              <CafeExpansion cafes={cafes} />
-            </div>
+            <>
+              <div className="w-full">
+                <CafeExpansion cafes={cafes.slice(0, 8)} />
+              </div>
+              <div className="flex justify-center mt-6">
+                <Link href="/discover">
+                  <button className="px-6 py-2 rounded-full bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark font-button hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 transition-colors">
+                    Discover the rest
+                  </button>
+                </Link>
+              </div>
+            </>
           )}
         </section>
 
-        {/* Theme Toggle - Hidden during search */}
         {!searchQuery && <ThemeToggle />}
       </main>
-      {/* Discover All Button (Mobile Only) - Hidden during search */}
+
       {!searchQuery && (
         <div className="flex justify-center mb-12 md:hidden">
           <Link href="/discover">
@@ -246,7 +243,6 @@ function TheBookShelves() {
           </Link>
         </div>
       )}
-      {/* Footer - Hidden during search */}
       {!searchQuery && <Footer />}
     </div>
   );
