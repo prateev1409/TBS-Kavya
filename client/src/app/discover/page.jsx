@@ -11,7 +11,13 @@ import ThemeToggle from "../../components/ThemeToggle";
 function MainComponent() {
   const [activeFilter, setActiveFilter] = useState(null);
   const [cafeFilters, setCafeFilters] = useState({ distance: "", pricing: "" });
-  const [bookFilters, setBookFilters] = useState({ author: "", language: "", genre: "" });
+  const [bookFilters, setBookFilters] = useState({ 
+    author: "", 
+    language: "", 
+    genre: "",
+    hasAudio: false,
+    hasDownload: false 
+  });
   const [books, setBooks] = useState([]);
   const [cafes, setCafes] = useState([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
@@ -25,6 +31,9 @@ function MainComponent() {
   });
   const [searchQuery, setSearchQuery] = useState("");
 
+  const cafeFilterRef = useRef(null);
+  const bookFilterRef = useRef(null);
+
   const filterRef = useRef(null);
 
   const handleFilterClick = (filterName) => {
@@ -32,7 +41,10 @@ function MainComponent() {
   };
 
   const handleClickOutside = (event) => {
-    if (filterRef.current && !filterRef.current.contains(event.target)) {
+    const isCafe = cafeFilterRef.current && cafeFilterRef.current.contains(event.target);
+    const isBook = bookFilterRef.current && bookFilterRef.current.contains(event.target);
+  
+    if (!isCafe && !isBook) {
       setActiveFilter(null);
     }
   };
@@ -81,6 +93,8 @@ function MainComponent() {
         ...(bookFilters.author && { author: bookFilters.author }),
         ...(bookFilters.language && { language: bookFilters.language }),
         ...(bookFilters.genre && { genre: bookFilters.genre }),
+        ...(bookFilters.hasAudio && { hasAudio: true }), // Only books with audio_url
+        ...(bookFilters.hasDownload && { hasDownload: true }), // Only books with pdf_url
       }).toString();
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`);
@@ -95,6 +109,7 @@ function MainComponent() {
         publisher: book.publisher,
         description: book.description,
         audioSummary: book.audio_url,
+        pdfUrl: book.pdf_url,
         ratings: book.ratings,
         language: book.language,
         available: book.available,
@@ -108,7 +123,6 @@ function MainComponent() {
       setLoadingBooks(false);
     }
   };
-
   // Fetch cafes
   const fetchCafes = async () => {
     setLoadingCafes(true);
@@ -151,7 +165,11 @@ function MainComponent() {
   };
 
   const handleBookFilterChange = (filterType, value) => {
-    setBookFilters((prev) => ({ ...prev, [filterType]: value || "" }));
+    if (filterType === "hasAudio" || filterType === "hasDownload") {
+      setBookFilters((prev) => ({ ...prev, [filterType]: value }));
+    } else {
+      setBookFilters((prev) => ({ ...prev, [filterType]: value || "" }));
+    }
     setActiveFilter(null);
   };
 
@@ -214,7 +232,7 @@ function MainComponent() {
         {/* Filters & Lists Section */}
         <section className="mb-16">
           <h2 className="text-2xl font-header font-semibold mb-6">Nearby Cafes</h2>
-          <div className="flex gap-4 mb-8" ref={filterRef}>
+          <div className="flex gap-4 mb-8" ref={cafeFilterRef}>
             <div className="relative">
               <button
                 onClick={() => handleFilterClick("distance")}
@@ -325,7 +343,7 @@ function MainComponent() {
           {/* Available Books List */}
           <section className="mb-16">
             <h2 className="text-2xl font-header font-semibold mb-6">Available Books</h2>
-            <div className="flex gap-4 mb-8 flex-wrap" ref={filterRef}>
+            <div className="flex gap-4 mb-8 flex-wrap" ref={bookFilterRef}>
               <div className="relative">
                 <button
                   onClick={() => handleFilterClick("author")}
@@ -475,6 +493,30 @@ function MainComponent() {
                   </div>
                 )}
               </div>
+              {/* Downloadable Checkbox with Circular Styling */}
+              <div className="relative">
+                <label className="flex items-center space-x-2 p-2 border rounded-full hover:border-gray-400 transition-colors">
+                  <input
+                    type="checkbox"
+                    className="circular-checkbox"
+                    checked={bookFilters.hasAudio}
+                    onChange={(e) => handleBookFilterChange("hasAudio", e.target.checked)}
+                  />
+                  <span>Audio Enabled</span>
+                </label>
+              </div>
+              {/* Downloadable Checkbox with Circular Styling */}
+              <div className="relative">
+                <label className="flex items-center space-x-2 p-2 border rounded-full hover:border-gray-400 transition-colors">
+                  <input
+                    type="checkbox"
+                    className="circular-checkbox"
+                    checked={bookFilters.hasDownload}
+                    onChange={(e) => handleBookFilterChange("hasDownload", e.target.checked)}
+                  />
+                  <span>Downloadable</span>
+                </label>
+              </div>
             </div>
             {loadingBooks ? (
               <div className="text-gray-600">Loading books...</div>
@@ -501,6 +543,59 @@ function MainComponent() {
         }
         .animate-slideDown {
           animation: slideDown 0.2s ease-out;
+        }
+
+        /* Circular Checkbox Styling */
+        .circular-checkbox {
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #4b5563; /* gray-600 */
+          border-radius: 50%;
+          background-color: transparent;
+          cursor: pointer;
+          position: relative;
+          transition: all 0.2s ease;
+        }
+
+        .circular-checkbox:checked {
+          border-color: #3b82f6; /* blue-500 */
+          background-color: #3b82f6;
+        }
+
+        .circular-checkbox:checked::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 8px;
+          height: 8px;
+          background-color: white;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .circular-checkbox:hover {
+          border-color: #6b7280; /* gray-500 */
+        }
+
+        .circular-checkbox:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* blue-500/30 */
+        }
+
+        /* Dark mode adjustments */
+        .dark .circular-checkbox {
+          border-color: #9ca3af; /* gray-400 */
+        }
+
+        .dark .circular-checkbox:checked {
+          border-color: #60a5fa; /* blue-400 */
+          background-color: #60a5fa;
+        }
+
+        .dark .circular-checkbox:hover {
+          border-color: #d1d5db; /* gray-300 */
         }
       `}</style>
     </div>

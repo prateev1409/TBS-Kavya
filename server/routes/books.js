@@ -40,7 +40,7 @@ const adminMiddleware = async (req, res, next) => {
 // GET /api/books - Retrieve list of books with case-insensitive filtering (no auth required)
 router.get('/', async (req, res) => {
   try {
-    const { genre, author, language, name, keeper_id, available } = req.query;
+    const { genre, author, language, name, keeper_id, available, hasAudio, hasDownload } = req.query;
     let query = {};
 
     if (genre) query.genre = { $regex: genre, $options: 'i' };
@@ -49,10 +49,13 @@ router.get('/', async (req, res) => {
     if (name) query.name = { $regex: name, $options: 'i' };
     if (keeper_id) query.keeper_id = keeper_id;
     if (available) query.available = available === 'true';
+    if (hasAudio === 'true') query.audio_url = { $ne: null, $exists: true }; // Filter books with non-null audio_url
+    if (hasDownload === 'true') query.pdf_url = { $ne: null, $exists: true }; // Filter books with non-null pdf_url
 
     const books = await Book.find(query);
     res.status(200).json(books);
   } catch (err) {
+    console.error('Error fetching books:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -67,6 +70,7 @@ router.get('/filters', async (req, res) => {
 
     res.status(200).json({ authors, publishers, genres, languages });
   } catch (err) {
+    console.error('Error fetching filters:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -81,6 +85,7 @@ router.get('/:book_id', async (req, res) => {
     }
     res.status(200).json(book);
   } catch (err) {
+    console.error('Error fetching book:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -138,6 +143,7 @@ router.post(
       await book.save();
       res.status(201).json({ message: 'Book created successfully', book });
     } catch (err) {
+      console.error('Error creating book:', err.message);
       res.status(500).json({ error: err.message });
     }
   }
