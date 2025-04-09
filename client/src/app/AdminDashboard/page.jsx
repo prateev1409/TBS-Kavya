@@ -26,7 +26,7 @@ function AdminDashboard() {
   const modalStartX = useRef(0);
   const modalScrollLeft = useRef(0);
 
-  // Fetch data on mount
+  // Fetch data on mount (unchanged)
   useEffect(() => {
     const abortController = new AbortController();
     const fetchData = async () => {
@@ -68,7 +68,6 @@ function AdminDashboard() {
           throw new Error(`Failed to fetch books: ${errorData.error || booksRes.statusText}`);
         }
         const booksData = await booksRes.json();
-        // Sanitize books data
         const sanitizedBooks = Array.isArray(booksData)
           ? booksData.filter(
               (book) =>
@@ -90,11 +89,10 @@ function AdminDashboard() {
           throw new Error(`Failed to fetch cafes: ${errorData.error || cafesRes.statusText}`);
         }
         const cafesData = await cafesRes.json();
-        // Sanitize cafes data
         const sanitizedCafes = Array.isArray(cafesData)
           ? cafesData.map((cafe) => ({
               ...cafe,
-              cafe_owner_id: cafe.cafe_owner_id || "", // Ensure cafe_owner_id is always present
+              cafe_owner_id: cafe.cafe_owner_id || "",
             }))
           : [];
         setCafes(sanitizedCafes);
@@ -461,19 +459,14 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-                    <button
-                        
-                        className="px-4 py-2 rounded-full bg-red-600 text-white font-medium hover:bg-red-700"
-                        >
-                            <a
-                            href="/auth/logout"
-                            >   
-                                Log Out
-                            </a>
-                        </button>
-                </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+          <button
+            className="px-4 py-2 rounded-full bg-red-600 text-white font-medium hover:bg-red-700"
+          >
+            <a href="/auth/logout">Log Out</a>
+          </button>
+        </div>
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-4">
             {["books", "cafes", "users", "transactions"].map((tab) => (
@@ -513,7 +506,9 @@ function AdminDashboard() {
         {activeTab === "users" && (
           <UsersSection data={users} setData={setUsers} onEdit={openEditModal} />
         )}
-        {activeTab === "transactions" && <TransactionsSection data={transactions} />}
+        {activeTab === "transactions" && (
+          <TransactionsSection data={transactions} setData={setTransactions} /> // Pass setTransactions
+        )}
       </div>
 
       {showModal && (

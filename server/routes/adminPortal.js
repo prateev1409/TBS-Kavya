@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Book = require('../models/Book');
 const User = require('../models/User');
 const Cafe = require('../models/Cafe');
+const Transaction = require('../models/Transaction'); // Add this line
 
 // Middleware to verify JWT
 const authMiddleware = (req, res, next) => {
@@ -170,6 +171,78 @@ router.post(
         } catch (err) {
             console.error('Error adding book:', err.message); // Debug log
             return res.status(500).json({ error: 'Failed to add book: ' + err.message });
+        }
+    }
+);
+
+// PUT /api/admin/transactions/approve/:transaction_id - Approve a transaction (admin-only)
+router.put(
+    '/transactions/approve/:transaction_id',
+    authMiddleware,
+    adminMiddleware,
+    [
+        body('book_id').notEmpty().withMessage('book_id is required').trim(),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { transaction_id } = req.params;
+        const { book_id } = req.body;
+
+        try {
+            // Find the transaction
+            const transaction = await Transaction.findOne({ transaction_id });
+            if (!transaction) {
+                console.log(`Transaction not found: ${transaction_id}`);
+                return res.status(404).json({ error: 'Transaction not found' });
+            }
+
+            // Check if transaction is in pickup_pending state
+            if (transaction.status !== 'pickup_pending') {
+                console.log(`Transaction ${transaction_id} is not in pickup_pending state`);
+                return res.status(400).json({ error: 'Transaction must be in pickup_pending state to approve' });
+            }
+
+            // Find the book by book_id
+            const book = await Book.findOne({ book_id });
+            if (!book) {
+                console.log(`Book not found: ${book_id}`);
+                return res.status(404).json({ error: 'Book not found' });
+            }
+
+            // Find the user associated with the transaction
+            const user = await User.findById(transaction.user_id);
+            if (!user) {
+                console.log(`User not found for transaction: ${transaction_id}`);
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Update transaction status
+            transaction.book_id = book._id; // Update book_id to the correct ObjectId
+            transaction.status = 'picked_up';
+            transaction.processed_at = new Date();
+            await transaction.save();
+
+            // Update book
+            book.available = false;
+            book.keeper_id = user.user_id;
+            book.updatedAt = new Date();
+            await book.save();
+
+            // Update user
+            user.book_id = book.book_id;
+            user.updatedAt = new Date();
+            await user.save();
+
+            console.log(`Transaction ${transaction_id} approved successfully`);
+            return res.status(200).json({ message: 'Transaction approved successfully', transaction });
+        } catch (err) {
+            console.error('Error approving transaction:', err.message);
+            return res.status(500).json({ error: 'Failed to approve transaction: ' + err.message });
         }
     }
 );

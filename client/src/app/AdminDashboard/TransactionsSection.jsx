@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function TransactionsSection({ data }) {
+function TransactionsSection({ data, setData }) { // Add setData as a prop
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState({
         status: "",
@@ -8,6 +8,8 @@ function TransactionsSection({ data }) {
     const [filterOptions, setFilterOptions] = useState({
         statuses: [],
     });
+    const [approvingTxId, setApprovingTxId] = useState(null); // Track which transaction is being approved
+    const [bookIdInput, setBookIdInput] = useState(""); // Store book_id input
 
     // Fetch filter values dynamically on component mount
     useEffect(() => {
@@ -26,6 +28,47 @@ function TransactionsSection({ data }) {
         };
         fetchFilters();
     }, []);
+
+    // Handle transaction approval
+    const handleApproveTransaction = async (transaction_id) => {
+        if (!bookIdInput) {
+            alert("Please enter a Book ID to approve the transaction.");
+            return;
+        }
+
+        setApprovingTxId(transaction_id);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/transactions/approve/${transaction_id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ book_id: bookIdInput }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(`Failed to approve transaction: ${errorData.error || res.statusText}`);
+            }
+
+            const updatedTransaction = await res.json();
+            // Update the transactions state with the approved transaction
+            setData((prevData) =>
+                prevData.map((tx) =>
+                    tx.transaction_id === transaction_id ? { ...tx, status: 'picked_up', processed_at: new Date() } : tx
+                )
+            );
+            setBookIdInput(""); // Clear input after success
+            alert("Transaction approved successfully!");
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        } finally {
+            setApprovingTxId(null);
+        }
+    };
 
     // Filter transactions based on search query and status filter (case-insensitive)
     const filteredData = data.filter((tx) => {
@@ -100,10 +143,32 @@ function TransactionsSection({ data }) {
                                 <td className="px-4 py-3">
                                     {new Date(tx.created_at).toLocaleDateString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 flex space-x-2">
                                     <button className="text-blue-600 hover:text-blue-800">
                                         View
                                     </button>
+                                    {tx.status === "pickup_pending" && (
+                                        <div className="flex items-center space-x-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Book ID"
+                                                value={bookIdInput}
+                                                onChange={(e) => setBookIdInput(e.target.value)}
+                                                className="border px-2 py-1 rounded-lg text-sm"
+                                            />
+                                            <button
+                                                onClick={() => handleApproveTransaction(tx.transaction_id)}
+                                                disabled={approvingTxId === tx.transaction_id}
+                                                className={`text-white px-2 py-1 rounded-lg ${
+                                                    approvingTxId === tx.transaction_id
+                                                        ? "bg-gray-400 cursor-not-allowed"
+                                                        : "bg-green-600 hover:bg-green-700"
+                                                }`}
+                                            >
+                                                {approvingTxId === tx.transaction_id ? "Approving..." : "Approve"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}
