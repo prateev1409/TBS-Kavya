@@ -311,9 +311,9 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
 
         // Define expected amounts for each plan (in INR)
         const planAmounts = {
-            basic: 9.99,
-            standard: 14.99,
-            premium: 19.99,
+            basic: 49.00,
+            standard: 49.00,
+            premium: 199.99,
         };
         if (planAmounts[tier] !== amount) {
             return res.status(400).json({ error: `Invalid amount for ${tier} plan. Expected ${planAmounts[tier]} INR` });

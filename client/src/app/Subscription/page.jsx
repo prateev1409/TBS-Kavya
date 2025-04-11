@@ -24,7 +24,7 @@ function MainComponent() {
             id: 1,
             tier: "basic",
             name: "Basic Plan",
-            price: 9.99,
+            price: 49.00,
             disabled: true,
             image:
                 "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1934&q=80",
@@ -38,7 +38,7 @@ function MainComponent() {
             id: 2,
             tier: "standard",
             name: "Standard Plan",
-            price: 14.99,
+            price: 49.00,
             image:
                 "https://images.unsplash.com/photo-1524578271613-d550eacf6090?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
             features: [
@@ -52,7 +52,7 @@ function MainComponent() {
             id: 3,
             tier: "premium",
             name: "Premium Plan",
-            price: 19.99,
+            price: 199.99,
             disabled: true,
             image: "",
             features: [
@@ -151,7 +151,7 @@ function MainComponent() {
     const initiatePayment = async (orderData) => {
         const options = {
             key: orderData.key, // Razorpay Key ID from the backend
-            amount: orderData.amount, // Amount in paise
+            amount: orderData.amount, // Amount in INR
             currency: orderData.currency,
             name: 'TheBookShelves Subscription',
             description: `Subscription Plan: ${selectedPlan.tier}`,
