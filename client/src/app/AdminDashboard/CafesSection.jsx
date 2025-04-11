@@ -6,11 +6,15 @@ function CafesSection({ data, setData, onEdit }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState({
         location: "",
+        city: "",
+        area: "",
         average_bill: "",
         ratings: "",
     });
     const [filterOptions, setFilterOptions] = useState({
         locations: [],
+        cities: [],
+        areas: [],
         average_bills: [],
         ratings: [],
     });
@@ -98,6 +102,8 @@ function CafesSection({ data, setData, onEdit }) {
             (cafe.name.toLowerCase().includes(searchLower) ||
                 cafe.cafe_id.toLowerCase().includes(searchLower)) &&
             (filter.location === "" || cafe.location.toLowerCase() === filter.location.toLowerCase()) &&
+            (filter.city === "" || cafe.city.toLowerCase() === filter.city.toLowerCase()) &&
+            (filter.area === "" || cafe.area.toLowerCase() === filter.area.toLowerCase()) &&
             (filter.average_bill === "" || cafe.average_bill.toString() === filter.average_bill) &&
             (filter.ratings === "" || cafe.ratings.toString() === filter.ratings)
         );
@@ -172,6 +178,26 @@ function CafesSection({ data, setData, onEdit }) {
                 </select>
                 <select
                     className="px-4 py-2 border rounded-lg"
+                    value={filter.city}
+                    onChange={(e) => setFilter({ ...filter, city: e.target.value })}
+                >
+                    <option value="">Filter by City</option>
+                    {filterOptions.cities.map((city, idx) => (
+                        <option key={idx} value={city}>{city}</option>
+                    ))}
+                </select>
+                <select
+                    className="px-4 py-2 border rounded-lg"
+                    value={filter.area}
+                    onChange={(e) => setFilter({ ...filter, area: e.target.value })}
+                >
+                    <option value="">Filter by Area</option>
+                    {filterOptions.areas.map((area, idx) => (
+                        <option key={idx} value={area}>{area}</option>
+                    ))}
+                </select>
+                <select
+                    className="px-4 py-2 border rounded-lg"
                     value={filter.average_bill}
                     onChange={(e) => setFilter({ ...filter, average_bill: e.target.value })}
                 >
@@ -206,6 +232,8 @@ function CafesSection({ data, setData, onEdit }) {
                             <th className="px-4 py-3 text-left">Cafe ID</th>
                             <th className="px-4 py-3 text-left">Name</th>
                             <th className="px-4 py-3 text-left">Location</th>
+                            <th className="px-4 py-3 text-left">City</th>
+                            <th className="px-4 py-3 text-left">Area</th>
                             <th className="px-4 py-3 text-left">Image URL</th>
                             <th className="px-4 py-3 text-left">Audio URL</th>
                             <th className="px-4 py-3 text-left">Avg Bill</th>
@@ -223,6 +251,8 @@ function CafesSection({ data, setData, onEdit }) {
                             <tr key={idx} className="border-t whitespace-nowrap">
                                 <td className="px-4 py-3">{cafe.cafe_id}</td>
                                 <td className="px-4 py-3">{cafe.name}</td>
+                                <td className="px-4 py-3">{cafe.city || 'N/A'}</td>
+                                <td className="px-4 py-3">{cafe.area || 'N/A'}</td>
                                 <td className="px-4 py-3">{cafe.location}</td>
                                 <td className="px-4 py-3 truncate max-w-xs">
                                 {cafe.image_url ? (
