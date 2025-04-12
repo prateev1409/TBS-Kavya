@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Book from "../components/book";
 import CafeExpansion from "../components/cafe";
 import Carousel from "../components/carousel";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import Header from "../components/header";
 import ThemeToggle from "../components/ThemeToggle";
 

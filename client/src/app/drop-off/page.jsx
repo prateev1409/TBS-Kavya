@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ThemeToggle from "../../components/ThemeToggle";
 
-function DropOffPage() {
+// New component to handle useSearchParams logic
+function DropOffContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookId = searchParams.get("book_id");
@@ -124,7 +125,6 @@ function DropOffPage() {
         throw new Error(errorData.error || "Failed to initiate drop-off");
       }
 
-      // Redirect back to profile page after successful drop-off request
       router.push("/profile");
     } catch (err) {
       console.error("Error initiating drop-off:", err.message);
@@ -215,4 +215,11 @@ function DropOffPage() {
   );
 }
 
-export default DropOffPage;
+// Main page component with Suspense boundary
+export default function DropOffPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DropOffContent />
+    </Suspense>
+  );
+}
