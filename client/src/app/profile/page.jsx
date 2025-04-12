@@ -1,9 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import { useEffect, useState } from "react";
 import QRCodeGenerator from "../../components/QRCodeGenerator";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useUser } from "../Hooks/useUser";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
 function MainComponent() {
   const { data: user, loading, error: userError, refetch } = useUser();
@@ -18,7 +18,8 @@ function MainComponent() {
   const [showQR, setShowQR] = useState({});
   const [currentBook, setCurrentBook] = useState(null);
   const [loadingBook, setLoadingBook] = useState(true);
-  const router = useRouter(); // Initialize router
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false); // New state for confirmation dialog
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -31,6 +32,40 @@ function MainComponent() {
     }
   }, [user]);
 
+  const handleCancelSubscription = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/cancel-subscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to cancel subscription");
+      }
+
+      await refetch();
+      setError(null);
+      setShowConfirmCancel(false); // Hide confirmation dialog after success
+      alert("Subscription cancelled successfully.");
+    } catch (err) {
+      console.error("Error cancelling subscription:", err.message);
+      setError(err.message);
+      setShowConfirmCancel(false); // Hide confirmation dialog on error
+    }
+  };
+  
   const fetchTransactions = async () => {
     setLoadingTransactions(true);
     try {
@@ -554,6 +589,46 @@ function MainComponent() {
                 </div>
               ) : null;
             })}
+          </div>
+        )}
+
+        {/* Cancel Button */}
+        {user.subscription_type !== "basic" && (
+          <div className="text-center">
+            <button
+              onClick={() => setShowConfirmCancel(true)} // Show confirmation dialog
+              className="inline-block px-6 py-2.5 text-sm font-medium text-warning-light dark:text-warning-dark border border-warning-light dark:border-warning-dark rounded-full hover:bg-warning-light dark:hover:bg-warning-dark transition-colors"
+            >
+              Cancel Subscription
+            </button>
+          </div>
+        )}
+
+        {/* Confirmation Dialog */}
+        {showConfirmCancel && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative max-w-md w-full">
+              <h3 className="text-lg font-bold mb-4 text-black">
+                Are you sure?
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to cancel your subscription? This action cannot be undone.
+              </p>
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleCancelSubscription} // Confirm cancellation
+                  className="px-4 py-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full font-button hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
+                >
+                  Yes, I confirm
+                </button>
+                <button
+                  onClick={() => setShowConfirmCancel(false)} // Cancel the dialog
+                  className="px-4 py-2 border border-border-light dark:border-border-dark rounded-full font-button hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark"
+                >
+                  No, go back
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

@@ -407,6 +407,32 @@ router.post('/verify-subscription-payment', authMiddleware, async (req, res) => 
         console.error('Error verifying Razorpay payment:', err.message);
         res.status(500).json({ error: `Failed to verify payment: ${err.message}` });
     }
+    // POST /api/users/cancel-subscription - Cancel the user's current subscription
+    router.post('/cancel-subscription', authMiddleware, async (req, res) => {
+        try {
+          const user = await User.findById(req.userId);
+          if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+          }
+      
+          // Check if user has an active subscription
+          if (!user.subscription_type || user.subscription_type === 'basic') {
+            return res.status(400).json({ error: 'No active subscription to cancel' });
+          }
+      
+          // Reset subscription details
+          user.subscription_type = 'basic'; // Default back to basic
+          user.subscription_validity = new Date(); // Set to current date to indicate no validity
+      
+          await user.save();
+      
+          console.log(`Subscription cancelled for user ${user.user_id}`);
+          res.status(200).json({ message: 'Subscription cancelled successfully' });
+        } catch (err) {
+          console.error('Error cancelling subscription:', err.message);
+          res.status(500).json({ error: err.message });
+        }
+      });
 });
 
 module.exports = router;
