@@ -94,11 +94,13 @@ router.get('/', async (req, res) => {
 // GET /api/cafes/filters - Retrieve unique values for filters (public access)
 router.get('/filters', async (req, res) => {
     try {
+        const cities = await Cafe.distinct("city");
+        const areas = await Cafe.distinct("area");
         const locations = await Cafe.distinct('location');
         const average_bills = await Cafe.distinct('average_bill');
         const ratings = await Cafe.distinct('ratings');
 
-        res.status(200).json({ locations, average_bills, ratings });
+        res.status(200).json({ cities, areas, locations, average_bills, ratings });
     } catch (err) {
         console.error('Error fetching cafe filters:', err.message);
         res.status(500).json({ error: err.message });
@@ -232,6 +234,12 @@ router.post(
             .notEmpty()
             .withMessage('Location is required')
             .trim(),
+        body('city')
+            .optional()
+            .trim(),
+        body('area')
+            .optional()
+            .trim(),
         body('average_bill')
             .optional()
             .isFloat({ min: 0 })
@@ -254,7 +262,7 @@ router.post(
         }
 
         try {
-            const { name, location, average_bill, discount, ratings, specials, cafe_owner_id , image_url, audio_url,} = req.body;
+            const { name, location, city, area, average_bill, discount, ratings, specials, cafe_owner_id , image_url, audio_url,} = req.body;
 
             // Generate a unique cafe_id
             const cafeCount = await Cafe.countDocuments();
@@ -272,6 +280,8 @@ router.post(
                 cafe_id, // Add the generated cafe_id
                 name,
                 location,
+                city,
+                area,
                 image_url,
                 audio_url,
                 average_bill: average_bill || 0,

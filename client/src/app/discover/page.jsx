@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify"; // Import react-toastify
 import Book from "../../components/book";
 import CafeExpansion from "../../components/cafe";
 import Footer from "../../components/footer";
@@ -10,31 +11,36 @@ import ThemeToggle from "../../components/ThemeToggle";
 
 function MainComponent() {
   const [activeFilter, setActiveFilter] = useState(null);
-  const [cafeFilters, setCafeFilters] = useState({ distance: "", pricing: "" });
-  const [bookFilters, setBookFilters] = useState({ 
-    author: "", 
-    language: "", 
+  const [cafeFilters, setCafeFilters] = useState({ location: "", pricing: "" });
+  const [bookFilters, setBookFilters] = useState({
+    author: "",
+    language: "",
     genre: "",
     hasAudio: false,
-    hasDownload: false 
+    hasDownload: false,
   });
   const [books, setBooks] = useState([]);
   const [cafes, setCafes] = useState([]);
+  const [initialCafes, setInitialCafes] = useState([]); // Store initial cafe list
   const [loadingBooks, setLoadingBooks] = useState(true);
-  const [loadingCafes, setLoadingCafes] = useState(true);
+  const [loadingCafes, setLoadingCafes] = useState(false);
   const [error, setError] = useState(null);
   const [bookFilterOptions, setBookFilterOptions] = useState({
-    authors: [], languages: [], genres: [],
+    authors: [],
+    languages: [],
+    genres: [],
   });
   const [cafeFilterOptions, setCafeFilterOptions] = useState({
-    locations: [], average_bills: [], ratings: [],
+    cities: [], // Changed from locations to cities for parsed data
+    areas: [],  // New field for areas
+    average_bills: [],
+    ratings: [],
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState([]); // New state for autocomplete
 
   const cafeFilterRef = useRef(null);
   const bookFilterRef = useRef(null);
-
-  const filterRef = useRef(null);
 
   const handleFilterClick = (filterName) => {
     setActiveFilter(activeFilter === filterName ? null : filterName);
@@ -43,9 +49,10 @@ function MainComponent() {
   const handleClickOutside = (event) => {
     const isCafe = cafeFilterRef.current && cafeFilterRef.current.contains(event.target);
     const isBook = bookFilterRef.current && bookFilterRef.current.contains(event.target);
-  
+
     if (!isCafe && !isBook) {
       setActiveFilter(null);
+      setLocationSuggestions([]); // Clear suggestions when clicking outside
     }
   };
 
@@ -71,9 +78,10 @@ function MainComponent() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafes/filters`);
       if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch cafe filters");
-      const { locations, average_bills, ratings } = await res.json();
+      const { cities, areas, average_bills, ratings } = await res.json();
       setCafeFilterOptions({
-        locations: locations.slice(0, 5),
+        cities: cities.slice(0, 5),
+        areas: areas.slice(0, 5),
         average_bills: average_bills.sort((a, b) => a - b).slice(0, 3),
         ratings: ratings.sort((a, b) => a - b).slice(0, 5),
       });
@@ -93,8 +101,8 @@ function MainComponent() {
         ...(bookFilters.author && { author: bookFilters.author }),
         ...(bookFilters.language && { language: bookFilters.language }),
         ...(bookFilters.genre && { genre: bookFilters.genre }),
-        ...(bookFilters.hasAudio && { hasAudio: true }), // Only books with audio_url
-        ...(bookFilters.hasDownload && { hasDownload: true }), // Only books with pdf_url
+        ...(bookFilters.hasAudio && { hasAudio: true }),
+        ...(bookFilters.hasDownload && { hasDownload: true }),
       }).toString();
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books${query ? `?${query}` : ""}`);
@@ -123,13 +131,14 @@ function MainComponent() {
       setLoadingBooks(false);
     }
   };
+
   // Fetch cafes
-  const fetchCafes = async () => {
+  const fetchCafes = async (initial = false) => {
     setLoadingCafes(true);
     try {
       const query = new URLSearchParams({
         ...(searchQuery && { name: searchQuery }),
-        ...(cafeFilters.distance && { distance: cafeFilters.distance }),
+        ...(cafeFilters.location && { location: cafeFilters.location }),
         ...(cafeFilters.pricing && { average_bill: cafeFilters.pricing }),
       }).toString();
 
@@ -149,6 +158,9 @@ function MainComponent() {
         discounts: `${cafe.discount}%`,
         description: cafe.description || "No description available",
       }));
+      if (initial) {
+        setInitialCafes(mappedCafes); // Save initial cafes
+      }
       setCafes(mappedCafes);
     } catch (err) {
       console.error("Error fetching cafes:", err.message);
@@ -162,6 +174,7 @@ function MainComponent() {
   const handleCafeFilterChange = (filterType, value) => {
     setCafeFilters((prev) => ({ ...prev, [filterType]: value }));
     setActiveFilter(null);
+    setLocationSuggestions([]); // Clear suggestions when selecting a filter
   };
 
   const handleBookFilterChange = (filterType, value) => {
@@ -173,10 +186,57 @@ function MainComponent() {
     setActiveFilter(null);
   };
 
-  // Handle search
+  // Handle global search
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
+  };
+
+  // Update location suggestions based on typed input
+  const updateLocationSuggestions = (query) => {
+    if (query) {
+      const suggestions = [
+        ...cafeFilterOptions.cities,
+        ...cafeFilterOptions.areas,
+      ].filter((loc) =>
+        loc.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      setLocationSuggestions(suggestions);
+    } else {
+      setLocationSuggestions([]);
+    }
+  };
+
+  const handleLocationInputChange = (e) => {
+    const query = e.target.value;
+    setCafeFilters((prev) => ({ ...prev, location: query })); // Update location as user types
+    updateLocationSuggestions(query); // Show suggestions instantly
+  };
+
+  // Handle "Locate" button click to trigger cafe search
+  const handleLocate = () => {
+    if (cafeFilters.location) {
+      fetchCafes(); // Trigger fetch only when "Locate" is clicked
+      setLocationSuggestions([]); // Clear suggestions after locating
+    } else {
+      toast.error("Please enter a location before locating.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (suggestion) => {
+    setCafeFilters((prev) => ({ ...prev, location: suggestion }));
+    setLocationSuggestions([]);
+  };
+
+  // Reset location filter and restore initial cafes
+  const resetLocationFilter = () => {
+    setCafeFilters((prev) => ({ ...prev, location: "" }));
+    setLocationSuggestions([]);
+    setCafes(initialCafes); // Restore initial cafes
   };
 
   // Fetch data on mount and when filters/search change
@@ -184,16 +244,21 @@ function MainComponent() {
     fetchBookFilters();
     fetchCafeFilters();
     fetchBooks();
-    fetchCafes();
+    fetchCafes(true); // Fetch initial cafes and save them
   }, []);
 
   useEffect(() => {
     fetchBooks();
   }, [bookFilters, searchQuery]);
 
+  // Fetch cafes only when location or pricing changes via "Locate" button
   useEffect(() => {
-    fetchCafes();
-  }, [cafeFilters, searchQuery]);
+    if (cafeFilters.pricing || searchQuery) {
+      fetchCafes();
+    } else if (!cafeFilters.location && initialCafes.length > 0) {
+      setCafes(initialCafes); // Ensure initial cafes are shown if no location
+    }
+  }, [cafeFilters.pricing, searchQuery, cafeFilters.location]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -219,9 +284,9 @@ function MainComponent() {
         {/* Featured Section - Hidden during search */}
         {!searchQuery && (
           <section className="mb-16">
-              <h1 className="text-4xl font-header font-bold mb-12">
-                Discover Your Next Reading Adventure 
-              </h1>
+            <h1 className="text-4xl font-header font-bold mb-12">
+              Discover Your Next Reading Adventure
+            </h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <MustVisitCafe />
               <MustReadBook />
@@ -233,53 +298,54 @@ function MainComponent() {
         <section className="mb-16">
           <h2 className="text-2xl font-header font-semibold mb-6">Nearby Cafes</h2>
           <div className="flex gap-4 mb-8" ref={cafeFilterRef}>
-            <div className="relative">
-              <button
-                onClick={() => handleFilterClick("distance")}
-                className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
-              >
-                {cafeFilters.distance || "Distance"}
-                <svg
-                  className={`w-4 h-4 transition-transform ${activeFilter === "distance" ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {/* Location Search Input with Reset, Autocomplete, and Locate Button */}
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={cafeFilters.location}
+                onChange={handleLocationInputChange}
+                placeholder="Search by location..."
+                className="px-4 py-2 border rounded-full w-48 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+                disabled={loadingCafes}
+              />
+              {cafeFilters.location && (
+                <button
+                  onClick={resetLocationFilter}
+                  className="absolute right-12 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  ✕
+                </button>
+              )}
+              <button
+                onClick={handleLocate}
+                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400"
+                disabled={loadingCafes}
+              >
+                Locate
               </button>
-              {activeFilter === "distance" && (
+              {locationSuggestions.length > 0 && (
                 <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input
-                        type="radio"
-                        name="distance"
-                        value=""
-                        checked={cafeFilters.distance === ""}
-                        onChange={() => handleCafeFilterChange("distance", "")}
-                      />
-                      <span>Reset</span>
-                    </label>
-                    {["1km", "3km", "5km"].map((dist) => (
-                      <label
-                        key={dist}
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                      >
-                        <input
-                          type="radio"
-                          name="distance"
-                          value={dist}
-                          checked={cafeFilters.distance === dist}
-                          onChange={() => handleCafeFilterChange("distance", dist)}
-                        />
-                        <span>Within {dist}</span>
-                      </label>
-                    ))}
-                  </div>
+                  {locationSuggestions.map((suggestion) => (
+                    <div
+                      key={suggestion}
+                      className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => handleSuggestionSelect(suggestion)}
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {loadingCafes && (
+                <div className="absolute right-20 flex items-center h-full">
+                  <svg className="animate-spin h-4 w-4 text-gray-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
+                  </svg>
                 </div>
               )}
             </div>
+            {/* Pricing Filter */}
             <div className="relative">
               <button
                 onClick={() => handleFilterClick("pricing")}
@@ -332,7 +398,13 @@ function MainComponent() {
           {/* Nearby Cafes List */}
           <section className="mb-16">
             {loadingCafes ? (
-              <div className="text-gray-600">Loading cafes...</div>
+              <div className="text-gray-600 flex items-center">
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
+                </svg>
+                Loading cafes...
+              </div>
             ) : cafes.length === 0 ? (
               <div className="text-gray-600">No cafes found.</div>
             ) : (
@@ -493,7 +565,6 @@ function MainComponent() {
                   </div>
                 )}
               </div>
-              {/* Downloadable Checkbox with Circular Styling */}
               <div className="relative">
                 <label className="flex items-center space-x-2 p-2 border rounded-full hover:border-gray-400 transition-colors">
                   <input
@@ -505,7 +576,6 @@ function MainComponent() {
                   <span>Audio Enabled</span>
                 </label>
               </div>
-              {/* Downloadable Checkbox with Circular Styling */}
               <div className="relative">
                 <label className="flex items-center space-x-2 p-2 border rounded-full hover:border-gray-400 transition-colors">
                   <input
@@ -545,12 +615,11 @@ function MainComponent() {
           animation: slideDown 0.2s ease-out;
         }
 
-        /* Circular Checkbox Styling */
         .circular-checkbox {
           appearance: none;
           width: 16px;
           height: 16px;
-          border: 2px solid #4b5563; /* gray-600 */
+          border: 2px solid #4b5563;
           border-radius: 50%;
           background-color: transparent;
           cursor: pointer;
@@ -559,7 +628,7 @@ function MainComponent() {
         }
 
         .circular-checkbox:checked {
-          border-color: #3b82f6; /* blue-500 */
+          border-color: #3b82f6;
           background-color: #3b82f6;
         }
 
@@ -576,26 +645,25 @@ function MainComponent() {
         }
 
         .circular-checkbox:hover {
-          border-color: #6b7280; /* gray-500 */
+          border-color: #6b7280;
         }
 
         .circular-checkbox:focus {
           outline: none;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* blue-500/30 */
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
 
-        /* Dark mode adjustments */
         .dark .circular-checkbox {
-          border-color: #9ca3af; /* gray-400 */
+          border-color: #9ca3af;
         }
 
         .dark .circular-checkbox:checked {
-          border-color: #60a5fa; /* blue-400 */
+          border-color: #60a5fa;
           background-color: #60a5fa;
         }
 
         .dark .circular-checkbox:hover {
-          border-color: #d1d5db; /* gray-300 */
+          border-color: #d1d5db;
         }
       `}</style>
     </div>

@@ -188,6 +188,8 @@ function AdminDashboard() {
         { name: "cafe_id", label: "Cafe ID", type: "text", readOnly: true },
         { name: "name", label: "Cafe Name *", type: "text" },
         { name: "location", label: "Location *", type: "text" },
+        { name: "city", label: "City", type: "text" },
+        { name: "area", label: "Area", type: "text" },
         { name: "image_url", label: "Image URL", type: "text" },
         { name: "audio_url", label: "Audio URL", type: "text" },
         { name: "average_bill", label: "Average Bill", type: "number", min: 0 },
@@ -237,6 +239,8 @@ function AdminDashboard() {
       setFormValues({
         name: "",
         location: "",
+        city: "",
+        area: "",
         average_bill: 0,
         discount: 0,
         ratings: 0,
@@ -324,6 +328,8 @@ function AdminDashboard() {
         requestData = {
           name: formValues.name,
           location: formValues.location,
+          city: formValues.city || undefined,
+          area: formValues.area || undefined,
           image_url: formValues.image_url || undefined,
           audio_url: formValues.audio_url || undefined,
           average_bill: Number(formValues.average_bill) || 0,
@@ -408,7 +414,7 @@ function AdminDashboard() {
         } else if (activeTab === "cafes") {
           setCafes(
             cafes.map((cafe) =>
-              cafe.cafe_id === editItemId ? responseData.cafe : cafe
+              cafe.cafe_id === editItemId ? responseData.cafe : cafe //migh need update
             )
           );
         } else if (activeTab === "users") {
