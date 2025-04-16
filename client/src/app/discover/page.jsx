@@ -296,121 +296,121 @@ function MainComponent() {
 
         {/* Filters & Lists Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-header font-semibold mb-6">Nearby Cafes</h2>
-          <div className="flex gap-4 mb-8" ref={cafeFilterRef}>
-            {/* Location Search Input with Reset, Autocomplete, and Locate Button */}
-            <div className="relative flex items-center">
+        <h2 className="text-2xl font-header font-semibold mb-6">Nearby Cafes</h2>
+  <div className="flex gap-4 mb-8 flex-wrap" ref={cafeFilterRef}> {/* Added flex-wrap */}
+    {/* Location Search Input with Reset, Autocomplete, and Locate Button */}
+    <div className="relative flex items-center">
+      <input
+        type="text"
+        value={cafeFilters.location}
+        onChange={handleLocationInputChange}
+        placeholder="Search by location..."
+        className="px-4 py-2 border rounded-full w-48 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+        disabled={loadingCafes}
+      />
+      {cafeFilters.location && (
+        <button
+          onClick={resetLocationFilter}
+          className="absolute right-12 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        >
+          ✕
+        </button>
+      )}
+      <button
+        onClick={handleLocate}
+        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400"
+        disabled={loadingCafes}
+      >
+        Locate
+      </button>
+      {locationSuggestions.length > 0 && (
+        <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
+          {locationSuggestions.map((suggestion) => (
+            <div
+              key={suggestion}
+              className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+              onClick={() => handleSuggestionSelect(suggestion)}
+            >
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      )}
+      {loadingCafes && (
+        <div className="absolute right-20 flex items-center h-full">
+          <svg className="animate-spin h-4 w-4 text-gray-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
+          </svg>
+        </div>
+      )}
+    </div>
+    {/* Pricing Filter */}
+    <div className="relative">
+      <button
+        onClick={() => handleFilterClick("pricing")}
+        className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
+      >
+        {cafeFilters.pricing ? `₹${cafeFilters.pricing}` : "Pricing"}
+        <svg
+          className={`w-4 h-4 transition-transform ${activeFilter === "pricing" ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {activeFilter === "pricing" && (
+        <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
               <input
-                type="text"
-                value={cafeFilters.location}
-                onChange={handleLocationInputChange}
-                placeholder="Search by location..."
-                className="px-4 py-2 border rounded-full w-48 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-                disabled={loadingCafes}
+                type="radio"
+                name="pricing"
+                value=""
+                checked={cafeFilters.pricing === ""}
+                onChange={() => handleCafeFilterChange("pricing", "")}
               />
-              {cafeFilters.location && (
-                <button
-                  onClick={resetLocationFilter}
-                  className="absolute right-12 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  ✕
-                </button>
-              )}
-              <button
-                onClick={handleLocate}
-                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400"
-                disabled={loadingCafes}
+              <span>Reset</span>
+            </label>
+            {cafeFilterOptions.average_bills.map((bill) => (
+              <label
+                key={bill}
+                className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
               >
-                Locate
-              </button>
-              {locationSuggestions.length > 0 && (
-                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
-                  {locationSuggestions.map((suggestion) => (
-                    <div
-                      key={suggestion}
-                      className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => handleSuggestionSelect(suggestion)}
-                    >
-                      {suggestion}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {loadingCafes && (
-                <div className="absolute right-20 flex items-center h-full">
-                  <svg className="animate-spin h-4 w-4 text-gray-500" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
-                  </svg>
-                </div>
-              )}
-            </div>
-            {/* Pricing Filter */}
-            <div className="relative">
-              <button
-                onClick={() => handleFilterClick("pricing")}
-                className="px-4 py-2 border rounded-full flex items-center gap-2 hover:border-gray-400 transition-colors"
-              >
-                {cafeFilters.pricing ? `₹${cafeFilters.pricing}` : "Pricing"}
-                <svg
-                  className={`w-4 h-4 transition-transform ${activeFilter === "pricing" ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {activeFilter === "pricing" && (
-                <div className="absolute top-full mt-2 w-48 bg-white dark:bg-background-dark border rounded-lg shadow-lg p-2 z-20 animate-slideDown">
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                      <input
-                        type="radio"
-                        name="pricing"
-                        value=""
-                        checked={cafeFilters.pricing === ""}
-                        onChange={() => handleCafeFilterChange("pricing", "")}
-                      />
-                      <span>Reset</span>
-                    </label>
-                    {cafeFilterOptions.average_bills.map((bill) => (
-                      <label
-                        key={bill}
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
-                      >
-                        <input
-                          type="radio"
-                          name="pricing"
-                          value={bill}
-                          checked={cafeFilters.pricing === String(bill)}
-                          onChange={() => handleCafeFilterChange("pricing", String(bill))}
-                        />
-                        <span>₹{bill}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                <input
+                  type="radio"
+                  name="pricing"
+                  value={bill}
+                  checked={cafeFilters.pricing === String(bill)}
+                  onChange={() => handleCafeFilterChange("pricing", String(bill))}
+                />
+                <span>₹{bill}</span>
+              </label>
+            ))}
           </div>
+        </div>
+      )}
+    </div>
+  </div>
 
-          {/* Nearby Cafes List */}
-          <section className="mb-16">
-            {loadingCafes ? (
-              <div className="text-gray-600 flex items-center">
-                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
-                </svg>
-                Loading cafes...
-              </div>
-            ) : cafes.length === 0 ? (
-              <div className="text-gray-600">No cafes found.</div>
-            ) : (
-              <CafeExpansion cafes={cafes} />
-            )}
-          </section>
+  {/* Nearby Cafes List */}
+  <section className="mb-16">
+    {loadingCafes ? (
+      <div className="text-gray-600 flex items-center">
+        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
+        </svg>
+        Loading cafes...
+      </div>
+    ) : cafes.length === 0 ? (
+      <div className="text-gray-600">No cafes found.</div>
+    ) : (
+      <CafeExpansion cafes={cafes} />
+    )}
+  </section>
 
           {/* Available Books List */}
           <section className="mb-16">

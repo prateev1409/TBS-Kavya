@@ -6,15 +6,16 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="fixed bottom-4 right-4 sm:right-[1rem] p-2 bg-primary-light dark:bg-primary-dark rounded-full shadow-lg font-button z-50"
+      className="fixed bottom-4 right-4 sm:right-[1rem] p-2 bg-primary-light dark:bg-primary-dark rounded-full shadow-md font-button z-50"
       aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      style={{ maxWidth: '2.5rem', maxHeight: '2.5rem' }} // Constrain size for consistency
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="h-6 w-6"
         fill="none"
         viewBox="0 0 24 24"
-        stroke={isDarkMode ? "#FFFFFF" : "#1F2937"} // White in dark mode, dark gray in light mode
+        stroke={isDarkMode ? "#FFFFFF" : "#1F2937"}
         strokeWidth={2}
       >
         <path
