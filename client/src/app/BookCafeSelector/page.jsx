@@ -1,15 +1,16 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation"; // Add useSearchParams
-import { useEffect, useState } from "react";
-import { CafeCard } from "../../components/cafe"; // Import CafeCard
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { CafeCard } from "../../components/cafe";
 import { useAuth } from "../Hooks/useAuth";
 
-export default function BookCafeSelector() {
+// New component to handle useSearchParams logic
+function BookCafeSelectorContent() {
   const { refreshToken } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams(); // Get query params from URL
+  const searchParams = useSearchParams();
   const [selectedBookId, setSelectedBookId] = useState(null);
-  const [bookName, setBookName] = useState(""); // To store book name for popup
+  const [bookName, setBookName] = useState("");
   const [cafes, setCafes] = useState([]);
   const [error, setError] = useState(null);
   const [loadingCafes, setLoadingCafes] = useState(false);
@@ -138,7 +139,7 @@ export default function BookCafeSelector() {
       setError(err.message);
     } finally {
       setTransactionLoading(false);
-      setShowConfirmPopup(false); // Close popup after transaction
+      setShowConfirmPopup(false);
     }
   };
 
@@ -153,8 +154,8 @@ export default function BookCafeSelector() {
     const bookId = searchParams.get("bookId");
     if (bookId) {
       setSelectedBookId(bookId);
-      fetchBookDetails(bookId); // Fetch book name for popup
-      fetchCafes(bookId); // Fetch cafes immediately
+      fetchBookDetails(bookId);
+      fetchCafes(bookId);
     }
   }, [searchParams]);
 
@@ -194,7 +195,7 @@ export default function BookCafeSelector() {
                       priceRange: `₹${cafe.average_bill}`,
                       description: cafe.description || "No description available",
                     }}
-                    onExpand={() => {}} // No expansion needed here
+                    onExpand={() => {}}
                   />
                   <button
                     onClick={() => handleBookAtCafe(cafe)}
@@ -236,5 +237,14 @@ export default function BookCafeSelector() {
         )}
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function BookCafeSelector() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookCafeSelectorContent />
+    </Suspense>
   );
 }
