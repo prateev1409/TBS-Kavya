@@ -336,11 +336,11 @@ function MainComponent() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Enter coupon code"
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border rounded-md text-text-light dark:text-text-light"
           />
           <button
             onClick={handleApplyCode}
-            className="ml-4 bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-4 py-2 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
+            className="mt-4 bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark px-4 py-2 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors font-button"
           >
             Apply Code
           </button>
