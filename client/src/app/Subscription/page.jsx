@@ -364,7 +364,7 @@ function MainComponent() {
               ? "Pay Deposit (₹299)"
               : selectedPlan
               ? "Confirm Subscription (₹348)"
-              : "Select a Plan"}
+              : "Pay Deposit (₹299)"}
           </button>
         </div>
       </div>

@@ -301,7 +301,7 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
             key_secret: process.env.RAZORPAY_KEY_SECRET,
         });
 
-        const { tier, amount } = req.body;
+        const { tier, amount, isCodeApplied } = req.body;
         if (!['basic', 'standard', 'premium'].includes(tier)) {
             return res.status(400).json({ error: 'Invalid subscription tier' });
         }
@@ -315,8 +315,18 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
             standard: 49.00,
             premium: 199.99,
         };
-        if (planAmounts[tier] !== amount) {
-            return res.status(400).json({ error: `Invalid amount for ${tier} plan. Expected ${planAmounts[tier]} INR` });
+        const depositFee = 299.00;
+
+        // Validate amount based on coupon application
+        let expectedAmount;
+        if (isCodeApplied) {
+            expectedAmount = depositFee; // Only deposit fee when coupon is applied
+        } else {
+            expectedAmount = planAmounts[tier] + depositFee; // Plan fee + deposit fee
+        }
+
+        if (amount !== expectedAmount) {
+            return res.status(400).json({ error: `Invalid amount for ${tier} plan. Expected ${expectedAmount} INR` });
         }
 
         const user = await User.findById(req.userId);
@@ -332,6 +342,7 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
             notes: {
                 user_id: user.user_id,
                 tier: tier,
+                isCodeApplied: isCodeApplied,
             },
         };
 
@@ -359,11 +370,33 @@ router.post('/verify-subscription-payment', authMiddleware, async (req, res) => 
             key_secret: process.env.RAZORPAY_KEY_SECRET,
         });
 
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier, amount } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier, amount, isCodeApplied } = req.body;
 
         // Validate the request
-        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !tier || !amount) {
-            return res.status(400).json({ error: 'Missing required payment details' });
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !tier || !amount || typeof isCodeApplied !== 'boolean') {
+            return res.status(400).json({ error: 'Missing or invalid required payment details' });
+        }
+
+        if (!['basic', 'standard', 'premium'].includes(tier)) {
+            return res.status(400).json({ error: 'Invalid subscription tier' });
+        }
+
+        // Validate amount based on coupon application
+        const planAmounts = {
+            basic: 49.00,
+            standard: 49.00,
+            premium: 199.99,
+        };
+        const depositFee = 299.00;
+        let expectedAmount;
+        if (isCodeApplied) {
+            expectedAmount = depositFee; // Only deposit fee when coupon is applied
+        } else {
+            expectedAmount = planAmounts[tier] + depositFee; // Plan fee + deposit fee
+        }
+
+        if (amount !== expectedAmount) {
+            return res.status(400).json({ error: `Invalid amount for ${tier} plan. Expected ${expectedAmount} INR` });
         }
 
         // Verify the payment signature
@@ -398,41 +431,57 @@ router.post('/verify-subscription-payment', authMiddleware, async (req, res) => 
             validity: user.subscription_validity,
             subscription_type: tier,
             amount: amount,
+            isCodeApplied: isCodeApplied,
+            isActive: true
         });
         await subscriptionPayment.save();
 
-        console.log(`Payment verified and subscription updated for user ${user.user_id}: Plan ${tier}`);
+        console.log(`Payment verified and subscription updated for user ${user.user_id}: Plan ${tier}, Coupon Applied: ${isCodeApplied}`);
         res.status(200).json({ message: 'Payment verified and subscription updated successfully' });
     } catch (err) {
         console.error('Error verifying Razorpay payment:', err.message);
         res.status(500).json({ error: `Failed to verify payment: ${err.message}` });
     }
-    // POST /api/users/cancel-subscription - Cancel the user's current subscription
-    router.post('/cancel-subscription', authMiddleware, async (req, res) => {
-        try {
-          const user = await User.findById(req.userId);
-          if (!user) {
+});
+
+// POST /api/users/cancel-subscription - Cancel the user's current subscription
+router.post('/cancel-subscription', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
-          }
-      
-          // Check if user has an active subscription
-          if (!user.subscription_type || user.subscription_type === 'basic') {
-            return res.status(400).json({ error: 'No active subscription to cancel' });
-          }
-      
-          // Reset subscription details
-          user.subscription_type = 'basic'; // Default back to basic
-          user.subscription_validity = new Date(); // Set to current date to indicate no validity
-      
-          await user.save();
-      
-          console.log(`Subscription cancelled for user ${user.user_id}`);
-          res.status(200).json({ message: 'Subscription cancelled successfully' });
-        } catch (err) {
-          console.error('Error cancelling subscription:', err.message);
-          res.status(500).json({ error: err.message });
         }
-      });
+
+        // Check if user has an active subscription
+        if (!user.subscription_type || user.subscription_type === 'basic') {
+            return res.status(400).json({ error: 'No active subscription to cancel' });
+        }
+
+        // Check if subscription is still valid
+        const currentDate = new Date();
+        if (user.subscription_validity < currentDate) {
+            return res.status(400).json({ error: 'Subscription is already expired' });
+        }
+
+        const canceledSubscriptionType = user.subscription_type;
+
+        // Reset subscription details
+        user.subscription_type = 'basic'; // Default back to basic
+        user.subscription_validity = currentDate; // Set to current date to indicate no validity
+        await user.save();
+
+        // Update SubscriptionPayment records to mark as inactive
+        await SubscriptionPayment.updateMany(
+            { user_id: user.user_id, isActive: true },
+            { $set: { isActive: false } }
+        );
+
+        console.log(`Subscription cancelled for user ${user.user_id}: Plan ${canceledSubscriptionType}`);
+        res.status(200).json({ message: `Subscription (${canceledSubscriptionType}) cancelled successfully` });
+    } catch (err) {
+        console.error('Error cancelling subscription:', err.message);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
