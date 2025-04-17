@@ -212,6 +212,54 @@ router.post(
     }
 );
 
+// PUT /api/users/update-user - Update the authenticated user's phone number
+router.put(
+    '/update-user',
+    authMiddleware,
+    [
+        body('phone_number')
+            .notEmpty()
+            .withMessage('Phone number is required')
+            .matches(/^\d{10}$/)
+            .withMessage('Phone number must be 10 digits'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const { phone_number } = req.body;
+
+            // Check if phone number is unique
+            const existingUser = await User.findOne({ phone_number });
+            if (existingUser && existingUser._id.toString() !== req.userId) {
+                return res.status(400).json({ message: 'Phone number already in use' });
+            }
+
+            const user = await User.findById(req.userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            // Ensure phone number is set for Google users
+            if (!user.phone_number) {
+                user.phone_number = phone_number;
+                await user.save();
+                console.log('User phone number updated:', user);
+                return res.status(200).json({ message: 'Phone number updated successfully' });
+            } else {
+                return res.status(400).json({ message: 'Phone number already set' });
+            }
+        } catch (err) {
+            console.error('Error updating phone number:', err.message);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+);
+
 // PUT /api/users/:user_id - Update a user (admin-only)
 router.put(
     '/:user_id',
@@ -407,7 +455,7 @@ router.post('/verify-subscription-payment', authMiddleware, async (req, res) => 
             .digest('hex');
 
         if (expectedSignature !== razorpay_signature) {
-            console.warn(`Payment verification failed for order ${razorpay_order_id}`);
+     console.warn(`Payment verification failed for order ${razorpay_order_id}`);
             return res.status(400).json({ error: 'Payment verification failed' });
         }
 

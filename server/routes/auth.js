@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
 
         // Create a new user
         const newUser = new User({
-           user_id,
+            user_id,
             name,
             phone_number,
             email,
@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/google', async (req, res) => {
     try {
-        const { idToken, name, email, phone_number } = req.body;
+        const { idToken, name, email } = req.body;
 
         // Verify Firebase ID token
         const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -88,14 +88,11 @@ router.post('/google', async (req, res) => {
         let user = await User.findOne({ email });
         if (!user) {
             // Register new user
-            if (!name || !email || !phone_number) {
-                return res.status(400).json({ message: 'Name, email, and phone number are required' });
+            if (!name || !email) {
+                return res.status(400).json({ message: 'Name and email are required' });
             }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 return res.status(400).json({ message: "Invalid email format" });
-            }
-            if (!/^\d{10}$/.test(phone_number)) {
-                return res.status(400).json({ message: "Phone number must be 10 digits" });
             }
 
             let count = await User.countDocuments();
@@ -104,8 +101,8 @@ router.post('/google', async (req, res) => {
             user = new User({
                 user_id,
                 name,
-                phone_number,
                 email,
+                phone_number: null, // Set to null initially
                 password: null, // No password for Google users
                 role: 'user'
             });
@@ -116,8 +113,8 @@ router.post('/google', async (req, res) => {
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
         res.status(200).json({ 
             token, 
-            user: { id: user._id, email: user.email, role: user.role },
-            message: user.password ? "Logged in with Google" : "Registered and logged in with Google"
+            user: { id: user._id, email: user.email, role: user.role, phone_number: user.phone_number },
+            message: user.phone_number ? "Logged in with Google" : "Registered and requires phone number"
         });
     } catch (error) {
         console.error('Google Sign-In Error:', error);

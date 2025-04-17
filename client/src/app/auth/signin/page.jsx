@@ -11,6 +11,9 @@ function MainComponent() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const [googlePhoneNumber, setGooglePhoneNumber] = useState("");
+    const [googleUserData, setGoogleUserData] = useState(null);
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -65,23 +68,71 @@ function MainComponent() {
                     idToken,
                     name: result.user.displayName,
                     email: result.user.email,
-                    phone_number: result.user.phoneNumber || "0000000000" // Default phone number
                 }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Google Sign-In failed');
-            localStorage.setItem('token', data.token);
+
+            // Check if user needs to provide phone number
+            if (data.message.includes("requires phone number")) {
+                // Store user data temporarily and show phone number modal
+                setGoogleUserData({ token: data.token, userId: data.user.id });
+                setShowPhoneModal(true);
+            } else {
+                // Existing user with phone number, proceed with login
+                localStorage.setItem('token', data.token);
+                // Redirect based on user role
+                if (data.user.role === 'admin') {
+                    window.location.href = '/AdminDashboard';
+                } else if (data.user.role === 'cafe') {
+                    window.location.href = '/CafeDashboard';
+                } else {
+                    window.location.href = '/';
+                }
+            }
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
+    };
+
+    const handlePhoneSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+
+        // Validate phone number
+        if (!/^\d{10}$/.test(googlePhoneNumber)) {
+            setError("Phone number must be 10 digits");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/update-user`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${googleUserData.token}`,
+                },
+                body: JSON.stringify({
+                    phone_number: googlePhoneNumber,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to update phone number');
+
+            // Phone number updated successfully, store token and redirect
+            localStorage.setItem('token', googleUserData.token);
+            setShowPhoneModal(false);
             // Redirect based on user role
-            if (data.user.role === 'admin') {
+            if (data.user && data.user.role === 'admin') {
                 window.location.href = '/AdminDashboard';
-            } else if (data.user.role === 'cafe') {
+            } else if (data.user && data.user.role === 'cafe') {
                 window.location.href = '/CafeDashboard';
             } else {
                 window.location.href = '/';
             }
         } catch (err) {
             setError(err.message);
-            setLoading(false);
         }
     };
 
@@ -184,6 +235,49 @@ function MainComponent() {
             </div>
 
             <ThemeToggle />
+
+            {/* Phone Number Modal */}
+            {showPhoneModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-background-light dark:bg-background-dark p-6 rounded-lg max-w-md w-full">
+                        <h2 className="text-xl font-bold text-text-light dark:text-text-dark mb-4">
+                            Enter Your Phone Number
+                        </h2>
+                        <p className="text-sm text-text-light dark:text-text-dark mb-4">
+                            A valid phone number is required to complete your registration.
+                        </p>
+                        <form onSubmit={handlePhoneSubmit}>
+                            <input
+                                type="tel"
+                                value={googlePhoneNumber}
+                                onChange={(e) => setGooglePhoneNumber(e.target.value)}
+                                placeholder="Phone Number (10 digits)"
+                                className="w-full rounded-full border border-border-light dark:border-border-dark px-4 py-3 text-text-light dark:text-text-light focus:border-primary-light dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2 transition-colors mb-4"
+                            />
+                            {error && (
+                                <div className="rounded-full bg-warning-light dark:bg-warning-dark p-3 text-sm text-warning-light dark:text-warning-dark mb-4">
+                                    {error}
+                                </div>
+                            )}
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPhoneModal(false)}
+                                    className="rounded-full border border-border-light dark:border-border-dark px-4 py-2 text-text-light dark:text-text-dark"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="rounded-full bg-primary-light dark:bg-primary-dark px-4 py-2 text-text-light dark:text-text-dark"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
