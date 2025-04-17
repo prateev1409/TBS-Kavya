@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import ThemeToggle from "../../../components/ThemeToggle";
+import { auth, googleProvider } from "../../../lib/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 function MainComponent() {
   const [error, setError] = useState(null);
@@ -70,6 +72,32 @@ function MainComponent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Registration failed');
+      localStorage.setItem('token', data.token);
+      window.location.href = '/';
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idToken,
+          name: result.user.displayName,
+          email: result.user.email,
+          phone_number: result.user.phoneNumber || "0000000000" // Default phone number
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Google Sign-In failed');
       localStorage.setItem('token', data.token);
       window.location.href = '/';
     } catch (err) {
@@ -167,7 +195,6 @@ function MainComponent() {
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
-          {/* Rest of the UI remains unchanged */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-border-light dark:border-border-dark"></div>
             <span className="px-4 text-text-light dark:text-text-dark text-sm">Or</span>
@@ -175,7 +202,7 @@ function MainComponent() {
           </div>
           <div className="space-y-4">
             <button
-              onClick={() => setError("Google sign-in not implemented yet")}
+              onClick={handleGoogleSignIn}
               className="w-full rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-base font-medium text-text-light dark:text-text-dark transition-colors hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:ring-offset-2"
             >
               <i className="fab fa-google mr-2"></i>

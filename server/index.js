@@ -22,6 +22,7 @@ console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID);
 console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
+console.log('FIREBASE_SERVICE_ACCOUNT_KEY:', process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 // Validate critical environment variables
 if (!process.env.JWT_SECRET) {
@@ -34,6 +35,10 @@ if (!process.env.MONGODB_URI) {
 }
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     console.error('FATAL ERROR: Razorpay credentials (RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET) are not defined in environment variables');
+    process.exit(1);
+}
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    console.error('FATAL ERROR: FIREBASE_SERVICE_ACCOUNT_KEY is not defined in environment variables');
     process.exit(1);
 }
 

@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import ThemeToggle from "../../../components/ThemeToggle";
+import { auth, googleProvider } from "../../../lib/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 function MainComponent() {
     const [error, setError] = useState(null);
@@ -37,21 +39,50 @@ function MainComponent() {
             localStorage.setItem('token', data.token);
             console.log('Token saved:', localStorage.getItem('token')); // Debug log
             // Redirect based on user role
-        if (data.user.role === 'admin') {
-            window.location.href = '/AdminDashboard';
-        } else if (data.user.role === 'cafe') {
-            window.location.href = '/CafeDashboard';
-        } else {
-            window.location.href = '/';
-        }
+            if (data.user.role === 'admin') {
+                window.location.href = '/AdminDashboard';
+            } else if (data.user.role === 'cafe') {
+                window.location.href = '/CafeDashboard';
+            } else {
+                window.location.href = '/';
+            }
         } catch (err) {
             setError(err.message);
             setLoading(false);
         }
     };
 
-    const handleGoogleSignIn = () => {
-        setError("Google sign-in not implemented yet");
+    const handleGoogleSignIn = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const idToken = await result.user.getIdToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    idToken,
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    phone_number: result.user.phoneNumber || "0000000000" // Default phone number
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Google Sign-In failed');
+            localStorage.setItem('token', data.token);
+            // Redirect based on user role
+            if (data.user.role === 'admin') {
+                window.location.href = '/AdminDashboard';
+            } else if (data.user.role === 'cafe') {
+                window.location.href = '/CafeDashboard';
+            } else {
+                window.location.href = '/';
+            }
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
     };
 
     const togglePasswordVisibility = () => {

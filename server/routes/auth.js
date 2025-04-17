@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const admin = require('../config/firebaseAdmin');
 
 router.post('/register', async (req, res) => {
     try {
@@ -70,6 +71,57 @@ router.post('/login', async (req, res) => {
         res.status(200).json({ token, user: { id: user._id, email: user.email, role: user.role } });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/google', async (req, res) => {
+    try {
+        const { idToken, name, email, phone_number } = req.body;
+
+        // Verify Firebase ID token
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        if (decodedToken.email !== email) {
+            return res.status(400).json({ message: 'Email mismatch' });
+        }
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+        if (!user) {
+            // Register new user
+            if (!name || !email || !phone_number) {
+                return res.status(400).json({ message: 'Name, email, and phone number are required' });
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                return res.status(400).json({ message: "Invalid email format" });
+            }
+            if (!/^\d{10}$/.test(phone_number)) {
+                return res.status(400).json({ message: "Phone number must be 10 digits" });
+            }
+
+            let count = await User.countDocuments();
+            let user_id = `User_${String(count + 1).padStart(3, '0')}`;
+
+            user = new User({
+                user_id,
+                name,
+                phone_number,
+                email,
+                password: null, // No password for Google users
+                role: 'user'
+            });
+            await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        res.status(200).json({ 
+            token, 
+            user: { id: user._id, email: user.email, role: user.role },
+            message: user.password ? "Logged in with Google" : "Registered and logged in with Google"
+        });
+    } catch (error) {
+        console.error('Google Sign-In Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

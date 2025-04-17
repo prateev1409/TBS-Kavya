@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone_number: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Will be hashed
+    password: { type: String }, // Optional for Google users
     subscription_validity: { type: Date },
     subscription_type: { type: String, enum: ['basic', 'standard', 'premium'], default: 'basic' },
     book_id: {  type: String , default: null },
@@ -19,22 +19,22 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function (next) {
     try {
         // Auto-generate user_id for new documents
-    if (this.isNew) {
-        console.log('Generating user_id for new user...');
-        const lastUser = await mongoose.models.User.findOne().sort({ createdAt: -1 });//sort by createdAt in descending order
-        console.log('Last user found:', lastUser); // Debug log
-        let userIdNumber;
-        if (lastUser) {
-          userIdNumber = parseInt(lastUser.user_id.split('_')[1], 10) + 1;
-        } else {
-          userIdNumber = 1; // First user
+        if (this.isNew) {
+            console.log('Generating user_id for new user...');
+            const lastUser = await mongoose.models.User.findOne().sort({ createdAt: -1 });
+            console.log('Last user found:', lastUser); // Debug log
+            let userIdNumber;
+            if (lastUser) {
+              userIdNumber = parseInt(lastUser.user_id.split('_')[1], 10) + 1;
+            } else {
+              userIdNumber = 1; // First user
+            }
+            this.user_id = `User_${String(userIdNumber).padStart(3, '0')}`; // e.g., User_001
+            console.log('Generated user_id:', this.user_id);
         }
-        this.user_id = `User_${String(userIdNumber).padStart(3, '0')}`; // e.g., User_001
-        console.log('Generated user_id:', this.user_id);
-      }
 
-        // Hash password if modified
-        if (this.isModified('password')) {
+        // Hash password if modified and exists
+        if (this.isModified('password') && this.password) {
             console.log('Hashing password...');
             this.password = await bcrypt.hash(this.password, 10);
             console.log('Password hashed successfully');
