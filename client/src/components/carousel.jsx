@@ -32,8 +32,8 @@ const Carousel = ({ title, description, buttonText, images }) => {
         </p>
         <Link
           href={
-            buttonText === "Browse New Releases" ? "/books/new-releases" :
-            buttonText === "Explore Classics" ? "/books/classics" :
+            buttonText === "Browse New Releases" ? "/discover" :
+            buttonText === "Explore Classics" ? "/discover" :
             buttonText === "Find Location" ? "/cafes" : "#"
           }
           className="inline-block bg-primary-light dark:bg-primary-dark text-background-light dark:text-background-dark font-button font-bold px-6 py-2 rounded-md hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors"
