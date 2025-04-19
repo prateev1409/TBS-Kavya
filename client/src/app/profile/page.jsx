@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCodeGenerator from "../../components/QRCodeGenerator";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -18,7 +18,7 @@ function MainComponent() {
   const [showQR, setShowQR] = useState({});
   const [currentBook, setCurrentBook] = useState(null);
   const [loadingBook, setLoadingBook] = useState(true);
-  const [showConfirmCancel, setShowConfirmCancel] = useState(false); // New state for confirmation dialog
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -57,15 +57,15 @@ function MainComponent() {
 
       await refetch();
       setError(null);
-      setShowConfirmCancel(false); // Hide confirmation dialog after success
+      setShowConfirmCancel(false);
       alert("Subscription cancelled successfully.");
     } catch (err) {
       console.error("Error cancelling subscription:", err.message);
       setError(err.message);
-      setShowConfirmCancel(false); // Hide confirmation dialog on error
+      setShowConfirmCancel(false);
     }
   };
-  
+
   const fetchTransactions = async () => {
     setLoadingTransactions(true);
     try {
@@ -217,7 +217,6 @@ function MainComponent() {
       setError("No book to drop off");
       return;
     }
-    // Redirect to the drop-off page with the current book's book_id
     router.push(`/drop-off?book_id=${currentBook.book_id}`);
   };
 
@@ -263,7 +262,6 @@ function MainComponent() {
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Profile Section */}
         <div className="text-center mb-8">
           <div className="relative inline-block">
             {user.image ? (
@@ -286,7 +284,6 @@ function MainComponent() {
           </p>
         </div>
 
-        {/* Subscription Section */}
         <div className="flex items-center justify-between px-6 py-3 rounded-lg border border-border-light dark:border-border-dark hover:border-border-light dark:hover:border-border-dark transition-colors">
           <div>
             <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark capitalize">
@@ -305,6 +302,9 @@ function MainComponent() {
                   )
                 : "Not set"}
             </p>
+            <p className="text-text-light dark:text-text-dark font-body">
+              Deposit Status: {user.deposit_status}
+            </p>
           </div>
           <a
             href="/Subscription"
@@ -314,7 +314,6 @@ function MainComponent() {
           </a>
         </div>
 
-        {/* Email/Phone Update Section */}
         <div className="space-y-4">
           {showEmailForm ? (
             <form onSubmit={handleUpdateEmail} className="space-y-3">
@@ -395,7 +394,6 @@ function MainComponent() {
           )}
         </div>
 
-        {/* Current Book Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark">
             Current Book
@@ -452,7 +450,6 @@ function MainComponent() {
           )}
         </div>
 
-        {/* Previous Transactions Section */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark">
             Previous Transactions
@@ -482,13 +479,66 @@ function MainComponent() {
                     <strong>Type:</strong>{" "}
                     {transaction.status === "picked_up" ? "Pickup" : "Drop-off"}
                   </p>
+                  <p>
+                    <strong>Date:</strong>{" "}
+                    {new Date(transaction.transaction_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
+                  </p>
                 </div>
+                <button
+                  onClick={() => toggleQR(transaction.transaction_id)}
+                  className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
+                >
+                  {showQR[transaction.transaction_id] ? "Hide QR" : "Show QR"}
+                </button>
+                {showQR[transaction.transaction_id] && (
+                  <div
+                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+                    onClick={() => toggleQR(transaction.transaction_id)}
+                  >
+                    <div
+                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center relative"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => toggleQR(transaction.transaction_id)}
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <h3 className="text-lg font-bold mb-4 text-text-light dark:text-text-dark">
+                        QR Code for {transaction.book_id.name}
+                      </h3>
+                      <QRCodeGenerator
+                        value={`transaction_${transaction.transaction_id}`}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
 
-        {/* Pending Transactions Section (Table Format) */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold font-header text-text-light dark:text-text-dark">
             Pending Transactions
@@ -499,7 +549,7 @@ function MainComponent() {
             </div>
           ) : pendingTransactions.length === 0 ? (
             <div className="px-6 py-3 rounded-lg border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-body">
-              No pending transactions found.
+              No pending transactions.
             </div>
           ) : (
             <div className="rounded-lg border border-border-light dark:border-border-dark overflow-hidden">
@@ -513,138 +563,122 @@ function MainComponent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingTransactions.map((transaction) => {
-                    const qrData = `${transaction.transaction_id}.${user.user_id}`;
-                    return (
-                      <tr
-                        key={transaction.transaction_id}
-                        className="border-t border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <td className="px-4 py-2">{transaction.cafe_id.name}</td>
-                        <td className="px-4 py-2">{transaction.book_id.name}</td>
-                        <td className="px-4 py-2">
-                          {transaction.status === "pickup_pending"
-                            ? "Pickup"
-                            : "Drop-off"}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          <button
+                  {pendingTransactions.map((transaction) => (
+                    <tr
+                      key={transaction.transaction_id}
+                      className="border-t border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      <td className="px-4 py-2">{transaction.cafe_id.name}</td>
+                      <td className="px-4 py-2">{transaction.book_id.name}</td>
+                      <td className="px-4 py-2">
+                        {transaction.status === "pickup_pending" ? "Pickup" : "Drop-off"}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        <button
+                          onClick={() => toggleQR(transaction.transaction_id)}
+                          className="px-4 py-1 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
+                        >
+                          {showQR[transaction.transaction_id] ? "Hide QR" : "Show QR"}
+                        </button>
+                        {showQR[transaction.transaction_id] && (
+                          <div
+                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
                             onClick={() => toggleQR(transaction.transaction_id)}
-                            className="px-4 py-1 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
                           >
-                            {showQR[transaction.transaction_id]
-                              ? "Hide QR"
-                              : "Show QR"}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                            <div
+                              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center relative"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => toggleQR(transaction.transaction_id)}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                              >
+                                <svg
+                                  className="w-6 h-6"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                              </button>
+                              <h3 className="text-lg font-bold mb-4 text-text-light dark:text-text-dark">
+                                QR Code for {transaction.book_id.name}
+                              </h3>
+                              <QRCodeGenerator
+                                value={`transaction_${transaction.transaction_id}`}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </div>
 
-        {/* QR Code Modal */}
-        {Object.keys(showQR).some((key) => showQR[key]) && (
-          <div
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-            onClick={() => setShowQR({})}
+        <div className="flex justify-center mt-8 space-x-4">
+          <button
+            onClick={() => setShowConfirmCancel(true)}
+            disabled={
+              !user.subscription_type ||
+              user.subscription_type === "basic" ||
+              new Date(user.subscription_validity) < new Date()
+            }
+            className={`px-6 py-3 rounded-full font-button transition-colors ${
+              !user.subscription_type ||
+              user.subscription_type === "basic" ||
+              new Date(user.subscription_validity) < new Date()
+                ? "bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-not-allowed"
+                : "bg-warning-light dark:bg-warning-dark text-text-light dark:text-text-dark hover:bg-warning-dark dark:hover:bg-warning-light"
+            }`}
           >
-            {pendingTransactions.map((transaction) => {
-              const qrData = `${transaction.transaction_id}.${user.user_id}`;
-              return showQR[transaction.transaction_id] ? (
-                <div
-                  key={transaction.transaction_id}
-                  className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => toggleQR(transaction.transaction_id)}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <h3 className="text-lg font-bold mb-4 text-black">
-                    QR Code for {transaction.book_id.name}
-                  </h3>
-                  <QRCodeGenerator
-                    bookName={transaction.book_id.name}
-                    bookId={qrData}
-                  />
-                </div>
-              ) : null;
-            })}
-          </div>
-        )}
+            Cancel Subscription
+          </button>
+          <a
+            href="/auth/logout"
+            className="px-6 py-3 text-warning-light dark:text-warning-dark border border-warning-light dark:border-warning-dark rounded-full hover:bg-warning-light dark:hover:bg-warning-dark transition-colors font-button"
+          >
+            Log Out
+          </a>
+        </div>
 
-        {/* Cancel Button */}
-        {user.subscription_type !== "basic" && (
-          <div className="text-center">
-            <button
-              onClick={() => setShowConfirmCancel(true)} // Show confirmation dialog
-              className="inline-block px-6 py-2.5 text-sm font-medium text-warning-light dark:text-warning-dark border border-warning-light dark:border-warning-dark rounded-full hover:bg-warning-light dark:hover:bg-warning-dark transition-colors"
-            >
-              Cancel Subscription
-            </button>
-          </div>
-        )}
-
-        {/* Confirmation Dialog */}
         {showConfirmCancel && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative max-w-md w-full">
-              <h3 className="text-lg font-bold mb-4 text-black">
-                Are you sure?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to cancel your subscription? This action cannot be undone.
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+              <p className="mb-4 text-lg text-text-light dark:text-text-dark">
+                Are you sure you want to cancel your subscription? This action
+                cannot be undone.
               </p>
-              <div className="flex space-x-4">
+              <div className="flex justify-center space-x-4">
                 <button
-                  onClick={handleCancelSubscription} // Confirm cancellation
-                  className="px-4 py-2 bg-primary-light dark:bg-primary-dark text-text-light dark:text-text-dark rounded-full font-button hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
+                  onClick={handleCancelSubscription}
+                  className="px-4 py-2 bg-warning-light dark:bg-warning-dark text-text-light dark:text-text-dark rounded-full hover:bg-warning-dark dark:hover:bg-warning-light transition-colors font-button"
                 >
-                  Yes, I confirm
+                  Yes, Cancel
                 </button>
                 <button
-                  onClick={() => setShowConfirmCancel(false)} // Cancel the dialog
-                  className="px-4 py-2 border border-border-light dark:border-border-dark rounded-full font-button hover:bg-backgroundSCD-light dark:hover:bg-backgroundSCD-dark"
+                  onClick={() => setShowConfirmCancel(false)}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors font-button"
                 >
-                  No, go back
+                  No, Go Back
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Logout Section */}
-        <div className="text-center">
-          <a
-            href="/auth/logout"
-            className="inline-block px-6 py-2 text-sm font-medium text-warning-light dark:text-warning-dark border border-warning-light dark:border-warning-dark rounded-full hover:bg-warning-light dark:hover:bg-warning-dark transition-colors"
-          >
-            Log Out
-          </a>
-        </div>
-
-        {/* Error Display */}
         {(userError || error) && (
-          <div className="bg-warning-light dark:bg-warning-dark text-warning-light dark:text-warning-dark p-3 rounded-lg font-body">
+          <div className="fixed bottom-4 right-4 bg-warning-light dark:bg-warning-dark text-text-light dark:text-text-dark p-3 rounded-lg font-body">
             {userError || error}
           </div>
         )}
