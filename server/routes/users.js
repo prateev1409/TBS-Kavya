@@ -147,7 +147,7 @@ router.post(
             });
 
             if (!user.user_id) {
-                console.log('user_id not set by model, generating Größe manually...');
+                console.log('user_id not set by model, generating manually...');
                 const count = await User.countDocuments();
                 user.user_id = `User_${String(count + 1).padStart(3, '0')}`;
                 console.log('Manually generated user_id:', user.user_id);
@@ -200,7 +200,8 @@ router.put(
     '/update-user',
     authMiddleware,
     [
-        body('phone_number').notEmpty().withMessage('Phone number is required').matches(/^\d{10}$/).withMessage('Phone number must be 10 digits'),
+        body('email').optional().isEmail().withMessage('Valid email is required'),
+        body('phone_number').optional().matches(/^\d{10}$/).withMessage('Phone number must be 10 digits'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -210,11 +211,10 @@ router.put(
         }
 
         try {
-            const { phone_number } = req.body;
+            const { email, phone_number } = req.body;
 
-            const existingUser = await User.findOne({ phone_number });
-            if (existingUser && existingUser._id.toString() !== req.userId) {
-                return res.status(400).json({ message: 'Phone number already in use' });
+            if (!email && !phone_number) {
+                return res.status(400).json({ message: 'At least one field (email or phone_number) must be provided' });
             }
 
             const user = await User.findById(req.userId);
@@ -222,16 +222,27 @@ router.put(
                 return res.status(404).json({ message: 'User not found' });
             }
 
-            if (!user.phone_number) {
-                user.phone_number = phone_number;
-                await user.save();
-                console.log('User phone number updated:', user);
-                return res.status(200).json({ message: 'Phone number updated successfully' });
-            } else {
-                return res.status(400).json({ message: 'Phone number already set' });
+            if (email && email !== user.email) {
+                const existingEmailUser = await User.findOne({ email });
+                if (existingEmailUser && existingEmailUser._id.toString() !== req.userId) {
+                    return res.status(400).json({ message: 'Email already in use' });
+                }
+                user.email = email;
             }
+
+            if (phone_number && phone_number !== user.phone_number) {
+                const existingPhoneUser = await User.findOne({ phone_number });
+                if (existingPhoneUser && existingPhoneUser._id.toString() !== req.userId) {
+                    return res.status(400).json({ message: 'Phone number already in use' });
+                }
+                user.phone_number = phone_number;
+            }
+
+            await user.save();
+            console.log('User updated:', user);
+            return res.status(200).json({ message: 'User updated successfully' });
         } catch (err) {
-            console.error('Error updating phone number:', err.message);
+            console.error('Error updating user:', err.message);
             res.status(500).json({ message: 'Internal server error' });
         }
     }

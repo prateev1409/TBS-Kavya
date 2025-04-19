@@ -162,10 +162,28 @@ function MainComponent() {
     }
   };
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phone);
+  };
+
   const handleUpdateEmail = async (e) => {
     e.preventDefault();
     try {
+      if (!validateEmail(email)) {
+        throw new Error("Please enter a valid email address");
+      }
+
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/update-user`,
         {
@@ -178,19 +196,32 @@ function MainComponent() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update email");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.errors?.[0]?.msg || "Failed to update email");
+      }
 
       await refetch();
       setShowEmailForm(false);
+      setError(null);
     } catch (err) {
-      setError("Failed to update email");
+      console.error("Error updating email:", err.message);
+      setError(err.message);
     }
   };
 
   const handleUpdatePhone = async (e) => {
     e.preventDefault();
     try {
+      if (!validatePhone(phone)) {
+        throw new Error("Phone number must be 10 digits");
+      }
+
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/update-user`,
         {
@@ -203,12 +234,17 @@ function MainComponent() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update phone");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.errors?.[0]?.msg || "Failed to update phone number");
+      }
 
       await refetch();
       setShowPhoneForm(false);
+      setError(null);
     } catch (err) {
-      setError("Failed to update phone number");
+      console.error("Error updating phone number:", err.message);
+      setError(err.message);
     }
   };
 
@@ -323,6 +359,7 @@ function MainComponent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg border border-border-light dark:border-border-dark px-4 py-2 font-body"
+                placeholder="Enter your email"
               />
               <div className="flex space-x-2 justify-end">
                 <button
@@ -362,6 +399,7 @@ function MainComponent() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full rounded-lg border border-border-light dark:border-border-dark px-4 py-2 font-body"
+                placeholder="Enter your 10-digit phone number"
               />
               <div className="flex space-x-2 justify-end">
                 <button
@@ -491,49 +529,6 @@ function MainComponent() {
                     )}
                   </p>
                 </div>
-                <button
-                  onClick={() => toggleQR(transaction.transaction_id)}
-                  className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
-                >
-                  {showQR[transaction.transaction_id] ? "Hide QR" : "Show QR"}
-                </button>
-                {showQR[transaction.transaction_id] && (
-                  <div
-                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-                    onClick={() => toggleQR(transaction.transaction_id)}
-                  >
-                    <div
-                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center relative"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => toggleQR(transaction.transaction_id)}
-                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                      <h3 className="text-lg font-bold mb-4 text-text-light dark:text-text-dark">
-                        QR Code for {transaction.book_id.name}
-                      </h3>
-                      <QRCodeGenerator
-                        value={`transaction_${transaction.transaction_id}`}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             ))
           )}
@@ -571,52 +566,19 @@ function MainComponent() {
                       <td className="px-4 py-2">{transaction.cafe_id.name}</td>
                       <td className="px-4 py-2">{transaction.book_id.name}</td>
                       <td className="px-4 py-2">
-                        {transaction.status === "pickup_pending" ? "Pickup" : "Drop-off"}
+                        {transaction.status === "pickup_pending"
+                          ? "Pickup"
+                          : "Drop-off"}
                       </td>
                       <td className="px-4 py-2 text-right">
                         <button
                           onClick={() => toggleQR(transaction.transaction_id)}
                           className="px-4 py-1 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
                         >
-                          {showQR[transaction.transaction_id] ? "Hide QR" : "Show QR"}
+                          {showQR[transaction.transaction_id]
+                            ? "Hide QR"
+                            : "Show QR"}
                         </button>
-                        {showQR[transaction.transaction_id] && (
-                          <div
-                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-                            onClick={() => toggleQR(transaction.transaction_id)}
-                          >
-                            <div
-                              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center relative"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                onClick={() => toggleQR(transaction.transaction_id)}
-                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                              >
-                                <svg
-                                  className="w-6 h-6"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                              <h3 className="text-lg font-bold mb-4 text-text-light dark:text-text-dark">
-                                QR Code for {transaction.book_id.name}
-                              </h3>
-                              <QRCodeGenerator
-                                value={`transaction_${transaction.transaction_id}`}
-                              />
-                            </div>
-                          </div>
-                        )}
                       </td>
                     </tr>
                   ))}
@@ -625,6 +587,51 @@ function MainComponent() {
             </div>
           )}
         </div>
+
+        {Object.keys(showQR).some((key) => showQR[key]) && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            onClick={() => setShowQR({})}
+          >
+            {pendingTransactions.map((transaction) => {
+              const qrData = `${transaction.transaction_id}.${user.user_id}`;
+              return showQR[transaction.transaction_id] ? (
+                <div
+                  key={transaction.transaction_id}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => toggleQR(transaction.transaction_id)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <h3 className="text-lg font-bold mb-4 text-text-light dark:text-text-dark">
+                    QR Code for {transaction.book_id.name}
+                  </h3>
+                  <QRCodeGenerator
+                    bookName={transaction.book_id.name}
+                    bookId={qrData}
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        )}
 
         <div className="flex justify-center mt-8 space-x-4">
           <button
