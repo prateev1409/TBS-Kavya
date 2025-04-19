@@ -19,6 +19,7 @@ function MainComponent() {
   const [currentBook, setCurrentBook] = useState(null);
   const [loadingBook, setLoadingBook] = useState(true);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [showConfirmCancelPickup, setShowConfirmCancelPickup] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -122,23 +123,25 @@ function MainComponent() {
       const token = localStorage.getItem("token");
       console.log("Fetching current book for user:", user?.user_id);
       console.log("User book_id in fetchCurrentBook:", user?.book_id);
-
+  
       if (!token) {
         throw new Error("No authentication token found.");
       }
-
-      if (!user?.book_id) {
+  
+      // Explicitly check for null or undefined book_id
+      if (!user?.book_id || user.book_id === null) {
         console.log("No book_id found for user. Setting currentBook to null.");
         setCurrentBook(null);
+        setLoadingBook(false); // Ensure loading state is cleared
         return;
       }
-
+  
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${user.book_id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Unauthorized: Please sign in again.");
@@ -146,7 +149,7 @@ function MainComponent() {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to fetch book");
       }
-
+  
       const bookData = await res.json();
       console.log("Fetched book data:", bookData);
       setCurrentBook(bookData);
@@ -157,11 +160,11 @@ function MainComponent() {
         localStorage.removeItem("token");
         window.location.href = "/auth/signin";
       }
+      setCurrentBook(null); // Ensure currentBook is null on error
     } finally {
       setLoadingBook(false);
     }
   };
-
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -256,6 +259,53 @@ function MainComponent() {
     router.push(`/drop-off?book_id=${currentBook.book_id}`);
   };
 
+  const handleCancelPickup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in.");
+      }
+
+      const pickupTransaction = pendingTransactions.find(
+        (t) =>
+          t.book_id.book_id === currentBook.book_id &&
+          t.status === "pickup_pending"
+      );
+      if (!pickupTransaction) {
+        throw new Error("No pending pickup transaction found.");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/transactions/cancel/${pickupTransaction.transaction_id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to cancel pickup request");
+      }
+
+      await refetch(); // Wait for user data to update (user.book_id should be null)
+      await fetchTransactions(); // Update transactions
+      await fetchCurrentBook(); // Fetch book only after user data is updated
+      setShowConfirmCancelPickup(false);
+      setError(null);
+      alert("Pickup request cancelled successfully.");
+    } catch (err) {
+      console.error("Error cancelling pickup request:", err.message);
+      setError(err.message);
+      setShowConfirmCancelPickup(false);
+    }
+  };
+  
+  // Add this state at the top of your component
+  const [key, setKey] = useState(0);
+
   const toggleQR = (transactionId) => {
     setShowQR((prev) => {
       const newState = {
@@ -294,6 +344,12 @@ function MainComponent() {
     window.location.href = "/auth/signin";
     return null;
   }
+
+  const isPickupPending = pendingTransactions.some(
+    (t) =>
+      t.book_id.book_id === currentBook?.book_id &&
+      t.status === "pickup_pending"
+  );
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 lg:px-8">
@@ -468,7 +524,7 @@ function MainComponent() {
                 </div>
               </div>
               <button
-                onClick={handleDropOff}
+                onClick={isPickupPending ? () => setShowConfirmCancelPickup(true) : handleDropOff}
                 className="px-4 py-2 text-primary-light dark:text-primary-dark rounded-full border border-primary-light dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary-dark transition-colors font-button"
                 disabled={pendingTransactions.some(
                   (t) =>
@@ -482,6 +538,8 @@ function MainComponent() {
                     t.status === "dropoff_pending"
                 )
                   ? "Drop-off Pending"
+                  : isPickupPending
+                  ? "Cancel"
                   : "Drop Off"}
               </button>
             </div>
@@ -675,6 +733,30 @@ function MainComponent() {
                 </button>
                 <button
                   onClick={() => setShowConfirmCancel(false)}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors font-button"
+                >
+                  No, Go Back
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showConfirmCancelPickup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+              <p className="mb-4 text-lg text-text-light dark:text-text-dark">
+                            Are you sure you want to cancel your pickup request for {currentBook ? currentBook.name : 'the selected book'}? This action cannot be undone.
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={handleCancelPickup}
+                  className="px-4 py-2 bg-warning-light dark:bg-warning-dark text-text-light dark:text-text-dark rounded-full hover:bg-warning-dark dark:hover:bg-warning-light transition-colors font-button"
+                >
+                  Yes, Cancel
+                </button>
+                <button
+                  onClick={() => setShowConfirmCancelPickup(false)}
                   className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors font-button"
                 >
                   No, Go Back
